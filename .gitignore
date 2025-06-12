@@ -1,0 +1,13 @@
+target/
+.idea/
+.vscode/
+
+build/
+out/
+bin/
+
+logs/
+.log
+.tmp
+
+~/.m2/
