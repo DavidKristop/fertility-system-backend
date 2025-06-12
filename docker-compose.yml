@@ -6,9 +6,17 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: changemeinprod!
+      PGDATA: /var/lib/postgresql/data/pgdata
+    command: postgres -c 'hba_file=/etc/postgresql/pg_hba.conf' -c 'password_encryption=md5'
+    volumes:
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - db_data:/var/lib/postgresql/data/pgdata
 
   adminer:
     image: adminer:latest
     restart: always
     ports:
       - 8088:8080
+
+volumes:
+  db_data:
