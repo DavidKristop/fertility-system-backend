@@ -1,4 +1,4 @@
-package com.group3.backend.entity.model;
+package com.group3.backend.constants;
 
 public enum Roles {
     ROLE_PATIENT,

@@ -1,6 +1,6 @@
-package com.group3.backend.entity;
+package com.group3.backend.model;
 
-import com.group3.backend.entity.model.Roles;
+import com.group3.backend.constants.Roles;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +14,7 @@ public class Role {
     private int id;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, unique = true)
+    @Column(length = 20, unique = true, nullable = false)
     private Roles name;
 
     public Role(Roles name) {

@@ -1,11 +1,10 @@
-package com.group3.backend.entity;
+package com.group3.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -15,22 +14,20 @@ public class UserInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private UUID id;
 
-    @NotBlank
-    @Size(max = 64)
+    @Column(nullable = false, length = 64, unique = true)
     private String name;
 
-    @NotBlank
-    @Size(max = 50)
     @Email
+    @Column(nullable = false, length = 50, unique = true)
     private String email;
 
-    @NotBlank
-    @Size(max = 255)
+    @Column(nullable = false, length = 255)
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
 }

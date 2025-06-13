@@ -1,0 +1,11 @@
+package com.group3.backend.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/blogs")
+@RequiredArgsConstructor
+public class BlogController {
+}

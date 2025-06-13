@@ -1,4 +1,4 @@
-package com.group3.backend.entity.request;
+package com.group3.backend.dto.request;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;

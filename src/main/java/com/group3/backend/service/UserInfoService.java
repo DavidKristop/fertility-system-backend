@@ -1,9 +1,9 @@
 package com.group3.backend.service;
 
-import com.group3.backend.entity.Role;
-import com.group3.backend.entity.UserInfo;
-import com.group3.backend.entity.request.RegistrationRequest;
-import com.group3.backend.entity.model.Roles;
+import com.group3.backend.model.Role;
+import com.group3.backend.model.UserInfo;
+import com.group3.backend.dto.request.RegistrationRequest;
+import com.group3.backend.constants.Roles;
 import com.group3.backend.repository.RoleRepository;
 import com.group3.backend.repository.UserInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;

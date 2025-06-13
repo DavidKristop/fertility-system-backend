@@ -1,7 +1,7 @@
 package com.group3.backend.controller;
 
-import com.group3.backend.entity.request.LoginRequest;
-import com.group3.backend.entity.request.RegistrationRequest;
+import com.group3.backend.dto.request.LoginRequest;
+import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.service.JwtService;
 import com.group3.backend.service.UserInfoService;
 import jakarta.validation.Valid;

@@ -1,7 +1,7 @@
 package com.group3.backend.repository;
 
-import com.group3.backend.entity.Role;
-import com.group3.backend.entity.model.Roles;
+import com.group3.backend.model.Role;
+import com.group3.backend.constants.Roles;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
