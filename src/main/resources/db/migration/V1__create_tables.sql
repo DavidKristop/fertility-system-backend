@@ -23,8 +23,8 @@ CREATE TABLE blog (
     thumbnail_url VARCHAR(2048),
     author_id UUID NOT NULL,
 
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
     CONSTRAINT fk_author
         FOREIGN KEY(author_id)
@@ -42,23 +42,22 @@ END;
 $$
 language 'plpgsql';
 
-CREATE INDEX idx_blog_author_id ON Blog(author_id);
+CREATE INDEX idx_blog_author_id ON blog(author_id);
 
 CREATE TRIGGER update_blog_updated_at
-BEFORE UPDATE ON Blog
+BEFORE UPDATE ON blog
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE blog_attachment (
     id UUID PRIMARY KEY,
-
     blog_id UUID NOT NULL,
     attachment_url VARCHAR(2048) NOT NULL,
 
-    CONSTRAINT fk_blog
+    CONSTRAINT fk_blog_attachment_blog
         FOREIGN KEY(blog_id)
         REFERENCES blog(id)
         ON DELETE CASCADE
 );
 
-CREATE INDEX idx_blogattachment_blog_id ON BlogAttachment(blog_id);
+CREATE INDEX idx_blogattachment_blog_id ON blog_attachment(blog_id);
