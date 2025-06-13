@@ -16,12 +16,10 @@ public class UserInfoDetails implements UserDetails {
     private List<GrantedAuthority> authorities;
 
     public UserInfoDetails(UserInfo userInfo) {
-        this.username = userInfo.getEmail(); // Use email as username
+        this.username = userInfo.getUsername();
         this.password = userInfo.getPassword();
-        this.authorities = List.of(userInfo.getRoles().split(","))
-                .stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        String roleName = userInfo.getRole().getName().name();
+        this.authorities = List.of(new SimpleGrantedAuthority(roleName));
     }
 
     @Override
