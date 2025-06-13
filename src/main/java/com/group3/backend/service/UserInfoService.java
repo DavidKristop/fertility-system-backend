@@ -3,7 +3,7 @@ package com.group3.backend.service;
 import com.group3.backend.entity.Role;
 import com.group3.backend.entity.UserInfo;
 import com.group3.backend.entity.request.RegistrationRequest;
-import com.group3.backend.models.Roles;
+import com.group3.backend.entity.model.Roles;
 import com.group3.backend.repository.RoleRepository;
 import com.group3.backend.repository.UserInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +29,14 @@ public class UserInfoService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<UserInfo> userDetail = repository.findByUsername(username);
+        Optional<UserInfo> userDetail = repository.findByName(username);
 
         return userDetail.map(UserInfoDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 
     public String registerUser(RegistrationRequest request) {
-        if (repository.findByUsername(request.getUsername()).isPresent()) {
+        if (repository.findByName(request.getUsername()).isPresent()) {
             throw new IllegalArgumentException("User with username '" + request.getUsername() + "' already exists!");
         }
         if (repository.findByEmail(request.getEmail()).isPresent()) {

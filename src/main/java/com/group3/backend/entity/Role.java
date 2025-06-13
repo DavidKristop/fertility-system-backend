@@ -1,6 +1,6 @@
 package com.group3.backend.entity;
 
-import com.group3.backend.models.Roles;
+import com.group3.backend.entity.model.Roles;
 import jakarta.persistence.*;
 import lombok.*;
 

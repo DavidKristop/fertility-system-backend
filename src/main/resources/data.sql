@@ -1,2 +1,0 @@
-INSERT INTO role (name) VALUES ('ROLE_PATIENT');
-INSERT INTO role (name) VALUES ('ROLE_DOCTOR');
