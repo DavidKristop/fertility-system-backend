@@ -44,7 +44,7 @@ public class UserInfoService implements UserDetailsService {
         }
 
         UserInfo userInfo = new UserInfo();
-        userInfo.setUsername(request.getUsername());
+        userInfo.setName(request.getUsername());
         userInfo.setEmail(request.getEmail());
         userInfo.setPassword(encoder.encode(request.getPassword()));
         Role patientRole = roleRepository.findByName(Roles.ROLE_PATIENT)

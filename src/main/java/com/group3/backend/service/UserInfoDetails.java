@@ -16,7 +16,7 @@ public class UserInfoDetails implements UserDetails {
     private List<GrantedAuthority> authorities;
 
     public UserInfoDetails(UserInfo userInfo) {
-        this.username = userInfo.getUsername();
+        this.username = userInfo.getName();
         this.password = userInfo.getPassword();
         String roleName = userInfo.getRole().getName().name();
         this.authorities = List.of(new SimpleGrantedAuthority(roleName));

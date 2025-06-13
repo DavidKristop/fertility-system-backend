@@ -19,7 +19,7 @@ public class UserInfo {
 
     @NotBlank
     @Size(max = 64)
-    private String username;
+    private String name;
 
     @NotBlank
     @Size(max = 50)
