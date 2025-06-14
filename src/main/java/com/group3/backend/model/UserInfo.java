@@ -13,7 +13,7 @@ import java.util.UUID;
 public class UserInfo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, length = 64, unique = true)
