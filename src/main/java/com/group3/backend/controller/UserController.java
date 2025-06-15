@@ -2,6 +2,7 @@ package com.group3.backend.controller;
 
 import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
+import com.group3.backend.dto.response.AuthResponse;
 import com.group3.backend.service.JwtService;
 import com.group3.backend.service.UserInfoService;
 import jakarta.validation.Valid;
@@ -44,23 +45,32 @@ public class UserController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<String> signin(@RequestBody LoginRequest authRequest) {
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
-            );
-        } catch (UsernameNotFoundException | BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred during authentication: " + e.getMessage());
-        }
+    public ResponseEntity<?> signin(@RequestBody LoginRequest authRequest) {
+    Authentication authentication;
+    try {
+        authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
+        );
+    } catch (UsernameNotFoundException | BadCredentialsException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An unexpected error occurred: " + e.getMessage());
+    }
 
-        if (authentication.isAuthenticated()) {
-            String token = jwtService.generateToken(authRequest.getUsername());
-            return ResponseEntity.ok(token);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: Invalid user request!");
+    if (authentication.isAuthenticated()) {
+        String token = jwtService.generateToken(authRequest.getUsername());
+
+        // ⛳ TRẢ VỀ JSON TOKEN + USERNAME
+        AuthResponse authResponse = new AuthResponse(token, authRequest.getUsername());
+        return ResponseEntity.ok(authResponse);
+    } else {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed!");
         }
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<String> validateToken() {
+        return ResponseEntity.ok("Token is valid");
     }
 }

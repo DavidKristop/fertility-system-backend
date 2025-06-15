@@ -1,0 +1,27 @@
+
+# POST http://localhost:8080/auth/signin
+# Content-Type: application/json
+
+# {
+#   "username": "testuser",
+#   "password": "Abcd@12345678"
+# }
+
+# POST http://localhost:8080/auth/signup
+# Content-Type: application/json
+
+# {
+#   "username": "testuser",
+#   "email": "test@example.com",
+#   "password": "Abcd@12345678",
+#   "confirmPassword": "Abcd@12345678"
+# }
+
+# GET http://localhost:8080/auth/validate
+# Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImlhdCI6MTc0OTk3NzE1OSwiZXhwIjoxNzQ5OTc4MDU5fQ.E9RjrrPbw9ciFeeBNb8CFeOf0ltnPUvJoRnZHfppt6k
+
+# file này dùng extention REST Client để test API auth
+# Cách test:
+# - tải REST Client extension cho VSCode
+# - mở file này trong VSCode
+# - click vào link ở đầu mỗi request để gửi request đến server
