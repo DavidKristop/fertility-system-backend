@@ -18,8 +18,9 @@
 	<description>Backend service for the Fertility Treatment System.</description>
 
 	<properties>
-		<java.version>24</java.version>
+		<java.version>21</java.version>
 		<lombok.version>1.18.38</lombok.version>
+		<postgres.version>42.7.5</postgres.version>
 	</properties>
 
 	<dependencies>
@@ -42,7 +43,6 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -80,7 +80,6 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.7.5</version>
 		</dependency>
 
 		<dependency>
@@ -108,7 +107,6 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
-			<version>11.8.2</version>
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
