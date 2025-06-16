@@ -49,24 +49,24 @@ public class UserController {
     Authentication authentication;
     try {
         authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
         );
     } catch (UsernameNotFoundException | BadCredentialsException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
     } catch (Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("An unexpected error occurred: " + e.getMessage());
     }
 
     if (authentication.isAuthenticated()) {
-        String token = jwtService.generateToken(authRequest.getUsername());
+        String token = jwtService.generateToken(authRequest.getEmail());
 
-        // ⛳ TRẢ VỀ JSON TOKEN + USERNAME
-        AuthResponse authResponse = new AuthResponse(token, authRequest.getUsername());
+        // ⛳ TRẢ VỀ JSON TOKEN + EMAIL
+        AuthResponse authResponse = new AuthResponse(token, authRequest.getEmail());
         return ResponseEntity.ok(authResponse);
     } else {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed!");
-        }
+    }
     }
 
     @GetMapping("/validate")

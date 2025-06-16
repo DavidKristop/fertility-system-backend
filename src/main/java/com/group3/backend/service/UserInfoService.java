@@ -28,11 +28,11 @@ public class UserInfoService implements UserDetailsService {
     private PasswordEncoder encoder;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<UserInfo> userDetail = repository.findByName(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<UserInfo> userDetail = repository.findByEmail(email);
 
         return userDetail.map(UserInfoDetails::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 
     public String registerUser(RegistrationRequest request) {
