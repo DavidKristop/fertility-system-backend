@@ -4,7 +4,7 @@ import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.dto.response.AuthResponse;
 import com.group3.backend.service.JwtService;
-import com.group3.backend.service.UserInfoService;
+import com.group3.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserInfoService service;
+    private final UserService service;
 
     private final JwtService jwtService;
 
@@ -46,6 +46,8 @@ public class UserController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequest authRequest) {
+        System.out.println("🟡 Login attempt with email: " + authRequest.getEmail());
+    System.out.println("🟡 Password input: " + authRequest.getPassword());
     Authentication authentication;
     try {
         authentication = authenticationManager.authenticate(

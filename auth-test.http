@@ -3,7 +3,7 @@
 # Content-Type: application/json
 
 # {
-#   "username": "testuser",
+#   "email": "test@example.com",
 #   "password": "Abcd@12345678"
 # }
 
@@ -18,7 +18,7 @@
 # }
 
 # GET http://localhost:8080/auth/validate
-# Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImlhdCI6MTc0OTk3NzE1OSwiZXhwIjoxNzQ5OTc4MDU5fQ.E9RjrrPbw9ciFeeBNb8CFeOf0ltnPUvJoRnZHfppt6k
+# Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNzUwMDYxNTYwLCJleHAiOjE3NTAwNjI0NjB9.bDh1s2uXCnbAS2daXOaLRL_939qZOtxFbeJItMXlK3A
 
 # file này dùng extention REST Client để test API auth
 # Cách test:
