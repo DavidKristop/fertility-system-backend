@@ -1,13 +1,13 @@
 package com.group3.backend.config;
 
-import com.group3.backend.filter.JwtAuthFilter;
-import com.group3.backend.service.UserService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,9 +20,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.group3.backend.filter.JwtAuthFilter;
+import com.group3.backend.service.UserService;
 
-import static org.springframework.security.config.Customizer.withDefaults;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -46,6 +47,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/auth/validate").authenticated()
                         .requestMatchers("/auth/patient/**").hasAuthority("ROLE_PATIENT")
+                        .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/test/patient").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/test/user").authenticated()
