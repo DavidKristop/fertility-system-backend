@@ -2,6 +2,8 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Entity
@@ -31,12 +33,16 @@ public class RequestAppointment {
     @Column(name = "reason")
     private String reason;
 
+    @Column(name = "appointment_datetime", nullable = false)
+    private Timestamp appointmentDatetime;
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
     public enum Status {
-        ACCEPT,
-        DENIED
+        Accept,
+        Denied,
+        Pending
     }
 }
