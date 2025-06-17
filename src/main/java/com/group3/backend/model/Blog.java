@@ -35,7 +35,7 @@ public class Blog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
-    private UserInfo author;
+    private User author;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
