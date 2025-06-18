@@ -7,6 +7,8 @@ import java.sql.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.group3.backend.constants.TreatmentStatus;
+
 @Entity
 @Table(name = "treatment")
 @Getter
@@ -31,9 +33,17 @@ public class Treatment {
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
+
     @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Status status;
+    private String status;
+
+    public TreatmentStatus getTreatmentStatus() {
+        return TreatmentStatus.fromString(status);
+    }
+
+    public void setTreatmentStatus(TreatmentStatus status) {
+        this.status = status.getDisplayName();
+    }
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -43,7 +53,11 @@ public class Treatment {
     @JoinColumn(name = "doctor_id")
     private User doctor;
 
-    @OneToMany(mappedBy = "treatment")
+    @ManyToOne
+    @JoinColumn(name = "treatment_protocol_id")
+    private TreatmentProtocol treatmentProtocol;
+
+    @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL)
     private List<TreatmentPhase> phases;
 
     @OneToOne(mappedBy = "treatment")
@@ -51,10 +65,4 @@ public class Treatment {
 
     @OneToMany(mappedBy = "treatment")
     private List<Feedback> feedbacks;
-
-    public enum Status {
-        CANCEL,
-        IN_PROGRESS,
-        COMPLETE
-    }
 }

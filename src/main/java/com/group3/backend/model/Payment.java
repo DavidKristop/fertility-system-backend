@@ -18,7 +18,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "amount", precision = 10, scale = 2)
+    @Column(name = "amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal amount;
 
     @Column(name = "description")
@@ -37,10 +37,10 @@ public class Payment {
     private String status;
 
     @ManyToOne
-    @JoinColumn(name = "payment_history_id")
+    @JoinColumn(name = "payment_history_id", nullable = false)
     private PaymentHistory paymentHistory;
 
     @ManyToOne
-    @JoinColumn(name = "treatment_phase_id")
+    @JoinColumn(name = "treatment_phase_id", nullable = false)
     private TreatmentPhase treatmentPhase;
 }
