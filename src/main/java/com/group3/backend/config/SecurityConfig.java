@@ -45,9 +45,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
                                 "/webjars/**", "/swagger-ui.html"
                         ).permitAll()
+                        .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/auth/validate").authenticated()
                         .requestMatchers("/auth/patient/**").hasAuthority("ROLE_PATIENT")
-                        .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/test/patient").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/test/user").authenticated()
