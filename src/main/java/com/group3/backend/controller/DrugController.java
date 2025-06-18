@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/doctor/drugs")
+@RequestMapping("/drugs")
 public class DrugController {
     @Autowired
     private DrugService drugService;
@@ -23,6 +23,6 @@ public class DrugController {
     @GetMapping("/{id}")
     public ResponseEntity<DrugResponse> get(@PathVariable UUID id){
         DrugResponse drugResponse = drugService.getDrugById(id);
-        return ResponseEntity.ok(drugResponse);
+        return drugResponse != null ? ResponseEntity.ok(drugResponse) : ResponseEntity.notFound().build();
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/doctor/services")
+@RequestMapping("/services")
 public class ServiceController {
     @Autowired
     private ServiceItemService serviceItemService;
@@ -23,6 +23,6 @@ public class ServiceController {
     @GetMapping("/{id}")
     public ResponseEntity<ServiceResponse> get(@PathVariable UUID id){
         ServiceResponse serviceResponse = serviceItemService.getServiceById(id);
-        return ResponseEntity.ok(serviceResponse);
+        return serviceResponse != null ? ResponseEntity.ok(serviceResponse) : ResponseEntity.notFound().build();
     }
 }
