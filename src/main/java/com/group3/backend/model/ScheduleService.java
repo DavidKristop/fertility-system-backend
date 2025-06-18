@@ -14,7 +14,7 @@ import java.util.UUID;
 public class ScheduleService {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private int id;
 
     @ManyToOne
     @JoinColumn(name = "schedule_id")

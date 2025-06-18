@@ -42,7 +42,7 @@ public class Schedule {
     @OneToOne(mappedBy = "schedule")
     private RequestAppointment requestAppointment;
 
-    @OneToMany(mappedBy = "schedule")
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
     private List<ScheduleService> scheduleServices;
 
     public enum Status {

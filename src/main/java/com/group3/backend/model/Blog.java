@@ -20,7 +20,7 @@ import java.util.UUID;
 public class Blog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, length = 64)
@@ -35,7 +35,7 @@ public class Blog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
-    private UserInfo author;
+    private User author;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

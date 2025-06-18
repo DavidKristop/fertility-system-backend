@@ -3,6 +3,7 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,11 +38,11 @@ public class TreatmentPhase {
     @Column(name = "refund_amount", precision = 10, scale = 2)
     private BigDecimal refundAmount;
 
-    @OneToMany(mappedBy = "treatmentPhase")
-    private List<PatientDrug> patientDrugs;
+    @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
+    private List<PatientDrug> patientDrugs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "treatmentPhase")
-    private List<ScheduleService> scheduleServices;
+    @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
+    private List<ScheduleService> scheduleServices = new ArrayList<>();
 
     @OneToMany(mappedBy = "treatmentPhase")
     private List<Payment> payments;

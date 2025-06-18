@@ -1,12 +1,12 @@
-package com.group3.backend.repository;
+// package com.group3.backend.repository;
 
-import com.group3.backend.model.UserInfo;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.util.Optional;
+// import com.group3.backend.model.UserInfo;
+// import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.stereotype.Repository;
+// import java.util.Optional;
 
-@Repository
-public interface UserInfoRepository extends JpaRepository<UserInfo, Integer> {
-    Optional<UserInfo> findByEmail(String email);
-    Optional<UserInfo> findByName(String name);
-}
+// @Repository
+// public interface UserInfoRepository extends JpaRepository<UserInfo, Integer> {
+//     Optional<UserInfo> findByEmail(String email);
+//     Optional<UserInfo> findByName(String name);
+// }
