@@ -19,12 +19,16 @@ public class Schedule {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "doctor_id")
+    @JoinColumn(name = "doctor_id", nullable = false)
     private User doctor;
 
     @ManyToOne
-    @JoinColumn(name = "patient_id")
+    @JoinColumn(name = "patient_id", nullable = false)
     private User patient;
+
+    @ManyToOne
+    @JoinColumn(name = "treatment_phase_id", nullable = false)
+    private TreatmentPhase treatmentPhase;
 
     @Column(name = "appointment_datetime", nullable = false)
     private Timestamp appointmentDateTime;
@@ -48,6 +52,7 @@ public class Schedule {
     public enum Status {
         PENDING,
         CHANGED,
+        CANCELED,
         DONE
     }
 }

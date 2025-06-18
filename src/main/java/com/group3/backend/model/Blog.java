@@ -9,8 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -46,6 +45,6 @@ public class Blog {
     private Instant updatedAt;
 
     @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<BlogAttachment> attachments = new HashSet<>();
+    private List<BlogAttachment> attachments;
 
 }

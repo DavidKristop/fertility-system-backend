@@ -14,8 +14,8 @@ import java.util.UUID;
 @Builder
 public class PatientDrug {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "drug_id")

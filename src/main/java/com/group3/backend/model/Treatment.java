@@ -53,6 +53,10 @@ public class Treatment {
     @JoinColumn(name = "doctor_id")
     private User doctor;
 
+    @ManyToOne
+    @JoinColumn(name = "treatment_protocol_id")
+    private TreatmentProtocol treatmentProtocol;
+
     @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL)
     private List<TreatmentPhase> phases;
 

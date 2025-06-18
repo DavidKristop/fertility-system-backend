@@ -3,10 +3,11 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "\"user\"")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,7 +27,7 @@ public class User {
     @Column(nullable = false)
     private String fullName;
 
-    @Column(nullable = false)
+    @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
 
     private String address;
@@ -37,6 +38,7 @@ public class User {
     @Column(nullable = false)
     private String passwordSecret;
 
+    @Column(name = "avatar_url")
     private String avatarUrl;
 
     @ManyToOne
@@ -48,4 +50,33 @@ public class User {
 
     @OneToOne(mappedBy = "user")
     private DoctorProfile doctorProfile;
+
+    @OneToMany(mappedBy = "sendTo")
+    private List<Reminder> reminders;
+
+    @OneToMany(mappedBy = "user")
+    private List<PaymentHistory> paymentHistories;
+
+    @OneToMany(mappedBy = "patient")
+    private List<RequestAppointment> requestAppointments;
+
+    @OneToMany(mappedBy = "author")
+    private List<Blog> blogs;
+
+    @OneToMany(mappedBy = "user")
+    private List<Feedback> feedbacks;
+
+    @OneToMany(mappedBy = "patient")
+    private List<Schedule> schedules;
+
+    @OneToMany(mappedBy = "patient")
+    private List<Treatment> treatments;
+
+    @OneToMany(mappedBy = "doctor")
+    private List<Schedule> doctorSchedules;
+
+    @OneToMany(mappedBy = "doctor")
+    private List<RequestAppointment> doctorRequestAppointments;
+
+    
 }
