@@ -106,6 +106,7 @@ public class TreatmentService {
                         Service service = serviceRepository.findById(serviceRequest.getId())
                             .orElseThrow(() -> new RuntimeException("Service not found"));
                         scheduleService.setService(service);
+                        scheduleService.setSchedule(schedule);
                         scheduleService.setAmount(serviceRequest.getAmount());
                         scheduleService.setNotes(serviceRequest.getNotes());
                         schedule.getScheduleServices().add(scheduleService);
