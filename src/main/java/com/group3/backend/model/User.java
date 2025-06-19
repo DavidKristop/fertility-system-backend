@@ -1,5 +1,6 @@
 package com.group3.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -46,9 +47,11 @@ public class User {
     private Role role;
 
     @OneToOne(mappedBy = "user")
+    @JsonIgnore
     private PatientProfile patientProfile;
 
     @OneToOne(mappedBy = "user")
+    @JsonIgnore
     private DoctorProfile doctorProfile;
 
     @OneToMany(mappedBy = "sendTo")

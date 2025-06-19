@@ -46,8 +46,6 @@ public class UserController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequest authRequest) {
-        System.out.println("🟡 Login attempt with email: " + authRequest.getEmail());
-    System.out.println("🟡 Password input: " + authRequest.getPassword());
     Authentication authentication;
     try {
         authentication = authenticationManager.authenticate(
@@ -63,7 +61,7 @@ public class UserController {
     if (authentication.isAuthenticated()) {
         String token = jwtService.generateToken(authRequest.getEmail());
 
-        // ⛳ TRẢ VỀ JSON TOKEN + EMAIL
+        //  TRẢ VỀ JSON TOKEN + EMAIL
         AuthResponse authResponse = new AuthResponse(token, authRequest.getEmail());
         return ResponseEntity.ok(authResponse);
     } else {
