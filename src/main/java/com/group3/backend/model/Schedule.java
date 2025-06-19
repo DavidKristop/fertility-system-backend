@@ -3,6 +3,7 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +48,7 @@ public class Schedule {
     private RequestAppointment requestAppointment;
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
-    private List<ScheduleService> scheduleServices;
+    private List<ScheduleService> scheduleServices = new ArrayList<>();
 
     public enum Status {
         PENDING,

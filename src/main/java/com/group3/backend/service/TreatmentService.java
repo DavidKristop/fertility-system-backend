@@ -99,6 +99,7 @@ public class TreatmentService {
                     schedule.setAppointmentDateTime(scheduleRequest.getAppointmentDateTime());
                     schedule.setEstimatedTime(scheduleRequest.getEstimatedTime());
                     schedule.setStatus(Schedule.Status.PENDING);
+                    schedule.setTreatmentPhase(phase);
 
                     for (ServiceRequest serviceRequest : scheduleRequest.getServices()){
                         ScheduleService scheduleService = new ScheduleService();
