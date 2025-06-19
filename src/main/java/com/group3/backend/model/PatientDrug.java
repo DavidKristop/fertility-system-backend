@@ -33,6 +33,9 @@ public class PatientDrug {
     @Column(name = "dosage")
     private String dosage;
 
+    @Column(name = "amount")
+    private Integer amount;
+
     @ManyToOne
     @JoinColumn(name = "treatment_phase_id")
     private TreatmentPhase treatmentPhase;

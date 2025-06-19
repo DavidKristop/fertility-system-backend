@@ -42,7 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/welcome", "/auth/signup", "/auth/signin", "/test/public",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
-                                "/webjars/**", "/swagger-ui.html"
+                                "/webjars/**", "/swagger-ui.html","/api/treatments"
                         ).permitAll()
                         .requestMatchers("/auth/validate").authenticated()
                         .requestMatchers("/auth/patient/**").hasAuthority("ROLE_PATIENT")

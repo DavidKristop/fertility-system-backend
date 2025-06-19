@@ -8,13 +8,16 @@ import com.group3.backend.dto.request.Treatment.POST.TreatmentCreateRequest;
 import com.group3.backend.dto.request.Treatment.POST.TreatmentPhaseRequest;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
+import com.group3.backend.model.TreatmentProtocol;
 import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.PatientDrug;
+import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Service;
 import com.group3.backend.model.Drug;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.TreatmentRepository;
 import com.group3.backend.repository.TreatmentPhaseRepository;
+import com.group3.backend.repository.TreatmentProtocolRepository;
 import com.group3.backend.repository.ScheduleServiceRepository;
 import com.group3.backend.repository.DrugPatientRepository;
 import com.group3.backend.repository.ServiceRepository;
@@ -32,12 +35,10 @@ import java.util.List;
 public class TreatmentService {
     
     private final TreatmentRepository treatmentRepository;
-    private final TreatmentPhaseRepository treatmentPhaseRepository;
-    private final ScheduleServiceRepository scheduleServiceRepository;
-    private final DrugPatientRepository drugPatientRepository;
     private final ServiceRepository serviceRepository;
     private final DrugRepository drugRepository;
     private final UserRepository userRepository;
+    private final TreatmentProtocolRepository treatmentProtocolRepository;
 
     @Autowired
     public TreatmentService(TreatmentRepository treatmentRepository,
@@ -46,14 +47,13 @@ public class TreatmentService {
                            DrugPatientRepository drugPatientRepository,
                            ServiceRepository serviceRepository,
                            DrugRepository drugRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           TreatmentProtocolRepository treatmentProtocolRepository) {
         this.treatmentRepository = treatmentRepository;
-        this.treatmentPhaseRepository = treatmentPhaseRepository;
-        this.scheduleServiceRepository = scheduleServiceRepository;
-        this.drugPatientRepository = drugPatientRepository;
         this.serviceRepository = serviceRepository;
         this.drugRepository = drugRepository;
         this.userRepository = userRepository;
+        this.treatmentProtocolRepository = treatmentProtocolRepository;
     }
 
 
@@ -61,10 +61,14 @@ public class TreatmentService {
     public Treatment createTreatment(TreatmentCreateRequest request) {
         // Create treatment
         Treatment treatment = new Treatment();
+        TreatmentProtocol protocol = treatmentProtocolRepository.findById(request.getProtocolId())
+            .orElseThrow(() -> new RuntimeException("Treatment protocol not found"));
+
         treatment.setStartDate(Date.valueOf(request.getStartDate()));
         treatment.setEndDate(Date.valueOf(request.getEndDate()));
         treatment.setDiagnosis(request.getDiagnosis());
-        
+        treatment.setTreatmentProtocol(protocol);
+
         // Fetch user objects from repository
         User patient = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
@@ -86,21 +90,30 @@ public class TreatmentService {
             // Calculate total amount for phase
             BigDecimal totalAmount = BigDecimal.ZERO;
             
-            // Create schedule services
-            // if (phaseRequest.getSchedules() != null) {
-            //     for (ScheduleRequest scheduleRequest : phaseRequest.getSchedules()) {
-            //         ScheduleService scheduleService = new ScheduleService();
-            //         Service requestedService = serviceRepository.findById(scheduleRequest.getId())
-            //             .orElseThrow(() -> new RuntimeException("Service not found"));
-            //         scheduleService.setService(requestedService);
-            //         scheduleService.setAmount(serviceRequest.getAmount());
-            //         scheduleService.setNotes(serviceRequest.getNotes());
-            //         scheduleService.setTreatmentPhase(phase);
-            //         phase.getScheduleServices().add(scheduleService);
-            //         totalAmount = totalAmount.add(requestedService.getPrice()
-            //             .multiply(BigDecimal.valueOf(serviceRequest.getAmount())));
-            //     }
-            // }
+            //Create schedule
+            if(phaseRequest.getSchedules() != null){
+                for (ScheduleRequest scheduleRequest : phaseRequest.getSchedules()){
+                    Schedule schedule = new Schedule();
+                    schedule.setDoctor(doctor);
+                    schedule.setPatient(patient);
+                    schedule.setAppointmentDateTime(scheduleRequest.getAppointmentDateTime());
+                    schedule.setEstimatedTime(scheduleRequest.getEstimatedTime());
+                    schedule.setStatus(Schedule.Status.PENDING);
+
+                    for (ServiceRequest serviceRequest : scheduleRequest.getServices()){
+                        ScheduleService scheduleService = new ScheduleService();
+                        Service service = serviceRepository.findById(serviceRequest.getId())
+                            .orElseThrow(() -> new RuntimeException("Service not found"));
+                        scheduleService.setService(service);
+                        scheduleService.setAmount(serviceRequest.getAmount());
+                        scheduleService.setNotes(serviceRequest.getNotes());
+                        schedule.getScheduleServices().add(scheduleService);
+                        totalAmount = totalAmount.add(service.getPrice().multiply(BigDecimal.valueOf(serviceRequest.getAmount())));
+                    }
+
+                    phase.getSchedules().add(schedule);
+                }
+            }
 
             // Create drug patients
             if (phaseRequest.getDrugs() != null) {
@@ -115,7 +128,7 @@ public class TreatmentService {
                     patientDrug.setEndDate(Date.valueOf(request.getEndDate()));
                     patientDrug.setTreatmentPhase(phase);
                     phase.getPatientDrugs().add(patientDrug);
-                    totalAmount = totalAmount.add(drug.getPrice());
+                    totalAmount = totalAmount.add(drug.getPrice().multiply(BigDecimal.valueOf(drugRequest.getAmount())));
                 }
             }
 

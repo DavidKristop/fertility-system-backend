@@ -12,5 +12,6 @@ public class TreatmentCreateRequest {
     private String diagnosis;
     private UUID userId;
     private UUID doctorId;
+    private UUID protocolId;
     private List<TreatmentPhaseRequest> phases;
 }

@@ -7,6 +7,4 @@ import java.util.UUID;
 
 @Repository
 public interface TreatmentRepository extends JpaRepository<Treatment, UUID> {
-    Treatment findByPatientId(UUID patientId);
-    Treatment findByDoctorId(UUID doctorId);
 }

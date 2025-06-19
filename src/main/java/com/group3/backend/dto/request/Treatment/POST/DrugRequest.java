@@ -8,4 +8,5 @@ public class DrugRequest {
     private UUID id;
     private String dosage;
     private String usageInstructions;
+    private int amount;
 }

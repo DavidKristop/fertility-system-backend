@@ -29,8 +29,4 @@ public class ScheduleService {
 
     @Column(name = "amount")
     private Integer amount;
-
-    @ManyToOne
-    @JoinColumn(name = "treatment_phase_id")
-    private TreatmentPhase treatmentPhase;
 }

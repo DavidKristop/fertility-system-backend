@@ -13,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="role")
+@Builder
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
