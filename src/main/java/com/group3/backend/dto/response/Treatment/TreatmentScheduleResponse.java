@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class ScheduleResponse {
+public class TreatmentScheduleResponse {
     private UUID id;
     private Timestamp appointmentDateTime;
     private Timestamp estimatedTime;
-    private List<ServiceResponse> services;
+    private List<TreatmentServiceResponse> services;
 }

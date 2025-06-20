@@ -41,7 +41,7 @@ public class Schedule {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @OneToOne(mappedBy = "schedule")
+    @OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL)
     private ScheduleResult scheduleResult;
 
     @OneToOne(mappedBy = "schedule")

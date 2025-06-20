@@ -16,10 +16,10 @@ public interface TreatmentMapper {
     TreatmentPhaseResponse map(TreatmentPhase phase);
 
     @Mapping(source = "scheduleServices", target = "services")
-    ScheduleResponse map(Schedule schedule);
+    TreatmentScheduleResponse map(Schedule schedule);
     
     @Mapping(source = "drug", target = "drug")
-    PatientDrugResponse map(PatientDrug patientDrug);
+    TreatmentPatientDrugResponse map(PatientDrug patientDrug);
     
 
 }

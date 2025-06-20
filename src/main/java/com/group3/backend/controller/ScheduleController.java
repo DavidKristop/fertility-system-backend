@@ -1,7 +1,8 @@
 package com.group3.backend.controller;
 
 import com.group3.backend.dto.Response;
-import com.group3.backend.dto.response.Treatment.ScheduleResponse;
+import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
+import com.group3.backend.dto.response.Schedule.ScheduleResponse;
 import com.group3.backend.mapper.ScheduleMapper;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.service.ScheduleService;
@@ -72,4 +73,15 @@ public class ScheduleController {
         return ResponseEntity.ok(new Response<>(responses,"Schedules retrieved successfully"));
     }
 
+    @GetMapping("/result/{scheduleId}")
+    public ResponseEntity<Response<ScheduleResponse>> getScheduleResultById(@PathVariable UUID scheduleId) {
+        Schedule schedule = scheduleService.getScheduleById(scheduleId);
+        return ResponseEntity.ok(new Response<>(scheduleMapper.toResponse(schedule),"Schedule result retrieved successfully"));
+    }
+
+    @PostMapping("/result")
+    public ResponseEntity<Response<ScheduleResponse>> addScheduleResult(@RequestBody ScheduleResultRequest request) {
+        Schedule schedule = scheduleService.addScheduleResult(request);
+        return ResponseEntity.ok(new Response<>(scheduleMapper.toResponse(schedule),"Schedule result added successfully"));
+    }
 }

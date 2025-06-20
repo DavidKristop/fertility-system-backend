@@ -14,6 +14,6 @@ public class TreatmentPhaseResponse {
     private BigDecimal totalAmount;
     private String refundCondition;
     private BigDecimal refundAmount;
-    private List<ScheduleResponse> schedules;
-    private List<PatientDrugResponse> patientDrugs;
+    private List<TreatmentScheduleResponse> schedules;
+    private List<TreatmentPatientDrugResponse> patientDrugs;
 }

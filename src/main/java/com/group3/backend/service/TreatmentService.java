@@ -1,11 +1,11 @@
 package com.group3.backend.service;
 
 import com.group3.backend.constants.TreatmentStatus;
-import com.group3.backend.dto.request.Treatment.POST.DrugRequest;
-import com.group3.backend.dto.request.Treatment.POST.ScheduleRequest;
-import com.group3.backend.dto.request.Treatment.POST.ServiceRequest;
-import com.group3.backend.dto.request.Treatment.POST.TreatmentCreateRequest;
-import com.group3.backend.dto.request.Treatment.POST.TreatmentPhaseRequest;
+import com.group3.backend.dto.request.Treatment.TreatmentDrugRequest;
+import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
+import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
+import com.group3.backend.dto.request.Treatment.TreatmentPhaseRequest;
+import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.TreatmentProtocol;
@@ -92,7 +92,7 @@ public class TreatmentService {
             
             //Create schedule
             if(phaseRequest.getSchedules() != null){
-                for (ScheduleRequest scheduleRequest : phaseRequest.getSchedules()){
+                for (TreatmentScheduleRequest scheduleRequest : phaseRequest.getSchedules()){
                     Schedule schedule = new Schedule();
                     schedule.setDoctor(doctor);
                     schedule.setPatient(patient);
@@ -101,7 +101,7 @@ public class TreatmentService {
                     schedule.setStatus(Schedule.Status.PENDING);
                     schedule.setTreatmentPhase(phase);
 
-                    for (ServiceRequest serviceRequest : scheduleRequest.getServices()){
+                    for (TreatmentServiceRequest serviceRequest : scheduleRequest.getServices()){
                         ScheduleService scheduleService = new ScheduleService();
                         Service service = serviceRepository.findById(serviceRequest.getId())
                             .orElseThrow(() -> new RuntimeException("Service not found"));
@@ -119,7 +119,7 @@ public class TreatmentService {
 
             // Create drug patients
             if (phaseRequest.getDrugs() != null) {
-                for (DrugRequest drugRequest : phaseRequest.getDrugs()) {
+                for (TreatmentDrugRequest drugRequest : phaseRequest.getDrugs()) {
                     PatientDrug patientDrug = new PatientDrug();
                     Drug drug = drugRepository.findById(drugRequest.getId())
                         .orElseThrow(() -> new RuntimeException("Drug not found"));

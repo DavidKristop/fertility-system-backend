@@ -1,9 +1,10 @@
-package com.group3.backend.dto.request.Treatment.POST;
+package com.group3.backend.dto.request.Treatment;
 
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
 import java.util.UUID;
+
 
 @Data
 public class TreatmentCreateRequest {

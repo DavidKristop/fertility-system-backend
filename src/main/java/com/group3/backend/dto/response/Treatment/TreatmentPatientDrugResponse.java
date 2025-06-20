@@ -5,9 +5,9 @@ import java.util.UUID;
 import lombok.Data;
 
 @Data
-public class PatientDrugResponse{
+public class TreatmentPatientDrugResponse{
     private UUID id;
-    private DrugResponse drug;
+    private TreatmentDrugResponse drug;
     private String dosage;
     private String usageInstructions;
     private int amount;

@@ -5,7 +5,7 @@ import java.util.UUID;
 import java.math.BigDecimal;
 
 @Data
-public class ServiceResponse {
+public class TreatmentServiceResponse {
     private UUID id;
     private String name;
     private String description;
