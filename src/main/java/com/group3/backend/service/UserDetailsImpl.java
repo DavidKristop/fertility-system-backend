@@ -23,7 +23,6 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        System.out.println("🔵 Hashed password from DB: " + user.getPasswordHashed());
         return user.getPasswordHashed();
     }
 
