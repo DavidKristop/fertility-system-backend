@@ -18,6 +18,8 @@ import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.service.RequestAppointmentService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/request-appointments")

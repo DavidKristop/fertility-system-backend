@@ -27,9 +27,10 @@ public class DrugService {
     }
 
     public DrugResponse getDrugById(UUID id){
-        Drug drug = drugRepository.findById(id)
-                                .orElseThrow(() -> new IllegalArgumentException("Drug not found: " + id));
-        return toResponse(drug);
+        return drugRepository
+                .findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new RuntimeException("Drug Not Found!"));
     }
 
     public DrugResponse toResponse (Drug drug){

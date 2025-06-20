@@ -5,13 +5,13 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.group3.backend.dto.request.RequestAppointmentRequest;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.RequestAppointmentRepository;
 import com.group3.backend.repository.UserRepository;
-
+import com.group3.backend.dto.request.RequestAppointmentRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

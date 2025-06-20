@@ -18,20 +18,20 @@ public class Refund {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "amount", precision = 10, scale = 2)
+    @Column(name = "amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "refund_date")
+    @Column(name = "refund_date", nullable = false)
     private Timestamp refundDate;
 
-    @Column(name = "refund_method")
+    @Column(name = "refund_method", nullable = false)
     private String refundMethod;
 
     @ManyToOne
-    @JoinColumn(name = "payment_history_id")
+    @JoinColumn(name = "payment_history_id", nullable = false)
     private PaymentHistory paymentHistory;
 
     @ManyToOne
-    @JoinColumn(name = "treatment_phase_id")
+    @JoinColumn(name = "treatment_phase_id", nullable = false)
     private TreatmentPhase treatmentPhase;
 }

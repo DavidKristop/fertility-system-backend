@@ -27,9 +27,10 @@ public class ServiceItemService {
     }
 
     public ServiceResponse getServiceById(UUID id){
-        Service svc = serviceRepository.findById(id)
-                                        .orElseThrow(() -> new IllegalArgumentException("Service not found: " + id));
-        return toResponse(svc);
+        return serviceRepository
+                .findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new RuntimeException("Service Not Found!"));
     }
 
     public ServiceResponse toResponse(Service svc){

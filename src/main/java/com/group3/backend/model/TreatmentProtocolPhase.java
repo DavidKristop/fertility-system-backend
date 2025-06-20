@@ -3,18 +3,17 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "treatment_phase")
+@Table(name = "treatment_protocol_phase")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TreatmentPhase {
+public class TreatmentProtocolPhase {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -28,25 +27,19 @@ public class TreatmentPhase {
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @ManyToOne
-    @JoinColumn(name = "treatment_id")
-    private Treatment treatment;
-
     @Column(name = "refund_condition")
     private String refundCondition;
 
     @Column(name = "refund_amount", precision = 10, scale = 2)
     private BigDecimal refundAmount;
 
-    @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
-    private List<PatientDrug> patientDrugs = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "treatment_protocol_id")
+    private TreatmentProtocol treatmentProtocol;
 
-    @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
-    private List<ScheduleService> scheduleServices = new ArrayList<>();
+    @OneToMany(mappedBy = "treatmentProtocolPhase", cascade = CascadeType.ALL)
+    private List<TreatmentProtocolService> services;
 
-    @OneToMany(mappedBy = "treatmentPhase")
-    private List<Payment> payments;
-
-    @OneToMany(mappedBy = "treatmentPhase")
-    private List<Refund> refunds;
+    @OneToMany(mappedBy = "treatmentProtocolPhase", cascade = CascadeType.ALL)
+    private List<TreatmentProtocolDrug> drugs;
 }
