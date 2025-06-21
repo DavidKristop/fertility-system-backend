@@ -19,37 +19,28 @@ public class ScheduleService {
     @Autowired
     private ScheduleRepository scheduleRepository;
 
+    public List<Schedule> getAvailableDoctors(Integer year, Integer month) {
+        List<Schedule> schedules = scheduleRepository.findAll();
+        if(year == null) year = LocalDate.now().getYear();
+        if(month == null) month = LocalDate.now().getMonthValue();
+        
+        return filterDate(schedules, year, month);
+    }
+
     public List<Schedule> getSchedulesByDoctorId(UUID doctorId, Integer year, Integer month) {
         List<Schedule> schedules = scheduleRepository.findByDoctorId(doctorId);
         if(year == null) year = LocalDate.now().getYear();
         if(month == null) month = LocalDate.now().getMonthValue();
-        LocalDate startOfMonth = LocalDate.of(year, month, 1);
-        LocalDate endOfMonth = startOfMonth.plusMonths(1).minusDays(1);
         
-        schedules = schedules.stream()
-                .filter(schedule -> {
-                    LocalDate appointmentDate = schedule.getAppointmentDateTime().toLocalDateTime().toLocalDate();
-                    return !appointmentDate.isBefore(startOfMonth) && !appointmentDate.isAfter(endOfMonth);
-                })
-                .collect(Collectors.toList());
-        
-        return schedules;
+        return filterDate(schedules, year, month);
     }
 
     public List<Schedule> getSchedulesByPatientId(UUID patientId, Integer year, Integer month) {
         List<Schedule> schedules = scheduleRepository.findByPatientId(patientId);
         if(year == null) year = LocalDate.now().getYear();
         if(month == null) month = LocalDate.now().getMonthValue();
-        LocalDate startOfMonth = LocalDate.of(year, month, 1);
-        LocalDate endOfMonth = startOfMonth.plusMonths(1).minusDays(1);
-        
-        schedules = schedules.stream()
-                .filter(schedule -> {
-                    LocalDate appointmentDate = schedule.getAppointmentDateTime().toLocalDateTime().toLocalDate();
-                    return !appointmentDate.isBefore(startOfMonth) && !appointmentDate.isAfter(endOfMonth);
-                })
-                .collect(Collectors.toList());
-        return schedules;
+       
+        return filterDate(schedules, year, month);
     }
 
     public Schedule getScheduleById(UUID id) {
@@ -67,5 +58,18 @@ public class ScheduleService {
             .build();
         schedule.setScheduleResult(scheduleResult);
         return scheduleRepository.save(schedule);
+    }
+
+    private List<Schedule> filterDate(List<Schedule> schedules, Integer year, Integer month) {
+        LocalDate startOfMonth = LocalDate.of(year, month, 1);
+        LocalDate endOfMonth = startOfMonth.plusMonths(1).minusDays(1);
+        
+        schedules = schedules.stream()
+                .filter(schedule -> {
+                    LocalDate appointmentDate = schedule.getAppointmentDateTime().toLocalDateTime().toLocalDate();
+                    return !appointmentDate.isBefore(startOfMonth) && !appointmentDate.isAfter(endOfMonth);
+                })
+                .collect(Collectors.toList());
+        return schedules;
     }
 }
