@@ -11,7 +11,6 @@ import com.group3.backend.repository.RequestAppointmentRepository;
 import com.group3.backend.repository.UserRepository;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

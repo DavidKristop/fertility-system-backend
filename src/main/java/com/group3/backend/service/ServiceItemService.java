@@ -1,6 +1,5 @@
 package com.group3.backend.service;
 
-import com.group3.backend.dto.response.ServiceResponse;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.model.Service;
 import com.group3.backend.repository.ServiceRepository;
