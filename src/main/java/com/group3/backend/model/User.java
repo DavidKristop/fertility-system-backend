@@ -55,30 +55,39 @@ public class User {
     private DoctorProfile doctorProfile;
 
     @OneToMany(mappedBy = "sendTo")
+    @JsonIgnore
     private List<Reminder> reminders;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<PaymentHistory> paymentHistories;
 
     @OneToMany(mappedBy = "patient")
+    @JsonIgnore
     private List<RequestAppointment> requestAppointments;
 
     @OneToMany(mappedBy = "author")
+    @JsonIgnore
     private List<Blog> blogs;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "patient")
+    @JsonIgnore
     private List<Schedule> schedules;
 
     @OneToMany(mappedBy = "patient")
+    @JsonIgnore
     private List<Treatment> treatments;
 
     @OneToMany(mappedBy = "doctor")
+    @JsonIgnore
     private List<Schedule> doctorSchedules;
 
     @OneToMany(mappedBy = "doctor")
+    @JsonIgnore
     private List<RequestAppointment> doctorRequestAppointments;
 
     

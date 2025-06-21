@@ -7,6 +7,7 @@ import java.sql.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group3.backend.constants.TreatmentStatus;
 
 @Entity
@@ -47,22 +48,28 @@ public class Treatment {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User patient;
 
     @ManyToOne
     @JoinColumn(name = "doctor_id")
+    @JsonIgnore
     private User doctor;
 
     @ManyToOne
     @JoinColumn(name = "treatment_protocol_id")
+    @JsonIgnore
     private TreatmentProtocol treatmentProtocol;
 
     @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<TreatmentPhase> phases;
 
     @OneToOne(mappedBy = "treatment")
+    @JsonIgnore
     private Contract contract;
 
     @OneToMany(mappedBy = "treatment")
+    @JsonIgnore
     private List<Feedback> feedbacks;
 }

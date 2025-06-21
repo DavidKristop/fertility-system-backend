@@ -27,7 +27,7 @@ public class RequestAppointment {
     private User patient;
 
     @ManyToOne
-    @JoinColumn(name = "schedule_id", nullable = false)
+    @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 
     @Column(name = "reason")
