@@ -3,6 +3,7 @@ package com.group3.backend.service;
 import com.group3.backend.constants.TreatmentStatus;
 import com.group3.backend.dto.request.Treatment.TreatmentDrugRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
+import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentPhaseRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
@@ -62,7 +63,7 @@ public class TreatmentService {
         // Create treatment
         Treatment treatment = new Treatment();
         TreatmentProtocol protocol = treatmentProtocolRepository.findById(request.getProtocolId())
-            .orElseThrow(() -> new RuntimeException("Treatment protocol not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Treatment protocol not found"));
 
         treatment.setStartDate(Date.valueOf(request.getStartDate()));
         treatment.setEndDate(Date.valueOf(request.getEndDate()));
@@ -71,9 +72,9 @@ public class TreatmentService {
 
         // Fetch user objects from repository
         User patient = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Patient not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
         User doctor = userRepository.findById(request.getDoctorId())
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
         
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
@@ -104,7 +105,7 @@ public class TreatmentService {
                     for (TreatmentServiceRequest serviceRequest : scheduleRequest.getServices()){
                         ScheduleService scheduleService = new ScheduleService();
                         Service service = serviceRepository.findById(serviceRequest.getId())
-                            .orElseThrow(() -> new RuntimeException("Service not found"));
+                            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
                         scheduleService.setService(service);
                         scheduleService.setSchedule(schedule);
                         scheduleService.setAmount(serviceRequest.getAmount());
@@ -122,7 +123,7 @@ public class TreatmentService {
                 for (TreatmentDrugRequest drugRequest : phaseRequest.getDrugs()) {
                     PatientDrug patientDrug = new PatientDrug();
                     Drug drug = drugRepository.findById(drugRequest.getId())
-                        .orElseThrow(() -> new RuntimeException("Drug not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));
                     patientDrug.setDrug(drug);
                     patientDrug.setDosage(drugRequest.getDosage());
                     patientDrug.setUsageInstructions(drugRequest.getUsageInstructions());

@@ -1,6 +1,7 @@
 package com.group3.backend.service;
 
 import com.group3.backend.dto.response.ServiceResponse;
+import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.model.Service;
 import com.group3.backend.repository.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class ServiceItemService {
@@ -16,31 +16,17 @@ public class ServiceItemService {
     @Autowired
     private ServiceRepository serviceRepository;
 
-    public List<ServiceResponse> getAllServices(boolean onlyActive){
+    public List<Service> getAllServices(boolean onlyActive){
         List<Service> services = onlyActive
                 ? serviceRepository.findByIsActiveTrue()
                 : serviceRepository.findAll();
 
-        return services.stream()
-                        .map(this::toResponse)
-                        .collect(Collectors.toList());
+        return services;
     }
 
-    public ServiceResponse getServiceById(UUID id){
+    public Service getServiceById(UUID id){
         return serviceRepository
                 .findById(id)
-                .map(this::toResponse)
-                .orElseThrow(() -> new RuntimeException("Service Not Found!"));
-    }
-
-    public ServiceResponse toResponse(Service svc){
-        return new ServiceResponse(
-          svc.getId(),
-          svc.getName(),
-          svc.getDescription(),
-          svc.getPrice(),
-          svc.getUnit(),
-          svc.isActive()
-        );
+                .orElseThrow(() -> new ResourceNotFoundException("Service Not Found!"));
     }
 }
