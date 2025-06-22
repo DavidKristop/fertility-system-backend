@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
@@ -33,6 +32,7 @@ public class UserService implements UserDetailsService {
     return new UserDetailsImpl(user);
     }
 
+    //Register a new patient
     public String registerUser(RegistrationRequest request) {
         if (userRepository.findByFullName(request.getUsername()).isPresent()) {
             throw new IllegalArgumentException("User with full name '" + request.getUsername() + "' already exists!");
@@ -55,5 +55,49 @@ public class UserService implements UserDetailsService {
 
         userRepository.save(newUser);
         return "User Registered Successfully.";
+    }
+
+    // Create a new doctor account
+    public String createDoctorAccount(RegistrationRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already exists!");
+        }
+
+        Role doctorRole = roleRepository.findByName(Roles.ROLE_DOCTOR)
+                .orElseThrow(() -> new RuntimeException("Doctor role not found."));
+
+        User user = User.builder()
+                .fullName(request.getUsername())
+                .email(request.getEmail())
+                .passwordHashed(passwordEncoder.encode(request.getPassword()))
+                .passwordSecret(UUID.randomUUID().toString())
+                .dateOfBirth(request.getDateOfBirth())
+                .role(doctorRole)
+                .build();
+
+        userRepository.save(user);
+        return "Doctor account created successfully.";
+    }
+
+    // Create a new manager account
+    public String createManagerAccount(RegistrationRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already exists!");
+        }
+
+        Role managerRole = roleRepository.findByName(Roles.ROLE_MANAGER)
+                .orElseThrow(() -> new RuntimeException("Manager role not found."));
+
+        User user = User.builder()
+                .fullName(request.getUsername())
+                .email(request.getEmail())
+                .passwordHashed(passwordEncoder.encode(request.getPassword()))
+                .passwordSecret(UUID.randomUUID().toString())
+                .dateOfBirth(request.getDateOfBirth())
+                .role(managerRole)
+                .build();
+
+        userRepository.save(user);
+        return "Manager account created successfully.";
     }
 }

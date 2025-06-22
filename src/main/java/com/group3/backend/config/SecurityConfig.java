@@ -49,6 +49,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/validate").authenticated()
                         .requestMatchers("/auth/patient/**").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/doctor-management/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                         .requestMatchers("/test/patient").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/drugs").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
                         .requestMatchers("/drugs/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
