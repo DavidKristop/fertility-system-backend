@@ -42,7 +42,7 @@ public class TreatmentPhase {
     private List<PatientDrug> patientDrugs = new ArrayList<>();
 
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
-    private List<ScheduleService> scheduleServices = new ArrayList<>();
+    private List<Schedule> schedules = new ArrayList<>();
 
     @OneToMany(mappedBy = "treatmentPhase")
     private List<Payment> payments;

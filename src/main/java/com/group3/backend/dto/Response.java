@@ -10,4 +10,10 @@ import lombok.NoArgsConstructor;
 public class Response<T> {
     private T payload;
     private String message;
+    private boolean isSuccess = true;
+
+    public Response(T payload, String message) {
+        this.payload = payload;
+        this.message = message;
+    }
 }

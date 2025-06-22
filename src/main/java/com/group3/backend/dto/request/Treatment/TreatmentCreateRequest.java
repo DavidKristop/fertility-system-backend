@@ -1,9 +1,10 @@
-package com.group3.backend.dto.request.Treatment.POST;
+package com.group3.backend.dto.request.Treatment;
 
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
 import java.util.UUID;
+
 
 @Data
 public class TreatmentCreateRequest {
@@ -12,5 +13,6 @@ public class TreatmentCreateRequest {
     private String diagnosis;
     private UUID userId;
     private UUID doctorId;
+    private UUID protocolId;
     private List<TreatmentPhaseRequest> phases;
 }
