@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +48,8 @@ public class UserService implements UserDetailsService {
                 .fullName(request.getUsername())
                 .email(request.getEmail())
                 .passwordHashed(passwordEncoder.encode(request.getPassword()))
-                .passwordSecret("DEFAULT") // hoặc random chuỗi bảo mật nếu bạn cần
-                .dateOfBirth(request.getDateOfBirth()) // placeholder
+                .passwordSecret(UUID.randomUUID().toString()) // tạo mật khẩu bí mật ngẫu nhiên
+                .dateOfBirth(request.getDateOfBirth())
                 .role(patientRole)
                 .build();
 
