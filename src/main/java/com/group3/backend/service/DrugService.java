@@ -1,5 +1,6 @@
 package com.group3.backend.service;
 
+import com.group3.backend.dto.request.DrugCreateRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.model.Drug;
 import com.group3.backend.repository.DrugRepository;
@@ -27,5 +28,17 @@ public class DrugService {
         return drugRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Drug Not Found!"));
+    }
+
+    public Drug createDrug(DrugCreateRequest request) {
+        Drug drug = Drug.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .unit(request.getUnit())
+                .isActive(true)
+                .build();
+        
+        return drugRepository.save(drug);
     }
 }
