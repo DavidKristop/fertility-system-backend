@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.group3.backend.dto.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -14,6 +17,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Response<?>> handleResourceNotFoundException(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new Response<>(null, ex.getMessage(), false));
+    }
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Response<?>> handleValidationException(MethodArgumentNotValidException ex) {
+        StringBuilder errorMessage = new StringBuilder("Validation failed. Errors:");
+        
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String defaultMessage = error.getDefaultMessage();
+            errorMessage.append(" - ").append(defaultMessage);
+        });
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new Response<>(null, errorMessage.toString(), false));
     }
     
     @ExceptionHandler(Exception.class)
