@@ -47,7 +47,7 @@ public class RequestAppointmentController {
         return ResponseEntity.ok(appointments);
     }
 
-        // API mới để doctor chấp nhận cuộc hẹn
+    // API mới để doctor chấp nhận cuộc hẹn
     @PutMapping("/accept/{appointmentId}")
     public ResponseEntity<RequestAppointment> acceptAppointment(@PathVariable UUID appointmentId) {
         RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId);
