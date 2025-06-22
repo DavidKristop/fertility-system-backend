@@ -27,8 +27,10 @@ public interface ScheduleMapper {
     @Mapping(source = "user.doctorProfile.degree",target = "degree")
     @Mapping(source = "user.doctorProfile.yearsOfExperience",target = "yearsOfExperience")
     @Mapping(source = "user.doctorProfile.licenseNumber",target = "licenseNumber")
+    @Mapping(source = "user.role.name",target = "role")
     UserDoctorResponse toUserDoctorReponse(User user);
 
     @Mapping(source = "user.patientProfile.medicalHistory",target = "medicalHistory")
+    @Mapping(source = "user.role.name",target = "role")
     UserPatientResponse toUserPatientResponse(User user);
 }
