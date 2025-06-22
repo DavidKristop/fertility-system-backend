@@ -5,6 +5,8 @@ import lombok.*;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "contract")
 @Getter
@@ -18,13 +20,14 @@ public class Contract {
     private UUID id;
 
     @Column(name = "is_signed")
-    private boolean isSigned;
+    private Boolean isSigned;
 
     @Column(name = "sign_deadline")
     private Timestamp signDeadline;
 
     @ManyToOne
     @JoinColumn(name = "treatment_id")
+    @JsonIgnore
     private Treatment treatment;
 
     @Column(name = "contract_url")

@@ -48,7 +48,7 @@ public class UserService implements UserDetailsService {
                 .email(request.getEmail())
                 .passwordHashed(passwordEncoder.encode(request.getPassword()))
                 .passwordSecret("DEFAULT") // hoặc random chuỗi bảo mật nếu bạn cần
-                .dateOfBirth(LocalDate.of(2000, 1, 1)) // placeholder
+                .dateOfBirth(request.getDateOfBirth()) // placeholder
                 .role(patientRole)
                 .build();
 
