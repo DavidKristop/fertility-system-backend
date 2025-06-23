@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MinDaysAhead {
     int value() default 2;
-    String message() default "Appointment must be at least {value} days from now";
+    String message() default "Appointment must be at least 2 days from now";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

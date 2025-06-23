@@ -4,7 +4,9 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,54 +16,77 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
 
 import com.group3.backend.config.EnvironmentConfig;
+import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentPhaseRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
+import com.group3.backend.dto.response.RequestAppointment.RequestAppointmentResponse;
+import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.RequestAppointmentService;
 import com.group3.backend.service.TreatmentService;
 
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/request-appointments")
-@RequiredArgsConstructor
+@Validated
 public class RequestAppointmentController {
 
-    private final RequestAppointmentService service;
-    private final TreatmentService treatmentService;
-    private final EnvironmentConfig environmentConfig;
-    private final PaymentService paymentService;
+    @Autowired
+    private RequestAppointmentService service;
+    
+    @Autowired
+    private TreatmentService treatmentService;
+    
+    @Autowired
+    private EnvironmentConfig environmentConfig;
+    
+    @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
+    private AppointmentRequestMapper requestAppointmentMapper;
 
     @PostMapping
-    public ResponseEntity<RequestAppointment> createRequest(@RequestBody RequestAppointmentRequest request) {
+    @Validated
+    public ResponseEntity<Response<RequestAppointmentResponse>> createRequest(@Valid @RequestBody RequestAppointmentRequest request) {
         RequestAppointment result = service.createRequestAppointment(request);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(new Response<>(
+            requestAppointmentMapper.toResponse(result),
+            "Request appointment created successfully"));
     }
 
     @GetMapping("/doctor/{doctorId}")
-    public ResponseEntity<List<RequestAppointment>> getAppointmentsByDoctor(@PathVariable("doctorId") UUID doctorId) {
-        // Lấy danh sách các cuộc hẹn theo doctorId
+    public ResponseEntity<Response<List<RequestAppointmentResponse>>> getAppointmentsByDoctor(@PathVariable("doctorId") UUID doctorId) {
         List<RequestAppointment> appointments = service.getAppointmentsByDoctorId(doctorId);
 
-        // Kiểm tra nếu không có cuộc hẹn nào
-        if (appointments.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
-        }
-
-        return ResponseEntity.ok(appointments);
+        return ResponseEntity.ok(new Response<>(
+        appointments.stream().map(requestAppointmentMapper::toResponse).collect(Collectors.toList()),
+         "Appointments retrieved successfully"));
     }
+
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<Response<List<RequestAppointmentResponse>>> getAppointmentsByPatient(@PathVariable("patientId") UUID patientId) {
+        List<RequestAppointment> appointments = service.getAppointmentsByPatientId(patientId);
+
+        return ResponseEntity.ok(new Response<>(
+        appointments.stream().map(requestAppointmentMapper::toResponse).collect(Collectors.toList()),
+         "Appointments retrieved successfully"));
+    }
+    
 
     // API mới để doctor chấp nhận cuộc hẹn
     @PutMapping("/accept/{appointmentId}")
-    public ResponseEntity<RequestAppointment> acceptAppointment(@PathVariable UUID appointmentId) {
+    public ResponseEntity<Response<RequestAppointmentResponse>> acceptAppointment(@PathVariable UUID appointmentId) {
         RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId);
         
         // Create treatment based on consultation protocol
@@ -78,7 +103,7 @@ public class RequestAppointmentController {
                 .position(1)
                 .schedules(List.of(TreatmentScheduleRequest.builder()
                     .appointmentDateTime(acceptedAppointment.getAppointmentDatetime())
-                    .estimatedTime(acceptedAppointment.getAppointmentDatetime())
+                    .estimatedTime(new Timestamp(acceptedAppointment.getAppointmentDatetime().getTime() + 45 * 60 * 1000))
                     .services(List.of(TreatmentServiceRequest.builder()
                         .id(UUID.fromString(environmentConfig.getConsultationServiceId()))
                         .amount(1)
@@ -105,7 +130,8 @@ public class RequestAppointmentController {
 
         paymentService.createPayment(paymentRequest);
         
-        return ResponseEntity.ok(acceptedAppointment);
+        return ResponseEntity.ok(new Response<>(requestAppointmentMapper.toResponse(acceptedAppointment),
+         "Appointment accepted successfully"));
     }
 
 }

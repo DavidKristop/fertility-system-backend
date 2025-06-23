@@ -2,9 +2,10 @@ package com.group3.backend.constraints;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import java.time.OffsetDateTime;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-public class MinDaysAheadValidator implements ConstraintValidator<MinDaysAhead, OffsetDateTime> {
+public class MinDaysAheadValidator implements ConstraintValidator<MinDaysAhead, Timestamp> {
     private int days;
 
     @Override
@@ -13,12 +14,20 @@ public class MinDaysAheadValidator implements ConstraintValidator<MinDaysAhead, 
     }
 
     @Override
-    public boolean isValid(OffsetDateTime value, ConstraintValidatorContext context) {
+    public boolean isValid(Timestamp value, ConstraintValidatorContext context) {
         if (value == null) {
             return true; // Let @NotNull handle null cases
         }
 
-        OffsetDateTime now = OffsetDateTime.now();
-        return value.isAfter(now.plusDays(days));
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime valueLocalDateTime = value.toLocalDateTime();
+        
+        if (valueLocalDateTime.isBefore(now.plusDays(days))) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate("Appointment must be at least " + days + " days from now").addConstraintViolation();
+            return false;
+        }
+        
+        return true;
     }
 }

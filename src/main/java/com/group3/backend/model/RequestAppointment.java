@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.sql.Timestamp;
 import java.util.UUID;
-import com.group3.backend.constraints.MinDaysAhead;
-import com.group3.backend.constraints.WorkingHours;
 
 @Entity
 @Table(name = "request_appointment")
@@ -35,9 +33,10 @@ public class RequestAppointment {
     private String reason;
 
     @Column(name = "appointment_datetime", nullable = false)
-    @MinDaysAhead
-    @WorkingHours
     private Timestamp appointmentDatetime;
+
+    @Column(name = "rejected_reason")
+    private String rejectedReason;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

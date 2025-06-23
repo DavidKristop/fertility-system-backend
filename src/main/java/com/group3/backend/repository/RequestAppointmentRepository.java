@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public interface RequestAppointmentRepository extends JpaRepository<RequestAppointment, UUID> {
     List<RequestAppointment> findByDoctorId(UUID doctorId);
+    List<RequestAppointment> findByPatientId(UUID patientId);
 
     @Query("SELECT ra FROM RequestAppointment ra " +
             "WHERE ra.status = :status AND " +
