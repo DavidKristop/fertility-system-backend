@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -46,27 +47,55 @@ public class UserController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequest authRequest) {
-    Authentication authentication;
-    try {
-        authentication = authenticationManager.authenticate(
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
-        );
-    } catch (UsernameNotFoundException | BadCredentialsException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An unexpected error occurred: " + e.getMessage());
+            );
+        } catch (UsernameNotFoundException | BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
+
+        if (authentication.isAuthenticated()) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+            AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, userDetails.getUsername());
+            return ResponseEntity.ok(authResponse);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed!");
+        }
     }
 
-    if (authentication.isAuthenticated()) {
-        String token = jwtService.generateToken(authRequest.getEmail());
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Refresh token is missing");
+        }
 
-        //  TRẢ VỀ JSON TOKEN + EMAIL
-        AuthResponse authResponse = new AuthResponse(token, authRequest.getEmail());
-        return ResponseEntity.ok(authResponse);
-    } else {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed!");
-    }
+        String refreshToken = authHeader.substring(7); // Bỏ 'Bearer '
+        try {
+            String email = jwtService.extractEmail(refreshToken);
+
+            UserDetails userDetails = service.loadUserByUsername(email);
+
+            if (!jwtService.isTokenExpired(refreshToken)) {
+                String newAccessToken = jwtService.generateAccessToken(userDetails);
+
+                // Trả về access token mới, giữ nguyên refresh token
+                return ResponseEntity.ok(
+                    new AuthResponse(newAccessToken, refreshToken, email)
+                );
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
     }
 
     @GetMapping("/validate")
