@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,10 +34,11 @@ import com.group3.backend.dto.response.RequestAppointment.RequestAppointmentResp
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.Treatment;
+import com.group3.backend.model.User;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.RequestAppointmentService;
 import com.group3.backend.service.TreatmentService;
-
+import com.group3.backend.utils.CurrentUserUtils;
 
 @RestController
 @RequestMapping("/api/request-appointments")
@@ -56,8 +60,12 @@ public class RequestAppointmentController {
     @Autowired
     private AppointmentRequestMapper requestAppointmentMapper;
 
+    @Autowired
+    private CurrentUserUtils currentUserUtils;
+
     @PostMapping
     @Validated
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<RequestAppointmentResponse>> createRequest(@Valid @RequestBody RequestAppointmentRequest request) {
         RequestAppointment result = service.createRequestAppointment(request);
         return ResponseEntity.ok(new Response<>(
@@ -65,18 +73,22 @@ public class RequestAppointmentController {
             "Request appointment created successfully"));
     }
 
-    @GetMapping("/doctor/{doctorId}")
-    public ResponseEntity<Response<List<RequestAppointmentResponse>>> getAppointmentsByDoctor(@PathVariable("doctorId") UUID doctorId) {
-        List<RequestAppointment> appointments = service.getAppointmentsByDoctorId(doctorId);
+    @GetMapping("/doctor")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<List<RequestAppointmentResponse>>> getAppointmentsByDoctor() {
+        User user = currentUserUtils.getCurrentUser();
+        List<RequestAppointment> appointments = service.getAppointmentsByDoctorId(user.getId());
 
         return ResponseEntity.ok(new Response<>(
         appointments.stream().map(requestAppointmentMapper::toResponse).collect(Collectors.toList()),
          "Appointments retrieved successfully"));
     }
 
-    @GetMapping("/patient/{patientId}")
-    public ResponseEntity<Response<List<RequestAppointmentResponse>>> getAppointmentsByPatient(@PathVariable("patientId") UUID patientId) {
-        List<RequestAppointment> appointments = service.getAppointmentsByPatientId(patientId);
+    @GetMapping("/patient")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<Response<List<RequestAppointmentResponse>>> getAppointmentsByPatient() {
+        User user = currentUserUtils.getCurrentUser();
+        List<RequestAppointment> appointments = service.getAppointmentsByPatientId(user.getId());
 
         return ResponseEntity.ok(new Response<>(
         appointments.stream().map(requestAppointmentMapper::toResponse).collect(Collectors.toList()),
@@ -86,6 +98,7 @@ public class RequestAppointmentController {
 
     // API mới để doctor chấp nhận cuộc hẹn
     @PutMapping("/accept/{appointmentId}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<RequestAppointmentResponse>> acceptAppointment(@PathVariable UUID appointmentId) {
         RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId);
         

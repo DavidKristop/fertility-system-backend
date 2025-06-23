@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -46,6 +47,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         userDetails,
                         null,
                         userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                final String finalToken = token;
+                authToken.setDetails(new HashMap<String, Object>() {
+                    {
+                        put("userId", jwtService.extractUserId(finalToken));
+                        put("role", jwtService.extractRole(finalToken));
+                    }
+                });
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

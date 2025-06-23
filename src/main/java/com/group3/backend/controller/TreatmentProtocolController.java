@@ -12,6 +12,7 @@ import com.group3.backend.dto.request.Protocol.ProtocolCreateRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +30,7 @@ public class TreatmentProtocolController {
     private ProtocolMapper protocolMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Response<ProtocolResponse>> createProtocol(@RequestBody @Valid ProtocolCreateRequest request) {
         TreatmentProtocol protocol = protocolService.createProtocol(request);
         ProtocolResponse response = protocolMapper.toResponse(protocol);

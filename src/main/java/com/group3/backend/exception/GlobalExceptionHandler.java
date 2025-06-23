@@ -36,12 +36,30 @@ public class GlobalExceptionHandler {
                 .body(new Response<>(null, ex.getMessage(), false));
     }
 
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<Response<?>> handleUnauthorizedException(UnauthorizedAccessException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new Response<>(null, ex.getMessage(), false));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<?>> handleException(Exception ex) {
         ex.printStackTrace();
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new Response<>(null, "An unexpected error occurred: " + ex.getMessage(), false));
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Response<?>> handleAccessDeniedException(org.springframework.security.access.AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new Response<>(null, "Access denied: " + ex.getMessage(), false));
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class)
+    public ResponseEntity<Response<?>> handleAuthenticationCredentialsNotFoundException(org.springframework.security.authentication.AuthenticationCredentialsNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new Response<>(null, "Authentication credentials not provided", false));
     }
 
 }

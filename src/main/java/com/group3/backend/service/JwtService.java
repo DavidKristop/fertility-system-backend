@@ -3,6 +3,7 @@ package com.group3.backend.service;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -26,9 +27,19 @@ public class JwtService {
     @Value("${jwt.expiration.minutes}")
     private long expirationMinutes;
 
-    public String generateToken(String email) {
+    public String generateToken(String email, UUID userId, String role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId.toString());
+        claims.put("role", role);
         return createToken(claims, email);
+    }
+
+    public String extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", String.class));
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     private String createToken(Map<String, Object> claims, String email) {
