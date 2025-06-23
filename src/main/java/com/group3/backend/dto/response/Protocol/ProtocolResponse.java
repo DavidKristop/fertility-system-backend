@@ -13,7 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ProtocolResponse {
     private UUID id;
-    private String name;
+    private String title;
     private String description;
     private List<ProtocolPhaseResponse> phases;
 }
