@@ -43,7 +43,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/welcome", "/auth/signup", "/auth/signin", "/test/public",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
-                                "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**"
+                                "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**",
+                                "/api/protocols/**"
                         ).permitAll()
                         .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/auth/validate").authenticated()

@@ -1,9 +1,12 @@
 package com.group3.backend.controller;
 
 import com.group3.backend.dto.Response;
+import com.group3.backend.dto.request.DrugCreateRequest;
 import com.group3.backend.dto.response.DrugResponse;
 import com.group3.backend.mapper.DrugMapper;
+import com.group3.backend.model.Drug;
 import com.group3.backend.service.DrugService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,5 +36,12 @@ public class DrugController {
     public ResponseEntity<Response<DrugResponse>> get(@PathVariable UUID id){
         DrugResponse drugResponse = drugMapper.toResponse(drugService.getDrugById(id));
         return ResponseEntity.ok(new Response<>(drugResponse, "Drug retrieved successfully"));
+    }
+
+    @PostMapping
+    public ResponseEntity<Response<DrugResponse>> create(@RequestBody @Valid DrugCreateRequest request) {
+        Drug drug = drugService.createDrug(request);
+        DrugResponse response = drugMapper.toResponse(drug);
+        return ResponseEntity.ok(new Response<>(response, "Drug created successfully"));
     }
 }

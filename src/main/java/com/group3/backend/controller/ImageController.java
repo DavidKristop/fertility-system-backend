@@ -1,6 +1,8 @@
 package com.group3.backend.controller;
 
+import com.group3.backend.dto.Response;
 import com.group3.backend.service.ImageService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,12 +16,14 @@ public class ImageController {
     private ImageService imageService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Response<String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
             String url = imageService.uploadImage(file);
-            return ResponseEntity.ok(url);
+            return ResponseEntity.ok(new Response<>(url, "Upload success"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Upload failed: " + e.getMessage());
+            Response<String> response = new Response<>(null, "Upload failed: " + e.getMessage());
+            response.setSuccess(false);
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }
