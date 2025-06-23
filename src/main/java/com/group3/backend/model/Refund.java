@@ -27,11 +27,16 @@ public class Refund {
     @Column(name = "refund_method", nullable = false)
     private String refundMethod;
 
-    @ManyToOne
-    @JoinColumn(name = "payment_history_id", nullable = false)
-    private PaymentHistory paymentHistory;
 
     @ManyToOne
     @JoinColumn(name = "treatment_phase_id", nullable = false)
     private TreatmentPhase treatmentPhase;
+
+    @ManyToOne
+    @JoinColumn(name = "treatment_id", nullable = false)
+    private Treatment treatment;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

@@ -57,8 +57,6 @@ public class User {
     @OneToMany(mappedBy = "sendTo")
     private List<Reminder> reminders;
 
-    @OneToMany(mappedBy = "user")
-    private List<PaymentHistory> paymentHistories;
 
     @OneToMany(mappedBy = "patient")
     private List<RequestAppointment> requestAppointments;
@@ -70,16 +68,25 @@ public class User {
     private List<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "patient")
-    private List<Schedule> schedules;
+    private List<Schedule> patientSchedules;
+
+    @OneToMany(mappedBy = "doctor")
+    private List<Schedule> doctorSchedules;
 
     @OneToMany(mappedBy = "patient")
     private List<Treatment> treatments;
 
     @OneToMany(mappedBy = "doctor")
-    private List<Schedule> doctorSchedules;
-
-    @OneToMany(mappedBy = "doctor")
     private List<RequestAppointment> doctorRequestAppointments;
+
+    @OneToMany(mappedBy = "patient")
+    private List<RequestAppointment> patientRequestAppointments;
+
+    @OneToMany(mappedBy = "user")
+    private List<Payment> payments;
+
+    @OneToMany(mappedBy = "user")
+    private List<Refund> refunds;
 
     
 }

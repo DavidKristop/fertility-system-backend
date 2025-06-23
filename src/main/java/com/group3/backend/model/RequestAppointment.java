@@ -41,8 +41,8 @@ public class RequestAppointment {
     private Status status;
 
     public enum Status {
-        Accept,
-        Denied,
-        Pending
+        ACCEPTED,
+        DENIED,
+        PENDING
     }
 }

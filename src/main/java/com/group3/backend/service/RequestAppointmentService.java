@@ -30,7 +30,7 @@ public class RequestAppointmentService {
                 .patient(patient)
                 .reason(dto.getReason())
                 .appointmentDatetime(dto.getAppointmentDatetime())
-                .status(RequestAppointment.Status.Pending) // mặc định là Pending
+                .status(RequestAppointment.Status.PENDING) // mặc định là Pending
                 .build();
 
         return requestAppointmentRepository.save(request);
@@ -46,12 +46,12 @@ public class RequestAppointmentService {
                 .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
 
         // Kiểm tra trạng thái cuộc hẹn (phải là Pending mới có thể chấp nhận)
-        if (!appointment.getStatus().equals(RequestAppointment.Status.Pending)) {
+        if (!appointment.getStatus().equals(RequestAppointment.Status.PENDING)) {
             throw new IllegalStateException("Appointment is already accepted or cancelled");
         }
 
         // Cập nhật trạng thái của cuộc hẹn
-        appointment.setStatus(RequestAppointment.Status.Accept);
+        appointment.setStatus(RequestAppointment.Status.ACCEPTED);
 
         return requestAppointmentRepository.save(appointment); // Lưu lại sự thay đổi
     }

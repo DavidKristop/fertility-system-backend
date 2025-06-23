@@ -42,8 +42,6 @@ public class RequestAppointmentController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
 
-
-
         return ResponseEntity.ok(appointments);
     }
 
