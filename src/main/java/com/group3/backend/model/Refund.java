@@ -32,9 +32,6 @@ public class Refund {
     @JoinColumn(name = "treatment_phase_id", nullable = false)
     private TreatmentPhase treatmentPhase;
 
-    @ManyToOne
-    @JoinColumn(name = "treatment_id", nullable = false)
-    private Treatment treatment;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

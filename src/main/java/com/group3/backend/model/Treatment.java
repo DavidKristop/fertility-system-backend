@@ -63,11 +63,6 @@ public class Treatment {
     @OneToMany(mappedBy = "treatment")
     private List<Feedback> feedbacks;
 
-    @OneToMany(mappedBy = "treatment")
-    private List<Payment> payments;
-
-    @OneToMany(mappedBy = "treatment")
-    private List<Refund> refunds;
 
     public enum Status {
         IN_PROGRESS,

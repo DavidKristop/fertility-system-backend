@@ -45,10 +45,6 @@ public class Payment {
     @JoinColumn(name = "treatment_phase_id", nullable = false)
     private TreatmentPhase treatmentPhase;
 
-    @ManyToOne
-    @JoinColumn(name = "treatment_id", nullable = false)
-    private Treatment treatment;
-
     public enum Status {
         PENDING,
         COMPLETED,

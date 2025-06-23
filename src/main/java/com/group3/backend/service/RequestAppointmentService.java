@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.RequestAppointmentRepository;
 import com.group3.backend.repository.UserRepository;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
+import com.group3.backend.exception.ResourceNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,11 +22,12 @@ public class RequestAppointmentService {
     private final RequestAppointmentRepository requestAppointmentRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public RequestAppointment createRequestAppointment(RequestAppointmentRequest dto) {
         User doctor = userRepository.findById(dto.getDoctorId())
-                .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
         User patient = userRepository.findById(dto.getPatientId())
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
 
         RequestAppointment request = RequestAppointment.builder()
                 .doctor(doctor)
@@ -43,7 +47,7 @@ public class RequestAppointmentService {
         // Phương thức để doctor chấp nhận cuộc hẹn
     public RequestAppointment acceptAppointment(UUID appointmentId) {
         RequestAppointment appointment = requestAppointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
         // Kiểm tra trạng thái cuộc hẹn (phải là Pending mới có thể chấp nhận)
         if (!appointment.getStatus().equals(RequestAppointment.Status.PENDING)) {
@@ -53,7 +57,9 @@ public class RequestAppointmentService {
         // Cập nhật trạng thái của cuộc hẹn
         appointment.setStatus(RequestAppointment.Status.ACCEPTED);
 
-        return requestAppointmentRepository.save(appointment); // Lưu lại sự thay đổi
+        
+
+        return requestAppointmentRepository.save(appointment);
     }
 
 }
