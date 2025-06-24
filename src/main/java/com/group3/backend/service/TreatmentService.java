@@ -115,7 +115,7 @@ public class TreatmentService {
     }
 
     @Transactional
-    public Treatment createTreatment(TreatmentCreateRequest request) {
+    public Treatment createTreatment(TreatmentCreateRequest request, Treatment.Status treatmentStatus) {
         // Create treatment
         Treatment treatment = new Treatment();
         TreatmentProtocol protocol = treatmentProtocolRepository.findById(request.getProtocolId())
@@ -135,7 +135,7 @@ public class TreatmentService {
         
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
-        treatment.setStatus(Treatment.Status.IN_PROGRESS);
+        treatment.setStatus(treatmentStatus);
         List<TreatmentPhase> phases = new ArrayList<>();
 
         // Create treatment phases

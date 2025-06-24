@@ -131,7 +131,7 @@ public class RequestAppointmentController {
             .build();
 
         // Create treatment
-        Treatment createdTreatment = treatmentService.createTreatment(treatmentRequest);
+        Treatment createdTreatment = treatmentService.createTreatment(treatmentRequest,Treatment.Status.IN_PROGRESS);
 
         // Create payment request
         PaymentRequest paymentRequest = PaymentRequest.builder()

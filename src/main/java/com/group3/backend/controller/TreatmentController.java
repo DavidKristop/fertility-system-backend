@@ -3,7 +3,6 @@ package com.group3.backend.controller;
 import com.group3.backend.dto.response.Treatment.TreatmentResponse;
 import com.group3.backend.mapper.TreatmentMapper;
 import com.group3.backend.dto.Response;
-import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequestWithContract;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.service.ContractService;
@@ -38,7 +37,7 @@ public class TreatmentController {
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<TreatmentResponse>> createTreatment(@RequestBody TreatmentCreateRequestWithContract request) {
-        Treatment treatment = treatmentService.createTreatment(request.getTreatmentCreateRequest());
+        Treatment treatment = treatmentService.createTreatment(request.getTreatmentCreateRequest(), request.getContractCreateRequest().isSigned()?Treatment.Status.COMPLETED:Treatment.Status.IN_PROGRESS);
         TreatmentResponse response = treatmentMapper.toResponse(treatment);
 
         contractService.createContract(request.getContractCreateRequest(), treatment);
