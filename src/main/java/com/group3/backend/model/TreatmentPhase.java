@@ -28,6 +28,9 @@ public class TreatmentPhase {
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(name = "position")
+    private int position;
+
     @ManyToOne
     @JoinColumn(name = "treatment_id")
     private Treatment treatment;

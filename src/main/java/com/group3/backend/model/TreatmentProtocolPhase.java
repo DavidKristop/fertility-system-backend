@@ -33,6 +33,9 @@ public class TreatmentProtocolPhase {
     @Column(name = "refund_amount", precision = 10, scale = 2)
     private BigDecimal refundAmount;
 
+    @Column(name = "position")
+    private int position;
+
     @ManyToOne
     @JoinColumn(name = "treatment_protocol_id")
     private TreatmentProtocol treatmentProtocol;
