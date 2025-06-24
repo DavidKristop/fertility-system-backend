@@ -115,7 +115,6 @@ public class RequestAppointmentController {
             .phases(List.of(TreatmentPhaseRequest.builder()
                 .title("Consultation Phase")
                 .description("Initial consultation phase")
-                .position(1)
                 .schedules(List.of(TreatmentScheduleRequest.builder()
                     .appointmentDateTime(acceptedAppointment.getAppointmentDatetime())
                     .estimatedTime(new Timestamp(acceptedAppointment.getAppointmentDatetime().getTime() + 45 * 60 * 1000))

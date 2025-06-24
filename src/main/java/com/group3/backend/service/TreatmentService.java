@@ -29,8 +29,10 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class TreatmentService {
@@ -58,6 +60,53 @@ public class TreatmentService {
     public Treatment getTreatmentByIdAndPatientId(UUID id, UUID patientId){
         return treatmentRepository.findByIdAndPatientId(id, patientId)
             .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
+    }
+
+    @Transactional
+    public Treatment moveToNextPhase(UUID treatmentId) {
+        Treatment treatment = treatmentRepository.findById(treatmentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
+
+        // Get current phase
+        TreatmentPhase currentPhase = treatment.getCurrentPhase();
+        if (currentPhase == null) {
+            throw new ResourceConflictException("No current phase set");
+        }
+
+        // Check if all schedules in current phase are complete
+        List<Schedule> schedules = scheduleRepository.findByTreatmentPhaseId(currentPhase.getId());
+        boolean allSchedulesComplete = schedules.stream()
+            .allMatch(s -> s.getStatus() == Schedule.Status.DONE);
+
+        if (!allSchedulesComplete) {
+            throw new ResourceConflictException("Not all schedules in current phase are complete");
+        }
+
+        // Mark current phase as complete
+        currentPhase.setComplete(true);
+
+        // Find next phase with position + 1
+        List<TreatmentPhase> sortedPhases = treatment.getPhases().stream()
+            .sorted(Comparator.comparingInt(TreatmentPhase::getPosition))
+            .collect(Collectors.toList());
+
+        int currentIndex = sortedPhases.indexOf(currentPhase);
+        if (currentIndex == sortedPhases.size() - 1) {
+            throw new ResourceConflictException("Already at last phase");
+        }
+
+        TreatmentPhase nextPhase = sortedPhases.get(currentIndex + 1);
+        treatment.setCurrentPhase(nextPhase);
+
+        // Update treatment status if all phases are complete
+        boolean allPhasesComplete = sortedPhases.stream()
+            .allMatch(phase -> phase.isComplete());
+
+        if (allPhasesComplete) {
+            treatment.setStatus(Treatment.Status.COMPLETED);
+        }
+
+        return treatmentRepository.save(treatment);
     }
 
     public Treatment getTreatmentByIdAndDoctorId(UUID id, UUID doctorId){
@@ -90,12 +139,13 @@ public class TreatmentService {
         List<TreatmentPhase> phases = new ArrayList<>();
 
         // Create treatment phases
-        for (TreatmentPhaseRequest phaseRequest : request.getPhases()) {
+        for (int i=0;i<request.getPhases().size();i++) {
+            TreatmentPhaseRequest phaseRequest = request.getPhases().get(i);
             TreatmentPhase phase = new TreatmentPhase();
             phase.setTitle(phaseRequest.getTitle());
             phase.setDescription(phaseRequest.getDescription());
             phase.setTreatment(treatment);
-            phase.setPosition(phaseRequest.getPosition());
+            phase.setPosition(i);
             
             // Calculate total amount for phase
             BigDecimal totalAmount = BigDecimal.ZERO;
@@ -111,8 +161,12 @@ public class TreatmentService {
                     schedule.setStatus(Schedule.Status.PENDING);
                     schedule.setTreatmentPhase(phase);
 
-                    if(schedule.getEstimatedTime().getTime() < scheduleRequest.getAppointmentDateTime().getTime()){
+                    if(schedule.getEstimatedTime().getTime() <= schedule.getAppointmentDateTime().getTime()){
                         throw new ResourceConflictException("Estimated time must be greater than appointment time");
+                    }
+
+                    if(schedule.getEstimatedTime().getTime() - schedule.getAppointmentDateTime().getTime() > 4 * 60 * 60 * 1000){
+                        throw new ResourceConflictException("Estimated time must be at most 4 hours after appointment time");
                     }
 
                     if(checkOverlappingSchedule(doctor.getId(),scheduleRequest.getAppointmentDateTime(),scheduleRequest.getEstimatedTime())){
@@ -143,15 +197,18 @@ public class TreatmentService {
                     patientDrug.setDrug(drug);
                     patientDrug.setDosage(drugRequest.getDosage());
                     patientDrug.setUsageInstructions(drugRequest.getUsageInstructions());
-                    patientDrug.setStartDate(Date.valueOf(request.getStartDate()));
-                    patientDrug.setEndDate(Date.valueOf(request.getEndDate()));
+                    patientDrug.setStartDate(drugRequest.getStartDate());
+                    patientDrug.setEndDate(drugRequest.getEndDate());
                     patientDrug.setTreatmentPhase(phase);
                     phase.getPatientDrugs().add(patientDrug);
                     totalAmount = totalAmount.add(drug.getPrice().multiply(BigDecimal.valueOf(drugRequest.getAmount())));
                 }
             }
-
-            phase.setTotalAmount(totalAmount);
+            double phaseMultiplier = 1;
+            if(treatment.getPaymentMode().equals(Treatment.PaymentMode.FULL)){
+                phaseMultiplier = 1.2;
+            }
+            phase.setTotalAmount(totalAmount.multiply(BigDecimal.valueOf(phaseMultiplier)));
             phases.add(phase);
         }
 

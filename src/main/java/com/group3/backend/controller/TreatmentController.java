@@ -66,7 +66,7 @@ public class TreatmentController {
         return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
     }
 
-    @GetMapping("/patient/${treatmentId}")
+    @GetMapping("/patient/{treatmentId}")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<TreatmentResponse>> getTreatmentById(@PathVariable UUID treatmentId) {
         Treatment treatment = treatmentService.getTreatmentByIdAndPatientId(treatmentId,currentUserUtils.getCurrentUserId());
@@ -74,11 +74,20 @@ public class TreatmentController {
         return ResponseEntity.ok(new Response<>(response, "Treatment retrieved successfully"));
     }
 
-    @GetMapping("/doctor/${treatmentId}")
+    @GetMapping("/doctor/{treatmentId}")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<TreatmentResponse>> getTreatmentByIdAndDoctorId(@PathVariable UUID treatmentId) {
         Treatment treatment = treatmentService.getTreatmentByIdAndDoctorId(treatmentId,currentUserUtils.getCurrentUserId());
         TreatmentResponse response = treatmentMapper.toResponse(treatment);
         return ResponseEntity.ok(new Response<>(response, "Treatment retrieved successfully"));
+    }
+
+    @PostMapping("/{treatmentId}/next-phase")
+    @PreAuthorize("hasAnyAuthority('ROLE_DOCTOR', 'ROLE_PATIENT')")
+    public ResponseEntity<Response<TreatmentResponse>> moveToNextPhase(@PathVariable UUID treatmentId) {
+        Treatment treatment = treatmentService.moveToNextPhase(treatmentId);
+        return ResponseEntity.ok(new Response<>(
+            treatmentMapper.toResponse(treatment),
+            "Successfully moved to next phase"));
     }
 }

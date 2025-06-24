@@ -58,6 +58,7 @@ public class Treatment {
     @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL)
     private List<TreatmentPhase> phases;
 
+
     @OneToOne(mappedBy = "treatment")
     private Contract contract;
 
