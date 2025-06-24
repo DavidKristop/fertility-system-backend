@@ -45,14 +45,14 @@ public class TreatmentProtocolServiceService {
 
         if (request.getPhases() != null) {
             List<TreatmentProtocolPhase> phases = new ArrayList<>();
-            for (ProtocolPhaseCreateRequest phaseRequest : request.getPhases()) {
+            for (int i = 0;i<request.getPhases().size();i++) {
+                ProtocolPhaseCreateRequest phaseRequest = request.getPhases().get(i);
                 TreatmentProtocolPhase phase = TreatmentProtocolPhase.builder()
                         .title(phaseRequest.getTitle())
                         .description(phaseRequest.getDescription())
                         .totalAmount(phaseRequest.getTotalAmount())
-                        .refundCondition(phaseRequest.getRefundCondition())
                         .refundAmount(phaseRequest.getRefundAmount())
-                        .position(phaseRequest.getPosition())
+                        .position(i)
                         .treatmentProtocol(protocol)
                         .build();
 

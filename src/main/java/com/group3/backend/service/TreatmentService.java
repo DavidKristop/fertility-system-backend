@@ -165,8 +165,8 @@ public class TreatmentService {
                         throw new ResourceConflictException("Estimated time must be greater than appointment time");
                     }
 
-                    if(schedule.getEstimatedTime().getTime() - schedule.getAppointmentDateTime().getTime() > 4 * 60 * 60 * 1000){
-                        throw new ResourceConflictException("Estimated time must be at most 4 hours after appointment time");
+                    if(schedule.getEstimatedTime().getTime() - schedule.getAppointmentDateTime().getTime() > 8 * 60 * 60 * 1000){
+                        throw new ResourceConflictException("Estimated time must be at most 8 hours after appointment time");
                     }
 
                     if(checkOverlappingSchedule(doctor.getId(),scheduleRequest.getAppointmentDateTime(),scheduleRequest.getEstimatedTime())){

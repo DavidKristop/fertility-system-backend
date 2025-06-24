@@ -27,9 +27,6 @@ public class TreatmentProtocolPhase {
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(name = "refund_condition")
-    private String refundCondition;
-
     @Column(name = "refund_amount", precision = 10, scale = 2)
     private BigDecimal refundAmount;
 

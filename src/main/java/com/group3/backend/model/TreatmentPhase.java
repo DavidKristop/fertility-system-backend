@@ -25,6 +25,9 @@ public class TreatmentPhase {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "refund_amount", precision = 10, scale = 2)
+    private BigDecimal refundAmount;
+
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 

@@ -20,7 +20,6 @@ public class ProtocolPhaseCreateRequest {
     private String description;
     @DecimalMin(value = "0.00", message = "Total amount must be non-negative")
     private BigDecimal totalAmount;
-    private String refundCondition;
     @DecimalMin(value = "0.00", message = "Refund amount must be non-negative")
     @DecimalMax(value = "100.00", message = "Refund amount must be less than or equal to 100")
     private BigDecimal refundAmount;
