@@ -31,9 +31,7 @@ public class PaymentScheduler {
 
         // For each unpaid payment, cancel the schedules
         for (Payment payment : unpaidPayments) {
-            paymentService.cancelSchedulesForUnpaidPhase(payment.getTreatmentPhase());
-            payment.setStatus(Payment.Status.CANCELED);
-            paymentRepository.save(payment);
+            paymentService.cancelPayment(payment.getId());
         }
     }
 }

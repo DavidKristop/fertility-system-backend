@@ -1,6 +1,7 @@
 package com.group3.backend.service;
 
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
+import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.ScheduleResult;
@@ -56,6 +57,7 @@ public class ScheduleService {
             .doctorsNote(scheduleResultRequest.getDoctorsNote())
             .schedule(schedule)
             .build();
+        schedule.setStatus(Schedule.Status.DONE);
         schedule.setScheduleResult(scheduleResult);
         return scheduleRepository.save(schedule);
     }

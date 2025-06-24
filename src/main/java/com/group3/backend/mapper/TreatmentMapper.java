@@ -4,11 +4,13 @@ import com.group3.backend.dto.response.Treatment.*;
 import com.group3.backend.model.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface TreatmentMapper {
 
     @Mapping(source = "phases", target = "phases")
+    @Named("toTreatmentReponse")
     TreatmentResponse toResponse(Treatment treatment);
 
     @Mapping(source = "patientDrugs", target = "patientDrugs")

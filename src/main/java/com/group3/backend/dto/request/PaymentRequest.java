@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -13,5 +15,10 @@ public class PaymentRequest {
     private String description;
     private Timestamp paymentDeadline;
     private UUID userId;
-    private UUID treatmentPhaseId;
+    @Builder.Default
+    private List<UUID> treatmentPhaseIds = new ArrayList<>();
+    @Builder.Default
+    private List<UUID> scheduleIds = new ArrayList<>();
+    @Builder.Default
+    private List<UUID> patientDrugIds = new ArrayList<>();
 }

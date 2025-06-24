@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -41,9 +42,13 @@ public class Payment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "treatment_phase_id", nullable = false)
-    private TreatmentPhase treatmentPhase;
+    @ManyToMany
+    @JoinTable(
+        name = "payment_treatment_phase",
+        joinColumns = @JoinColumn(name = "payment_id"),
+        inverseJoinColumns = @JoinColumn(name = "treatment_phase_id")
+    )
+    private List<TreatmentPhase> treatmentPhases;
 
     public enum Status {
         PENDING,

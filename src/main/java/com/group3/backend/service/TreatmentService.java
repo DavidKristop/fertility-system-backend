@@ -1,8 +1,8 @@
 package com.group3.backend.service;
 
-import com.group3.backend.constants.TreatmentStatus;
 import com.group3.backend.dto.request.Treatment.TreatmentDrugRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
+import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentPhaseRequest;
@@ -17,46 +17,53 @@ import com.group3.backend.model.Service;
 import com.group3.backend.model.Drug;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.TreatmentRepository;
-import com.group3.backend.repository.TreatmentPhaseRepository;
 import com.group3.backend.repository.TreatmentProtocolRepository;
-import com.group3.backend.repository.ScheduleServiceRepository;
-import com.group3.backend.repository.DrugPatientRepository;
 import com.group3.backend.repository.ServiceRepository;
 import com.group3.backend.repository.DrugRepository;
+import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @org.springframework.stereotype.Service
 public class TreatmentService {
-    
-    private final TreatmentRepository treatmentRepository;
-    private final ServiceRepository serviceRepository;
-    private final DrugRepository drugRepository;
-    private final UserRepository userRepository;
-    private final TreatmentProtocolRepository treatmentProtocolRepository;
-
     @Autowired
-    public TreatmentService(TreatmentRepository treatmentRepository,
-                           TreatmentPhaseRepository treatmentPhaseRepository,
-                           ScheduleServiceRepository scheduleServiceRepository,
-                           DrugPatientRepository drugPatientRepository,
-                           ServiceRepository serviceRepository,
-                           DrugRepository drugRepository,
-                           UserRepository userRepository,
-                           TreatmentProtocolRepository treatmentProtocolRepository) {
-        this.treatmentRepository = treatmentRepository;
-        this.serviceRepository = serviceRepository;
-        this.drugRepository = drugRepository;
-        this.userRepository = userRepository;
-        this.treatmentProtocolRepository = treatmentProtocolRepository;
+    private TreatmentRepository treatmentRepository;
+    @Autowired
+    private ServiceRepository serviceRepository;
+    @Autowired
+    private DrugRepository drugRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TreatmentProtocolRepository treatmentProtocolRepository;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+
+    public List<Treatment> getAllTreatmentsByPatientId(UUID patientId){
+        return treatmentRepository.findByPatientId(patientId);
     }
 
+    public List<Treatment> getAllTreatmentsByDoctorId(UUID doctorId){
+        return treatmentRepository.findByDoctorId(doctorId);
+    }
+
+    public Treatment getTreatmentByIdAndPatientId(UUID id, UUID patientId){
+        return treatmentRepository.findByIdAndPatientId(id, patientId)
+            .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
+    }
+
+    public Treatment getTreatmentByIdAndDoctorId(UUID id, UUID doctorId){
+        return treatmentRepository.findByIdAndDoctorId(id, doctorId)
+            .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
+    }
 
     @Transactional
     public Treatment createTreatment(TreatmentCreateRequest request) {
@@ -69,6 +76,7 @@ public class TreatmentService {
         treatment.setEndDate(Date.valueOf(request.getEndDate()));
         treatment.setDiagnosis(request.getDiagnosis());
         treatment.setTreatmentProtocol(protocol);
+        treatment.setPaymentMode(request.getPaymentMode());
 
         // Fetch user objects from repository
         User patient = userRepository.findById(request.getUserId())
@@ -103,6 +111,13 @@ public class TreatmentService {
                     schedule.setStatus(Schedule.Status.PENDING);
                     schedule.setTreatmentPhase(phase);
 
+                    if(schedule.getEstimatedTime().getTime() < scheduleRequest.getAppointmentDateTime().getTime()){
+                        throw new ResourceConflictException("Estimated time must be greater than appointment time");
+                    }
+
+                    if(checkOverlappingSchedule(doctor.getId(),scheduleRequest.getAppointmentDateTime(),scheduleRequest.getEstimatedTime())){
+                        throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
+                    }
                     for (TreatmentServiceRequest serviceRequest : scheduleRequest.getServices()){
                         ScheduleService scheduleService = new ScheduleService();
                         Service service = serviceRepository.findById(serviceRequest.getId())
@@ -144,5 +159,14 @@ public class TreatmentService {
         treatmentRepository.save(treatment);
 
         return treatment;
+    }
+
+    private boolean checkOverlappingSchedule(UUID doctorId,Timestamp appointmentDateTime, Timestamp estimatedTime){
+        List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(
+            doctorId,
+            appointmentDateTime,
+            estimatedTime
+        );
+        return !overlappingSchedules.isEmpty();
     }
 }

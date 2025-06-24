@@ -29,7 +29,8 @@ public class Treatment {
     private String diagnosis;
 
     @Column(name = "payment_mode", length = 20)
-    private String paymentMode;
+    @Enumerated(EnumType.STRING)
+    private PaymentMode paymentMode;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -63,6 +64,10 @@ public class Treatment {
     @OneToMany(mappedBy = "treatment")
     private List<Feedback> feedbacks;
 
+    public enum PaymentMode {
+        FULL,
+        BY_PHASE
+    }
 
     public enum Status {
         IN_PROGRESS,

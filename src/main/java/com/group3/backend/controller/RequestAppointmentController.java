@@ -2,6 +2,7 @@ package com.group3.backend.controller;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ import com.group3.backend.dto.response.RequestAppointment.RequestAppointmentResp
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.Treatment;
+import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.User;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.RequestAppointmentService;
@@ -138,7 +140,7 @@ public class RequestAppointmentController {
             .description("Consultation payment")
             .paymentDeadline(Timestamp.from(acceptedAppointment.getAppointmentDatetime().toInstant()))
             .userId(acceptedAppointment.getPatient().getId())
-            .treatmentPhaseId(createdTreatment.getPhases().get(0).getId())
+            .treatmentPhaseIds(createdTreatment.getPhases().stream().map(TreatmentPhase::getId).collect(Collectors.toList()))
             .build();
 
         paymentService.createPayment(paymentRequest);

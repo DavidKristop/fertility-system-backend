@@ -29,4 +29,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
         @Param("start") Timestamp start,
         @Param("end") Timestamp end
     );
+
+    List<Schedule> findByIdIn(List<UUID> ids);
 }
