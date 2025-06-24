@@ -19,12 +19,6 @@ public class Treatment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "start_date")
-    private Date startDate;
-
-    @Column(name = "end_date")
-    private Date endDate;
-
     @Column(name = "diagnosis")
     private String diagnosis;
 

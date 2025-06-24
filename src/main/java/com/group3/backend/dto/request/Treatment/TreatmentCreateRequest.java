@@ -8,16 +8,22 @@ import java.util.UUID;
 
 import com.group3.backend.model.Treatment;
 
+import jakarta.validation.constraints.NotEmpty;
+
 
 @Data
 @Builder
 public class TreatmentCreateRequest {
-    private LocalDate startDate;
-    private LocalDate endDate;
+    @NotEmpty
     private Treatment.PaymentMode paymentMode;
+    @NotEmpty
     private String diagnosis;
+    @NotEmpty
     private UUID userId;
+    @NotEmpty
     private UUID doctorId;
+    @NotEmpty
     private UUID protocolId;
+    @NotEmpty
     private List<TreatmentPhaseRequest> phases;
 }

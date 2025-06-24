@@ -106,8 +106,6 @@ public class RequestAppointmentController {
         
         // Create treatment based on consultation protocol
         TreatmentCreateRequest treatmentRequest = TreatmentCreateRequest.builder()
-            .startDate(LocalDate.now())
-            .endDate(acceptedAppointment.getAppointmentDatetime().toLocalDateTime().toLocalDate())
             .diagnosis("Consultation")
             .userId(acceptedAppointment.getPatient().getId())
             .doctorId(acceptedAppointment.getDoctor().getId())
@@ -137,7 +135,7 @@ public class RequestAppointmentController {
         PaymentRequest paymentRequest = PaymentRequest.builder()
             .amount(createdTreatment.getPhases().get(0).getTotalAmount())
             .description("Consultation payment")
-            .paymentDeadline(Timestamp.from(acceptedAppointment.getAppointmentDatetime().toInstant()))
+            .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
             .userId(acceptedAppointment.getPatient().getId())
             .treatmentPhaseIds(createdTreatment.getPhases().stream().map(TreatmentPhase::getId).collect(Collectors.toList()))
             .build();

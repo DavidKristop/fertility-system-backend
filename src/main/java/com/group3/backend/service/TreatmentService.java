@@ -121,8 +121,6 @@ public class TreatmentService {
         TreatmentProtocol protocol = treatmentProtocolRepository.findById(request.getProtocolId())
             .orElseThrow(() -> new ResourceNotFoundException("Treatment protocol not found"));
 
-        treatment.setStartDate(Date.valueOf(request.getStartDate()));
-        treatment.setEndDate(Date.valueOf(request.getEndDate()));
         treatment.setDiagnosis(request.getDiagnosis());
         treatment.setTreatmentProtocol(protocol);
         treatment.setPaymentMode(request.getPaymentMode());
@@ -194,6 +192,11 @@ public class TreatmentService {
                     PatientDrug patientDrug = new PatientDrug();
                     Drug drug = drugRepository.findById(drugRequest.getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));
+                    
+                    if(drugRequest.getStartDate().getTime() > drugRequest.getEndDate().getTime()){
+                        throw new ResourceConflictException("Start date must be before end date");
+                    }
+
                     patientDrug.setDrug(drug);
                     patientDrug.setDosage(drugRequest.getDosage());
                     patientDrug.setUsageInstructions(drugRequest.getUsageInstructions());

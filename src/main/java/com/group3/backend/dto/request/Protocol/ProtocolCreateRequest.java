@@ -1,6 +1,7 @@
 package com.group3.backend.dto.request.Protocol;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +16,6 @@ public class ProtocolCreateRequest {
     @NotBlank(message = "Name is required")
     private String name;
     private String description;
+    @NotEmpty
     private List<ProtocolPhaseCreateRequest> phases;
 }
