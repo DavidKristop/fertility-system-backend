@@ -67,6 +67,10 @@ public class TreatmentService {
         Treatment treatment = treatmentRepository.findById(treatmentId)
             .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
 
+        if(treatment.getStatus() != Treatment.Status.IN_PROGRESS){
+            throw new ResourceConflictException("Treatment is not in progress");
+        }
+
         // Get current phase
         TreatmentPhase currentPhase = treatment.getCurrentPhase();
         if (currentPhase == null) {
@@ -220,6 +224,8 @@ public class TreatmentService {
 
         return treatment;
     }
+
+    
 
     private boolean checkOverlappingSchedule(UUID doctorId,Timestamp appointmentDateTime, Timestamp estimatedTime){
         List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(

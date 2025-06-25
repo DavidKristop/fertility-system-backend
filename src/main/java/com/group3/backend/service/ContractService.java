@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.group3.backend.constants.TreatmentStatus;
 import com.group3.backend.dto.request.ContractRequest;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
@@ -41,11 +42,14 @@ public class ContractService {
     public Contract signedContract(UUID contractId, UUID patientId){
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contract not found"));
+        Treatment treatment = contract.getTreatment();
         if(contract.getTreatment().getPatient().getId() != patientId){
             throw new UnauthorizedAccessException("You are not authorized to sign this contract");
         }
         contract.setSigned(true);
         createPaymentBasedOnPaymentMode(contract.getTreatment());
+        treatment.setStatus(Treatment.Status.IN_PROGRESS);
+        contract.setTreatment(treatment);
         return contractRepository.save(contract);
     }
 

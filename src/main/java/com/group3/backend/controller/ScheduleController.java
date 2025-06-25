@@ -9,6 +9,7 @@ import com.group3.backend.dto.response.Schedule.PatientScheduleResponse;
 import com.group3.backend.dto.response.Schedule.ScheduleResponse;
 import com.group3.backend.exception.UnauthorizedAccessException;
 import com.group3.backend.mapper.ScheduleMapper;
+import com.group3.backend.model.Payment;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.ScheduleService;
@@ -118,9 +119,24 @@ public class ScheduleController {
         );
     }
 
-    @PostMapping("/new")
+    @PutMapping("/cancel/{scheduleId}")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<Response<DoctorScheduleReponse>> cancelSchedule(@PathVariable UUID scheduleId) {
+        Schedule schedule = scheduleService.cancelSchedule(scheduleId);
+
+        if(schedule.getPayment().getStatus().equals(Payment.Status.PENDING)){
+            paymentService.cancelPayment(schedule.getPayment().getId());
+        }
+
+        return ResponseEntity.ok(new Response<>(
+            scheduleMapper.toDoctorScheduleRespone(schedule),
+            "Schedule canceled successfully")
+        );
+    }
+
+    @PostMapping("/new-schedule")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<ScheduleResponse>> createSchedule(@RequestBody ScheduleCreateRequest request) {
+    public ResponseEntity<Response<ScheduleResponse>> addSchedule(@RequestBody ScheduleCreateRequest request) {
         Schedule schedule = scheduleService.addScheduleToPhase(request, currentUserUtils.getCurrentUser().getId());
         
         BigDecimal totalAmount = schedule.getScheduleServices().stream()
@@ -132,7 +148,7 @@ public class ScheduleController {
             .description("Payment for additional schedule")
             .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
             .userId(currentUserUtils.getCurrentUser().getId())
-            .treatmentPhaseIds(List.of(schedule.getTreatmentPhase().getId()))
+            .scheduleIds(List.of(schedule.getId()))
             .build();
 
         paymentService.createPayment(paymentRequest);

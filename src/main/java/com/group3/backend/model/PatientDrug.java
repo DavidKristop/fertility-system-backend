@@ -39,4 +39,8 @@ public class PatientDrug {
     @ManyToOne
     @JoinColumn(name = "treatment_phase_id")
     private TreatmentPhase treatmentPhase;
+
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 }

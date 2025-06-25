@@ -42,13 +42,14 @@ public class Payment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToMany
-    @JoinTable(
-        name = "payment_treatment_phase",
-        joinColumns = @JoinColumn(name = "payment_id"),
-        inverseJoinColumns = @JoinColumn(name = "treatment_phase_id")
-    )
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<TreatmentPhase> treatmentPhases;
+
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
+    private List<Schedule> schedules;
+
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
+    private List<PatientDrug> patientDrugs;
 
     public enum Status {
         PENDING,

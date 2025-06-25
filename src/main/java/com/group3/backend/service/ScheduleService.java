@@ -2,7 +2,6 @@ package com.group3.backend.service;
 
 import com.group3.backend.dto.request.Schedule.ScheduleCreateRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
 import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
@@ -71,6 +70,10 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.findById(scheduleResultRequest.getScheduleId())
             .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
 
+        if(schedule.getStatus() != Schedule.Status.DONE){
+            throw new ResourceConflictException("Schedule is not done");
+        }
+
         ScheduleResult scheduleResult = ScheduleResult.builder()
             .doctorsNote(scheduleResultRequest.getDoctorsNote())
             .schedule(schedule)
@@ -89,6 +92,10 @@ public class ScheduleService {
         
         if(doctor.getId() != doctorId) {
             throw new UnauthorizedAccessException("Doctor is not authorized to add schedule to this treatment phase");
+        }
+
+        if(treatment.getStatus() != Treatment.Status.IN_PROGRESS){
+            throw new ResourceConflictException("Treatment is not in progress");
         }
 
         Schedule schedule = Schedule.builder()
@@ -125,6 +132,13 @@ public class ScheduleService {
         }
         treatmentPhase.setTotalAmount(totalAmount.add(treatmentPhase.getTotalAmount()));
         treatmentPhaseRepository.save(treatmentPhase);
+        return scheduleRepository.save(schedule);
+    }
+
+    public Schedule cancelSchedule(UUID scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+            .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+        schedule.setStatus(Schedule.Status.CANCELED);
         return scheduleRepository.save(schedule);
     }
 

@@ -8,12 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotEmpty;
+
 @Data
 @Builder
 public class PaymentRequest {
+    @DecimalMin(value = "1.00", message = "Amount must be greater than 0")
     private BigDecimal amount;
     private String description;
+    @NotEmpty
     private Timestamp paymentDeadline;
+    @NotEmpty
     private UUID userId;
     @Builder.Default
     private List<UUID> treatmentPhaseIds = new ArrayList<>();

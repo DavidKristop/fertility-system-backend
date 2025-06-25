@@ -50,6 +50,10 @@ public class Schedule {
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
     private List<ScheduleService> scheduleServices = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
     public enum Status {
         PENDING,
         CHANGED,

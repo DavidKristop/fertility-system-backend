@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class ScheduleResultRequest {
+    
     private String doctorsNote;
     @NotEmpty
     private UUID scheduleId;

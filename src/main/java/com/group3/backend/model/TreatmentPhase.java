@@ -47,8 +47,9 @@ public class TreatmentPhase {
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
     private List<Schedule> schedules = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "treatmentPhases")
-    private List<Payment> payments;
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 
     @OneToMany(mappedBy = "treatmentPhase")
     private List<Refund> refunds;

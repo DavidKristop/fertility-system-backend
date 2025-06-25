@@ -30,7 +30,7 @@ public class Treatment {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-
+    
 
     @ManyToOne
     @JoinColumn(name = "current_phase_id")

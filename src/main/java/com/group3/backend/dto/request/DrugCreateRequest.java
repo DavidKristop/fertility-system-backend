@@ -2,6 +2,7 @@ package com.group3.backend.dto.request;
 
 import java.math.BigDecimal;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class DrugCreateRequest {
     @DecimalMin(value = "0.00", message = "Price must be non-negative")
     private BigDecimal price;
     
+    @NotEmpty
     private String unit;
     
 }

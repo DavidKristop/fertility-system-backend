@@ -1,7 +1,5 @@
 package com.group3.backend.service;
 
-import com.group3.backend.model.PatientDrug;
-import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.Payment;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.repository.PatientDrugRepository;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
@@ -28,9 +25,11 @@ public class PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
     private ScheduleRepository scheduleRepository;
     @Autowired
-    private UserRepository userRepository;
+    private PatientDrugRepository patientDrugRepository;
     @Autowired
     private TreatmentPhaseRepository treatmentPhaseRepository;
 
@@ -48,10 +47,9 @@ public class PaymentService {
             .status(Payment.Status.PENDING)
             .user(userRepository.findById(paymentRequest.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found")))
-            .treatmentPhases(paymentRequest.getTreatmentPhaseIds().stream()
-                .map(id -> treatmentPhaseRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Treatment phase not found")))
-                .collect(Collectors.toList()))
+            .treatmentPhases(treatmentPhaseRepository.findByIdIn(paymentRequest.getTreatmentPhaseIds()))
+            .schedules(scheduleRepository.findByIdIn(paymentRequest.getScheduleIds()))
+            .patientDrugs(patientDrugRepository.findByIdIn(paymentRequest.getPatientDrugIds()))
             .build();
 
         // Save payment
@@ -84,27 +82,32 @@ public class PaymentService {
     }
 
     @Transactional
-    public void cancelPayment(UUID paymentId) {
+    public Payment cancelPayment(UUID paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
 
+        if (!payment.getStatus().equals(Payment.Status.PENDING)) {
+            throw new IllegalStateException("Payment is not peding");
+        }
 
         // Update payment status
         payment.setStatus(Payment.Status.CANCELED);
 
-        // Cancel associated treatment phases and their schedules
-        if (payment.getTreatmentPhases() != null) {
-            payment.getTreatmentPhases().forEach(treatmentPhase -> {
-                // Cancel schedules in this treatment phase
-                List<Schedule> schedules = scheduleRepository.findByTreatmentPhaseId(treatmentPhase.getId());
-                schedules.forEach(schedule -> {
-                    schedule.setStatus(Schedule.Status.CANCELED);
-                    scheduleRepository.save(schedule);
-                });
-            });
-        }
+        List<Schedule> pendingSchedules = payment.getSchedules().stream()
+            .filter(schedule -> schedule.getStatus().equals(Schedule.Status.PENDING))
+            .collect(Collectors.toList());
+        pendingSchedules.addAll(payment.getTreatmentPhases().stream()
+            .flatMap(treatmentPhase -> scheduleRepository.findByTreatmentPhaseId(treatmentPhase.getId()).stream())
+            .filter(schedule -> schedule.getStatus().equals(Schedule.Status.PENDING))
+            .collect(Collectors.toList()));
 
-        paymentRepository.save(payment);
+        // Cancel associated treatment phases and their schedules
+        pendingSchedules.forEach(schedule -> {
+            schedule.setStatus(Schedule.Status.CANCELED);
+            scheduleRepository.save(schedule);
+        });
+
+        return paymentRepository.save(payment);
     }
 
 }
