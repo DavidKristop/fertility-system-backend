@@ -44,7 +44,7 @@ public class SecurityConfig {
                                 "/auth/welcome", "/auth/signup", "/auth/signin", "/test/public",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
                                 "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**",
-                                "/api/protocols/**"
+                                "/api/protocols/**","/auth/forgot-password", "/auth/reset-password"
                         ).permitAll()
                         .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/auth/validate").authenticated()
