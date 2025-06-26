@@ -47,6 +47,8 @@ public class UserService implements UserDetailsService {
         User newUser = User.builder()
                 .fullName(request.getUsername())
                 .email(request.getEmail())
+                .phone(request.getPhone())
+                .address(request.getAddress())
                 .passwordHashed(passwordEncoder.encode(request.getPassword()))
                 .passwordSecret(UUID.randomUUID().toString()) // tạo mật khẩu bí mật ngẫu nhiên
                 .dateOfBirth(request.getDateOfBirth())
@@ -99,5 +101,10 @@ public class UserService implements UserDetailsService {
 
         userRepository.save(user);
         return "Manager account created successfully.";
+    }
+
+        public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 }

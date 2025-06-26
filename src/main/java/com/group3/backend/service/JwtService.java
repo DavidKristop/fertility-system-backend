@@ -24,15 +24,25 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration.minutes}")
-    private long expirationMinutes;
+    @Value("${jwt.access.expiration.minutes}")
+    private long accessTokenExpiration;
 
-    public String generateToken(String email, UUID userId, String role) {
+    @Value("${jwt.refresh.expiration.minutes}")
+    private long refreshTokenExpiration;
+
+    // Tạo Access Token với thông tin thêm
+    public String generateAccessToken(String email, UUID userId, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId.toString());
         claims.put("role", role);
-        return createToken(claims, email);
+        return createToken(claims, email, accessTokenExpiration);
     }
+
+    // Tạo Refresh Token (không cần nhiều info)
+    public String generateRefreshToken(String email) {
+        return createToken(new HashMap<>(), email, refreshTokenExpiration);
+    }
+
 
     public String extractUserId(String token) {
         return extractClaim(token, claims -> claims.get("userId", String.class));
@@ -42,19 +52,15 @@ public class JwtService {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
-    private String createToken(Map<String, Object> claims, String email) {
+    // Hàm chung để tạo token
+    private String createToken(Map<String, Object> claims, String subject, long expirationMinutes) {
         return Jwts.builder()
                 .claims(claims)
-                .subject(email)
+                .subject(subject)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(expirationMinutes)))
                 .signWith(getSignKey(), Jwts.SIG.HS256)
                 .compact();
-    }
-
-    private SecretKey getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String extractEmail(String token) {
@@ -78,12 +84,25 @@ public class JwtService {
                 .getPayload();
     }
 
-    private Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String email = extractEmail(token);
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public boolean validateTokenWithoutUser(String token) {
+        try {
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private SecretKey getSignKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
