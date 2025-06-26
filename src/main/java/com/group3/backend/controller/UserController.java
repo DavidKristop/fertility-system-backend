@@ -3,6 +3,7 @@ package com.group3.backend.controller;
 import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.dto.response.AuthResponse;
+import com.group3.backend.model.User;
 import com.group3.backend.service.JwtService;
 import com.group3.backend.service.UserService;
 import jakarta.validation.Valid;
@@ -14,7 +15,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -62,9 +62,9 @@ public class UserController {
         }
 
         if (authentication.isAuthenticated()) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String accessToken = jwtService.generateAccessToken(userDetails);
-            String refreshToken = jwtService.generateRefreshToken(userDetails);
+            User user = service.getUserByEmail(authRequest.getEmail());
+            String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
+            String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
             // Set refresh token as HttpOnly cookie
             Cookie cookie = new Cookie("refreshToken", refreshToken);
@@ -74,7 +74,7 @@ public class UserController {
             
             response.addCookie(cookie);
 
-            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, userDetails.getUsername()));
+            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, user.getEmail(), user.getRole().getName().name(), user.getId()));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed!");
         }
@@ -88,14 +88,14 @@ public class UserController {
 
         try {
             String email = jwtService.extractEmail(refreshToken);
-            UserDetails userDetails = service.loadUserByUsername(email);
+            User user = service.getUserByEmail(email);
 
             if (!jwtService.isTokenExpired(refreshToken)) {
-                String newAccessToken = jwtService.generateAccessToken(userDetails);
+                String newAccessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
 
                 // Trả về access token mới, giữ nguyên refresh token
                 return ResponseEntity.ok(
-                    new AuthResponse(newAccessToken, refreshToken, email)
+                    new AuthResponse(newAccessToken, refreshToken, email, user.getRole().getName().name(), user.getId())
                 );
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");

@@ -3,6 +3,7 @@ package com.group3.backend.service;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -29,14 +30,26 @@ public class JwtService {
     @Value("${jwt.refresh.expiration.minutes}")
     private long refreshTokenExpiration;
 
-    // Tạo Access Token
-    public String generateAccessToken(UserDetails userDetails) {
-        return createToken(new HashMap<>(), userDetails.getUsername(), accessTokenExpiration);
+    // Tạo Access Token với thông tin thêm
+    public String generateAccessToken(String email, UUID userId, String role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId.toString());
+        claims.put("role", role);
+        return createToken(claims, email, accessTokenExpiration);
     }
 
-    // Tạo Refresh Token
-    public String generateRefreshToken(UserDetails userDetails) {
-        return createToken(new HashMap<>(), userDetails.getUsername(), refreshTokenExpiration);
+    // Tạo Refresh Token (không cần nhiều info)
+    public String generateRefreshToken(String email) {
+        return createToken(new HashMap<>(), email, refreshTokenExpiration);
+    }
+
+
+    public String extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", String.class));
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     // Hàm chung để tạo token

@@ -1,7 +1,7 @@
 target/
 .idea/
 .vscode/
-
+.env
 build/
 out/
 bin/

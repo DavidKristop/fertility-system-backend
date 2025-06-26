@@ -19,7 +19,7 @@ import com.group3.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/blogs")
+@RequestMapping("/api/blogs")
 @RequiredArgsConstructor
 public class BlogController {
 

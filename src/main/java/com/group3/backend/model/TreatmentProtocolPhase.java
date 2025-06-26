@@ -37,7 +37,7 @@ public class TreatmentProtocolPhase {
     private int position;
 
     @ManyToOne
-    @JoinColumn(name = "treatment_protocol_id")
+    @JoinColumn(name = "treatment_protocol_id", nullable = false)
     private TreatmentProtocol treatmentProtocol;
 
     @OneToMany(mappedBy = "treatmentProtocolPhase", cascade = CascadeType.ALL)

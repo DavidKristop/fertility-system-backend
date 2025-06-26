@@ -28,18 +28,15 @@ public class TreatmentPhase {
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(name = "position")
+    @Column(name = "is_complete", nullable = false)
+    private boolean isComplete;
+
+    @Column(name = "position", nullable = false)
     private int position;
 
     @ManyToOne
-    @JoinColumn(name = "treatment_id")
+    @JoinColumn(name = "treatment_id", nullable = false)
     private Treatment treatment;
-
-    @Column(name = "refund_condition")
-    private String refundCondition;
-
-    @Column(name = "refund_amount", precision = 10, scale = 2)
-    private BigDecimal refundAmount;
 
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
     private List<PatientDrug> patientDrugs = new ArrayList<>();

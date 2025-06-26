@@ -13,7 +13,6 @@ public class TreatmentResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private String diagnosis;
-    private BigDecimal totalAmount;
     private String status;
     private UUID userId;
     private UUID doctorId;
