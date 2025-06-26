@@ -8,6 +8,8 @@ import com.group3.backend.model.User;
 import com.group3.backend.service.JwtService;
 import com.group3.backend.service.UserDetailsImpl;
 import com.group3.backend.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -52,41 +54,60 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<Response<AuthResponse>> signin(@RequestBody LoginRequest authRequest) {
+    public ResponseEntity<?> signin(@RequestBody LoginRequest authRequest, HttpServletResponse response) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
             );
         } catch (UsernameNotFoundException | BadCredentialsException e) {
-            return ResponseEntity
-            .status(HttpStatus.UNAUTHORIZED)
-            .body(new Response<>(null, "Invalid email or password.", false));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new Response<>(null, "An unexpected error occurred: " + e.getMessage(), false));
+                    .body("An unexpected error occurred: " + e.getMessage());
         }
 
         if (authentication.isAuthenticated()) {
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            UUID userId = userDetails.getUser().getId();
-            String role = userDetails.getUser().getRole().getName().name();
-            String email = userDetails.getUser().getEmail();
-            String accessToken = jwtService.generateAccessToken(email, userId, role);
-            String refreshToken = jwtService.generateRefreshToken(email);
-            AuthResponse authResponse = new AuthResponse(
-                accessToken,
-                refreshToken,
-                email,
-                role,
-                userId
-            );
+            User user = service.getUserByEmail(authRequest.getEmail());
+            String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
+            String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
-            return ResponseEntity.ok(new Response<>(authResponse, "Authentication successful", true));
+            // Set refresh token as HttpOnly cookie
+            Cookie cookie = new Cookie("refreshToken", refreshToken);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+            
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, user.getEmail(), user.getRole().getName().name(), user.getId()));
         } else {
-            return ResponseEntity
-            .status(HttpStatus.UNAUTHORIZED)
-            .body(new Response<>(null, "Authentication failed!", false));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed!");
+        }
+    }
+
+        @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Refresh token is missing");
+        }
+
+        try {
+            String email = jwtService.extractEmail(refreshToken);
+            User user = service.getUserByEmail(email);
+
+            if (!jwtService.isTokenExpired(refreshToken)) {
+                String newAccessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
+
+                // Trả về access token mới, giữ nguyên refresh token
+                return ResponseEntity.ok(
+                    new AuthResponse(newAccessToken, refreshToken, email, user.getRole().getName().name(), user.getId())
+                );
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
         }
     }
 
@@ -104,5 +125,10 @@ public class AuthController {
                 user.getId()
             );
         return ResponseEntity.ok(new Response<>(authResponse, "Authentication successful", true));
+    }
+
+        @GetMapping("/validate")
+    public ResponseEntity<String> validateToken() {
+        return ResponseEntity.ok("Token is valid");
     }
 }
