@@ -45,18 +45,18 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/auth/welcome", "/api/auth/signup", "/api/auth/signin",
+                                "/auth/welcome", "/auth/signup", "/auth/signin",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
                                 "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**"
                         ).permitAll()
                         .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
-                        .requestMatchers("/api/auth/me").authenticated()
-                        .requestMatchers("/api/auth/patient/**").hasAuthority("ROLE_PATIENT")
-                        .requestMatchers("/api/auth/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/api/drugs").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
-                        .requestMatchers("/api/drugs/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
-                        .requestMatchers("/api/services").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
-                        .requestMatchers("/api/services/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
+                        .requestMatchers("/auth/me").authenticated()
+                        .requestMatchers("/auth/patient/**").hasAuthority("ROLE_PATIENT")
+                        .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/drugs").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
+                        .requestMatchers("/drugs/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
+                        .requestMatchers("/services").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
+                        .requestMatchers("/services/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
