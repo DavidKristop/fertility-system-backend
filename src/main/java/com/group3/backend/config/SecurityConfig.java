@@ -9,6 +9,9 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -28,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true)  
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -41,22 +45,20 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/welcome", "/auth/signup", "/auth/signin", "/test/public",
+                                "/api/auth/welcome", "/api/auth/signup", "/api/auth/signin",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
                                 "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**"
                         ).permitAll()
                         .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
-                        .requestMatchers("/auth/validate").authenticated()
-                        .requestMatchers("/auth/patient/**").hasAuthority("ROLE_PATIENT")
-                        .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/doctor-management/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
-                        .requestMatchers("/test/patient").hasAuthority("ROLE_PATIENT")
-                        .requestMatchers("/drugs").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
-                        .requestMatchers("/drugs/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
-                        .requestMatchers("/services").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
-                        .requestMatchers("/services/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
-                        .requestMatchers("/test/user").authenticated()
+                        .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/auth/patient/**").hasAuthority("ROLE_PATIENT")
+                        .requestMatchers("/api/auth/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/doctor-management/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
+                        .requestMatchers("/api/drugs").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
+                        .requestMatchers("/api/drugs/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
+                        .requestMatchers("/api/services").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
+                        .requestMatchers("/api/services/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

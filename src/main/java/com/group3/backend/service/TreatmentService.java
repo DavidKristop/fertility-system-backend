@@ -78,7 +78,7 @@ public class TreatmentService {
         
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
-        treatment.setTreatmentStatus(TreatmentStatus.IN_PROGRESS);
+        treatment.setStatus(Treatment.Status.IN_PROGRESS);
         List<TreatmentPhase> phases = new ArrayList<>();
 
         // Create treatment phases
@@ -87,6 +87,7 @@ public class TreatmentService {
             phase.setTitle(phaseRequest.getTitle());
             phase.setDescription(phaseRequest.getDescription());
             phase.setTreatment(treatment);
+            phase.setPosition(phaseRequest.getPosition());
             
             // Calculate total amount for phase
             BigDecimal totalAmount = BigDecimal.ZERO;
@@ -139,11 +140,7 @@ public class TreatmentService {
             phases.add(phase);
         }
 
-        BigDecimal totalTreatmentAmount = phases.stream()
-            .map(TreatmentPhase::getTotalAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
         treatment.setPhases(phases);
-        treatment.setTotalAmount(totalTreatmentAmount);
         treatmentRepository.save(treatment);
 
         return treatment;

@@ -33,8 +33,11 @@ public class TreatmentProtocolPhase {
     @Column(name = "refund_amount", precision = 10, scale = 2)
     private BigDecimal refundAmount;
 
+    @Column(name = "position")
+    private int position;
+
     @ManyToOne
-    @JoinColumn(name = "treatment_protocol_id")
+    @JoinColumn(name = "treatment_protocol_id", nullable = false)
     private TreatmentProtocol treatmentProtocol;
 
     @OneToMany(mappedBy = "treatmentProtocolPhase", cascade = CascadeType.ALL)

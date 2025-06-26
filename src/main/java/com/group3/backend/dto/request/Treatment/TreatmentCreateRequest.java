@@ -2,11 +2,13 @@ package com.group3.backend.dto.request.Treatment;
 
 import java.time.LocalDate;
 import java.util.List;
+import lombok.Builder;
 import lombok.Data;
 import java.util.UUID;
 
 
 @Data
+@Builder
 public class TreatmentCreateRequest {
     private LocalDate startDate;
     private LocalDate endDate;

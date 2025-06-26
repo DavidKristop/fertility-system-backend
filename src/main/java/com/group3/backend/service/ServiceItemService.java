@@ -1,17 +1,15 @@
 package com.group3.backend.service;
 
+import com.group3.backend.dto.request.ServiceCreateRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.model.Service;
 import com.group3.backend.repository.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-
-
 import java.util.List;
 import java.util.UUID;
 
 @org.springframework.stereotype.Service
 public class ServiceItemService {
-
     @Autowired
     private ServiceRepository serviceRepository;
 
@@ -27,5 +25,17 @@ public class ServiceItemService {
         return serviceRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Service Not Found!"));
+    }
+
+    public Service createService(ServiceCreateRequest request) {
+        Service service = Service.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .unit(request.getUnit())
+                .isActive(true)
+                .build();
+        
+        return serviceRepository.save(service);
     }
 }

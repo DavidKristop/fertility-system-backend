@@ -1,24 +1,24 @@
 SELECT * FROM users;
 -- SELECT * FROM role;
 -- SELECT * FROM patient_profile;
--- SELECT * FROM treatment;
--- SELECT * FROM contract
+SELECT * FROM treatment;
+SELECT * FROM contract
 -- SELECT * FROM doctor_profile;
 
 
 -- tạo treatment mẫu
-INSERT INTO treatment (
-    id, start_date, end_date, diagnosis, total_amount, status, user_id, doctor_id
-) VALUES (
-    'cccccccc-cccc-cccc-cccc-cccccccccccc',
-    '2025-06-01',
-    '2025-06-30',
-    'Infertility diagnosis',
-    5000.00,
-    'In Progress',
-    '5bf08b23-112e-44ab-87e4-54b612dacc27',  -- patient_id
-    'd7f25fda-3f57-400b-8695-ff01d30a2ed2'   -- doctor_id
-);
+-- INSERT INTO treatment (
+--     id, start_date, end_date, diagnosis, total_amount, status, user_id, doctor_id
+-- ) VALUES (
+--     'cccccccc-cccc-cccc-cccc-cccccccccccc',
+--     '2025-06-01',
+--     '2025-06-30',
+--     'Infertility diagnosis',
+--     5000.00,
+--     'In Progress',
+--     '5bf08b23-112e-44ab-87e4-54b612dacc27',  -- patient_id
+--     'd7f25fda-3f57-400b-8695-ff01d30a2ed2'   -- doctor_id
+-- );
 
 
 -- đổi role của một user thành doctor
