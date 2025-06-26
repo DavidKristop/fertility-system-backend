@@ -6,6 +6,8 @@ import com.group3.backend.dto.response.AuthResponse;
 import com.group3.backend.service.JwtService;
 import com.group3.backend.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,7 +48,7 @@ public class UserController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> signin(@RequestBody LoginRequest authRequest) {
+    public ResponseEntity<?> signin(@RequestBody LoginRequest authRequest, HttpServletResponse response) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -64,23 +66,28 @@ public class UserController {
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-            AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, userDetails.getUsername());
-            return ResponseEntity.ok(authResponse);
+            // Set refresh token as HttpOnly cookie
+            Cookie cookie = new Cookie("refreshToken", refreshToken);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+            
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, userDetails.getUsername()));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed!");
         }
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    public ResponseEntity<?> refreshToken(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Refresh token is missing");
         }
 
-        String refreshToken = authHeader.substring(7); // Bỏ 'Bearer '
         try {
             String email = jwtService.extractEmail(refreshToken);
-
             UserDetails userDetails = service.loadUserByUsername(email);
 
             if (!jwtService.isTokenExpired(refreshToken)) {
