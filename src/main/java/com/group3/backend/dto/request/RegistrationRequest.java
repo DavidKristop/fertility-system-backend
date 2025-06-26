@@ -4,7 +4,10 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.time.LocalDate;
 
 @Data
 public class RegistrationRequest {
@@ -14,6 +17,15 @@ public class RegistrationRequest {
     @NotBlank(message = "Email cannot be empty")
     @Email(message = "Invalid email format")
     private String email;
+
+    @NotBlank(message = "Phone number cannot be empty")
+    private String phone;
+
+    @NotBlank(message = "Address cannot be empty")
+    private String address;
+
+    @NotNull(message = "Date of birth cannot be empty")
+    private LocalDate dateOfBirth;
 
     @NotBlank(message = "Password cannot be empty")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{12,}$",
