@@ -11,3 +11,5 @@ logs/
 .tmp
 
 ~/.m2/
+
+src\main\resources\application-local.properties
