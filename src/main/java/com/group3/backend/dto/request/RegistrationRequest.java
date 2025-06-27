@@ -1,15 +1,20 @@
 package com.group3.backend.dto.request;
 
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegistrationRequest {
     @NotBlank(message = "Username cannot be empty")
     private String username;
@@ -19,17 +24,19 @@ public class RegistrationRequest {
     private String email;
 
     @NotBlank(message = "Phone number cannot be empty")
+    @Pattern(regexp = "^\\d{9,11}$", message = "Phone number must be 9–11 digits")
     private String phone;
 
     @NotBlank(message = "Address cannot be empty")
     private String address;
 
     @NotNull(message = "Date of birth cannot be empty")
+    @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth;
 
     @NotBlank(message = "Password cannot be empty")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{12,}$",
-                message = "Password must be at least 12 characters and include uppercase, lowercase, number, and special character.")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,32}$",
+                message = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.")
+    @Size(min = 8, max = 32, message = "Password must be between 8 and 32 characters long")
     private String password;
 }

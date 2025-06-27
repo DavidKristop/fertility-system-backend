@@ -1,5 +1,6 @@
 package com.group3.backend.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,8 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.RegistrationRequest;
+import com.group3.backend.dto.response.AuthResponse;
+import com.group3.backend.model.User;
 import com.group3.backend.service.UserService;
 
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -18,13 +23,24 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
     private final UserService userService;
 
-    @PostMapping("/create-manager-account")
-    public ResponseEntity<?> createManager(@RequestBody RegistrationRequest request) {
+    @PostMapping("/new-manager")
+    public ResponseEntity<Response<AuthResponse>> createManager(@Valid @RequestBody RegistrationRequest registrationRequest, HttpServletResponse response) {
         try {
-            String result = userService.createManagerAccount(request);
-            return ResponseEntity.ok(new Response<String>("Manager account created", result));
+            User newUser = userService.createManagerAccount(registrationRequest);
+
+            AuthResponse authResponse = new AuthResponse(
+            null,
+            null,
+            newUser.getEmail(),
+            newUser.getRole().getName().name(),
+            newUser.getId()
+        );
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(authResponse, "Create Manager account successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(null, "Create Manager Error: " + e.getMessage(), false));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new Response<String>("Error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(null, "An unexpected error occurred during user registration: " + e.getMessage(), false));
         }
     }
 }
