@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -46,13 +46,20 @@ public class UserService implements UserDetailsService {
         User newUser = User.builder()
                 .fullName(request.getUsername())
                 .email(request.getEmail())
+                .phone(request.getPhone())
+                .address(request.getAddress())
                 .passwordHashed(passwordEncoder.encode(request.getPassword()))
-                .passwordSecret("DEFAULT") // hoặc random chuỗi bảo mật nếu bạn cần
-                .dateOfBirth(LocalDate.of(2000, 1, 1)) // placeholder
+                .passwordSecret(UUID.randomUUID().toString()) // hoặc random chuỗi bảo mật nếu bạn cần
+                .dateOfBirth(request.getDateOfBirth())
                 .role(patientRole)
                 .build();
 
         userRepository.save(newUser);
         return "User Registered Successfully.";
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 }

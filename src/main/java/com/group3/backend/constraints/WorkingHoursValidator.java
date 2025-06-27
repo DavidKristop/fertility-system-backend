@@ -14,7 +14,7 @@ public class WorkingHoursValidator implements ConstraintValidator<WorkingHours, 
     @Override
     public boolean isValid(Timestamp value, ConstraintValidatorContext context) {
         if (value == null) {
-            return true; // Let @NotNull handle null cases
+            return true; 
         }
 
         DayOfWeek dayOfWeek = value.toLocalDateTime().getDayOfWeek();

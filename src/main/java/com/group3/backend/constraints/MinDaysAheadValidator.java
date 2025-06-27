@@ -16,7 +16,7 @@ public class MinDaysAheadValidator implements ConstraintValidator<MinDaysAhead, 
     @Override
     public boolean isValid(Timestamp value, ConstraintValidatorContext context) {
         if (value == null) {
-            return true; // Let @NotNull handle null cases
+            return true;
         }
 
         LocalDateTime now = LocalDateTime.now();
