@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,13 +28,14 @@ public class Refund {
     @Column(name = "refund_method", nullable = false)
     private String refundMethod;
 
-
-    @ManyToOne
-    @JoinColumn(name = "treatment_phase_id", nullable = false)
-    private TreatmentPhase treatmentPhase;
-
+    @Column(name = "reason", nullable = false)
+    private String reason;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "payment_id", nullable = false)
+    private Payment payment;
 }

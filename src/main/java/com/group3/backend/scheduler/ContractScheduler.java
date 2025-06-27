@@ -44,7 +44,7 @@ public class ContractScheduler {
             for (TreatmentPhase phase : treatment.getPhases()) {
                 List<Schedule> schedules = scheduleRepository.findByTreatmentPhaseId(phase.getId());
                 for (Schedule schedule : schedules) {
-                    schedule.setStatus(Schedule.Status.CANCELED);
+                    schedule.setStatus(Schedule.Status.CANCELLED);
                     scheduleRepository.save(schedule);
                 }
             }

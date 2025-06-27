@@ -43,14 +43,14 @@ public class Payment {
     private User user;
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
-    private List<TreatmentPhase> treatmentPhases;
-
-    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<Schedule> schedules;
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
-    private List<PatientDrug> patientDrugs;
+    private List<AssignDrug> assignDrugs;
 
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
+    private List<Refund> refunds;
+    
     public enum Status {
         PENDING,
         COMPLETED,

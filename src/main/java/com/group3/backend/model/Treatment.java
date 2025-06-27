@@ -19,8 +19,14 @@ public class Treatment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "diagnosis")
-    private String diagnosis;
+    @Column(name = "start_date")
+    private Date startDate;
+
+    @Column(name = "end_date")
+    private Date endDate;
+
+    @Column(name = "description")
+    private String description;
 
     @Column(name = "payment_mode", length = 20)
     @Enumerated(EnumType.STRING)
@@ -32,7 +38,7 @@ public class Treatment {
 
     
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "current_phase_id")
     private TreatmentPhase currentPhase;
 

@@ -16,14 +16,14 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     List<Schedule> findByPatientId(UUID patientId);
     List<Schedule> findByDoctorId(UUID doctorId);
 
-    @Query("FROM Schedule s WHERE s.doctor.id = :doctorId AND s.appointmentDateTime BETWEEN :start AND :end AND s.status != CANCELED")
+    @Query("FROM Schedule s WHERE s.doctor.id = :doctorId AND s.appointmentDateTime BETWEEN :start AND :end AND s.status != 'CANCELLED'")
     List<Schedule> findByDoctorIdAndAppointmentDateTimeBetween(
         @Param("doctorId") UUID doctorId,
         @Param("start") Timestamp start,
         @Param("end") Timestamp end
     );
 
-    @Query("FROM Schedule s WHERE s.patient.id = :patientId AND s.appointmentDateTime BETWEEN :start AND :end AND s.status != CANCELED")
+    @Query("FROM Schedule s WHERE s.patient.id = :patientId AND s.appointmentDateTime BETWEEN :start AND :end AND s.status != 'CANCELLED'")
     List<Schedule> findByPatientIdAndAppointmentDateTimeBetween(
         @Param("patientId") UUID patientId,
         @Param("start") Timestamp start,

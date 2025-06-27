@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceCreateRequest {
-    @NotBlank(message = "Name is required")
+    @NotEmpty(message = "Name is required")
     private String name;
     
     private String description;

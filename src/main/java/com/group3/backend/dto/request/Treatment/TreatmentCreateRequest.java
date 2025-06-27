@@ -18,7 +18,7 @@ public class TreatmentCreateRequest {
     @NotEmpty
     private Treatment.PaymentMode paymentMode;
     @NotEmpty
-    private String diagnosis;
+    private String description;
     @NotEmpty
     private UUID userId;
     @NotEmpty

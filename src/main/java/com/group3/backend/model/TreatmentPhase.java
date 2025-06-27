@@ -37,6 +37,15 @@ public class TreatmentPhase {
     @Column(name = "position", nullable = false)
     private int position;
 
+    @Column(name = "phase_modifier_percentage", nullable = false)
+    private BigDecimal phaseModifierPercentage;
+
+    @Column(name = "refund_percentage", nullable = false)
+    private BigDecimal refundPercentage;
+
+    @OneToOne(mappedBy = "currentPhase")
+    private Treatment currentTreatment;
+
     @ManyToOne
     @JoinColumn(name = "treatment_id", nullable = false)
     private Treatment treatment;
@@ -46,11 +55,4 @@ public class TreatmentPhase {
 
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
     private List<Schedule> schedules = new ArrayList<>();
-
-    @ManyToOne
-    @JoinColumn(name = "payment_id")
-    private Payment payment;
-
-    @OneToMany(mappedBy = "treatmentPhase")
-    private List<Refund> refunds;
 }

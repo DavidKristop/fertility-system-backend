@@ -30,8 +30,14 @@ public class TreatmentProtocolPhase {
     @Column(name = "refund_amount", precision = 10, scale = 2)
     private BigDecimal refundAmount;
 
-    @Column(name = "position")
+    @Column(name = "position", nullable = false)
     private int position;
+
+    @Column(name = "phase_modifier_percentage", nullable = false)
+    private BigDecimal phaseModifierPercentage;
+
+    @Column(name = "refund_percentage", nullable = false)
+    private BigDecimal refundPercentage;
 
     @ManyToOne
     @JoinColumn(name = "treatment_protocol_id", nullable = false)

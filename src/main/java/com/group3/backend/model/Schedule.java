@@ -41,6 +41,10 @@ public class Schedule {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
     @OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL)
     private ScheduleResult scheduleResult;
 
@@ -50,14 +54,10 @@ public class Schedule {
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
     private List<ScheduleService> scheduleServices = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "payment_id")
-    private Payment payment;
-
     public enum Status {
         PENDING,
         CHANGED,
-        CANCELED,
+        CANCELLED,
         DONE
     }
 }

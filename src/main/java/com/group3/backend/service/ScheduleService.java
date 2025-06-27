@@ -66,6 +66,14 @@ public class ScheduleService {
             .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
     }
 
+    public List<Schedule> getAllSchedule(Integer year, Integer month){
+        List<Schedule> schedules = scheduleRepository.findAll();
+        if(year == null) year = LocalDate.now().getYear();
+        if(month == null) month = LocalDate.now().getMonthValue();
+        
+        return filterDate(schedules, year, month);
+    }
+
     public Schedule addScheduleResult(ScheduleResultRequest scheduleResultRequest) {
         Schedule schedule = scheduleRepository.findById(scheduleResultRequest.getScheduleId())
             .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
@@ -138,7 +146,7 @@ public class ScheduleService {
     public Schedule cancelSchedule(UUID scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
             .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
-        schedule.setStatus(Schedule.Status.CANCELED);
+        schedule.setStatus(Schedule.Status.CANCELLED);
         return scheduleRepository.save(schedule);
     }
 

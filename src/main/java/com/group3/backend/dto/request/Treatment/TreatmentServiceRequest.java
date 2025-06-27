@@ -5,12 +5,12 @@ import lombok.Data;
 import java.util.UUID;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 @Builder
 public class TreatmentServiceRequest {
-    @NotEmpty
+    @NotNull
     private UUID id;
     @Min(value = 1, message = "Amount of service must be greater than 0")
     private Integer amount;

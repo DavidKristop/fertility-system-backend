@@ -125,7 +125,7 @@ public class TreatmentService {
         TreatmentProtocol protocol = treatmentProtocolRepository.findById(request.getProtocolId())
             .orElseThrow(() -> new ResourceNotFoundException("Treatment protocol not found"));
 
-        treatment.setDiagnosis(request.getDiagnosis());
+        treatment.setDescription(request.getDescription());
         treatment.setTreatmentProtocol(protocol);
         treatment.setPaymentMode(request.getPaymentMode());
 
@@ -210,7 +210,7 @@ public class TreatmentService {
                     phase.getPatientDrugs().add(patientDrug);
                     totalAmount = totalAmount.add(drug.getPrice().multiply(BigDecimal.valueOf(drugRequest.getAmount())));
                 }
-            }
+        }
             double phaseMultiplier = 1;
             if(treatment.getPaymentMode().equals(Treatment.PaymentMode.FULL)){
                 phaseMultiplier = 1.2;

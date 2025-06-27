@@ -88,5 +88,6 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Refund> refunds;
 
-    
+    @OneToMany(mappedBy = "user")
+    private List<FogetPassToken> forgetPassTokens;
 }

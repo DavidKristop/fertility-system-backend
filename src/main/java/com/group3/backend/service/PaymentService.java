@@ -41,15 +41,15 @@ public class PaymentService {
         }
         // Create payment
         Payment payment = Payment.builder()
-            .amount(paymentRequest.getAmount())
-            .description(paymentRequest.getDescription())
-            .paymentDeadline(paymentRequest.getPaymentDeadline())
-            .status(Payment.Status.PENDING)
-            .user(userRepository.findById(paymentRequest.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found")))
-            .treatmentPhases(treatmentPhaseRepository.findByIdIn(paymentRequest.getTreatmentPhaseIds()))
-            .schedules(scheduleRepository.findByIdIn(paymentRequest.getScheduleIds()))
-            .patientDrugs(patientDrugRepository.findByIdIn(paymentRequest.getPatientDrugIds()))
+            // .amount(paymentRequest.getAmount())
+            // .description(paymentRequest.getDescription())
+            // .paymentDeadline(paymentRequest.getPaymentDeadline())
+            // .status(Payment.Status.PENDING)
+            // .user(userRepository.findById(paymentRequest.getUserId())
+            //     .orElseThrow(() -> new ResourceNotFoundException("User not found")))
+            // .treatmentPhases(treatmentPhaseRepository.findByIdIn(paymentRequest.getTreatmentPhaseIds()))
+            // .schedules(scheduleRepository.findByIdIn(paymentRequest.getScheduleIds()))
+            // .patientDrugs(patientDrugRepository.findByIdIn(paymentRequest.getPatientDrugIds()))
             .build();
 
         // Save payment
@@ -87,25 +87,11 @@ public class PaymentService {
             .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
 
         if (!payment.getStatus().equals(Payment.Status.PENDING)) {
-            throw new IllegalStateException("Payment is not peding");
+            throw new IllegalStateException("Payment is not pending");
         }
 
         // Update payment status
         payment.setStatus(Payment.Status.CANCELED);
-
-        List<Schedule> pendingSchedules = payment.getSchedules().stream()
-            .filter(schedule -> schedule.getStatus().equals(Schedule.Status.PENDING))
-            .collect(Collectors.toList());
-        pendingSchedules.addAll(payment.getTreatmentPhases().stream()
-            .flatMap(treatmentPhase -> scheduleRepository.findByTreatmentPhaseId(treatmentPhase.getId()).stream())
-            .filter(schedule -> schedule.getStatus().equals(Schedule.Status.PENDING))
-            .collect(Collectors.toList()));
-
-        // Cancel associated treatment phases and their schedules
-        pendingSchedules.forEach(schedule -> {
-            schedule.setStatus(Schedule.Status.CANCELED);
-            scheduleRepository.save(schedule);
-        });
 
         return paymentRepository.save(payment);
     }

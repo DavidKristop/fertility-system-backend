@@ -69,7 +69,7 @@ public class RequestAppointmentController {
     @Validated
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<RequestAppointmentResponse>> createRequest(@Valid @RequestBody RequestAppointmentRequest request) {
-        RequestAppointment result = service.createRequestAppointment(request);
+        RequestAppointment result = service.createRequestAppointment(request, currentUserUtils.getCurrentUser().getId());
         return ResponseEntity.ok(new Response<>(
             requestAppointmentMapper.toResponse(result),
             "Request appointment created successfully"));
@@ -102,11 +102,12 @@ public class RequestAppointmentController {
     @PutMapping("/accept/{appointmentId}")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<RequestAppointmentResponse>> acceptAppointment(@PathVariable UUID appointmentId) {
-        RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId);
+        RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId, currentUserUtils.getCurrentUser().getId());
         
         // Create treatment based on consultation protocol
         TreatmentCreateRequest treatmentRequest = TreatmentCreateRequest.builder()
-            .diagnosis("Consultation")
+            .paymentMode(Treatment.PaymentMode.FULL)
+            .description("Consultation")
             .userId(acceptedAppointment.getPatient().getId())
             .doctorId(acceptedAppointment.getDoctor().getId())
             .protocolId(UUID.fromString(environmentConfig.getConsultationProtocolId()))

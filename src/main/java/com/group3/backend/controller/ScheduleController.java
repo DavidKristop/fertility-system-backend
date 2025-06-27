@@ -80,6 +80,22 @@ public class ScheduleController {
         ));
     }
 
+    @GetMapping("/available-doctors")
+    @PreAuthorize("hasAnyAuthority('ROLE_PATIENT', 'ROLE_MANAGER', 'ROLE_DOCTOR', 'ROLE_ADMIN')")
+    public ResponseEntity<Response<List<PatientScheduleResponse>>> getAvailableDoctors(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month) {
+        List<Schedule> schedules = scheduleService.getAllSchedule(year,month);
+        
+        List<PatientScheduleResponse> responses = schedules.stream()
+                .map(scheduleMapper::toPatientScheduleResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new Response<>(
+            responses,
+            "Available doctors retrieved successfully"
+        ));
+    }
+
     @GetMapping("/patient")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<List<DoctorScheduleReponse>>> getSchedulesByPatient(

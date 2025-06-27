@@ -12,7 +12,7 @@ public class TreatmentResponse {
     private UUID id;
     private LocalDate startDate;
     private LocalDate endDate;
-    private String diagnosis;
+    private String description;
     private String status;
     private UUID userId;
     private UUID doctorId;

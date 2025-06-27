@@ -1,7 +1,9 @@
 package com.group3.backend.scheduler;
 
 import com.group3.backend.model.Payment;
+import com.group3.backend.model.Schedule;
 import com.group3.backend.repository.PaymentRepository;
+import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,6 +12,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class PaymentScheduler {
@@ -17,7 +20,8 @@ public class PaymentScheduler {
     private PaymentRepository paymentRepository;
     @Autowired
     private PaymentService paymentService;
-
+    @Autowired
+    private ScheduleRepository scheduleRepository;
     @Scheduled(cron = "0 0 * * * ?") // Runs every hour
     public void checkUnpaidPayments() {
         // Get current time
@@ -32,6 +36,19 @@ public class PaymentScheduler {
         // For each unpaid payment, cancel the schedules
         for (Payment payment : unpaidPayments) {
             paymentService.cancelPayment(payment.getId());
+            List<Schedule> pendingSchedules = payment.getSchedules().stream()
+                .filter(schedule -> schedule.getStatus().equals(Schedule.Status.PENDING))
+                .collect(Collectors.toList());
+            // pendingSchedules.addAll(payment.getTreatmentPhases().stream()
+            //     .flatMap(treatmentPhase -> scheduleRepository.findByTreatmentPhaseId(treatmentPhase.getId()).stream())
+            //     .filter(schedule -> schedule.getStatus().equals(Schedule.Status.PENDING))
+            //     .collect(Collectors.toList()));
+
+            // Cancel associated treatment phases and their schedules
+            pendingSchedules.forEach(schedule -> {
+                schedule.setStatus(Schedule.Status.CANCELLED);
+                scheduleRepository.save(schedule);
+            });
         }
     }
 }
