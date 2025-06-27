@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.UUID;
 
 @Service
@@ -32,12 +34,16 @@ public class UserService implements UserDetailsService {
     return new UserDetailsImpl(user);
     }
 
-    public String registerUser(RegistrationRequest request) {
-        if (userRepository.findByFullName(request.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("User with full name '" + request.getUsername() + "' already exists!");
-        }
+    public User registerUser(RegistrationRequest request) {
+
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("User with email '" + request.getEmail() + "' already exists!");
+        }
+
+        int age = Period.between(request.getDateOfBirth(), LocalDate.now()).getYears();
+        
+        if (age < 18) {
+            throw new IllegalArgumentException("You must be at least 18 years old to register.");
         }
 
         Role patientRole = roleRepository.findByName(Roles.ROLE_PATIENT)
@@ -49,13 +55,12 @@ public class UserService implements UserDetailsService {
                 .phone(request.getPhone())
                 .address(request.getAddress())
                 .passwordHashed(passwordEncoder.encode(request.getPassword()))
-                .passwordSecret(UUID.randomUUID().toString()) // hoặc random chuỗi bảo mật nếu bạn cần
+                .passwordSecret(UUID.randomUUID().toString())
                 .dateOfBirth(request.getDateOfBirth())
                 .role(patientRole)
                 .build();
 
-        userRepository.save(newUser);
-        return "User Registered Successfully.";
+        return userRepository.save(newUser);
     }
 
     public User getUserByEmail(String email) {
