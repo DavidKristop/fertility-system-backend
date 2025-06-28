@@ -1,7 +1,6 @@
 package com.group3.backend.dto.request;
 
 import java.math.BigDecimal;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -25,7 +24,7 @@ public class ServiceCreateRequest {
     
     @DecimalMin(value = "1.00", message = "Price must be at least 1")
     private BigDecimal price;
-    
+
     @Min(value = 1, message = "Unit must be at least 1 character")
     @Max(value = 50, message = "Unit must be at most 50 characters")
     private String unit;

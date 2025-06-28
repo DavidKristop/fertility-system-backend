@@ -40,16 +40,16 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Initialize consultation protocol phase
-INSERT INTO treatment_protocol_phase (id, title, description, total_amount, position, treatment_protocol_id,phase_modifier_percentage,refund_percentage)
+INSERT INTO treatment_protocol_phase (id, title, description, position, treatment_protocol_id,phase_modifier_percentage,refund_percentage)
 VALUES
-    ('123e4567-e89b-12d3-a456-426614174011', 'Consultation Phase', 'Initial consultation with ultrasound scan', 10000.00, 1, '123e4567-e89b-12d3-a456-426614174010',1.00,0.30)
+    ('123e4567-e89b-12d3-a456-426614174011', 'Consultation Phase', 'Initial consultation with ultrasound scan', 1, '123e4567-e89b-12d3-a456-426614174010',1.00,0.30)
 ON CONFLICT DO NOTHING;
 
 -- Initialize protocol services
-INSERT INTO treatment_protocol_service (id, service_id, treatment_protocol_phase_id, amount)
+INSERT INTO treatment_protocol_service (id, service_id, treatment_protocol_phase_id)
 VALUES
-    ('123e4567-e89b-12d3-a456-426614174012', '123e4567-e89b-12d3-a456-426614174008', '123e4567-e89b-12d3-a456-426614174011',1),
-    ('123e4567-e89b-12d3-a456-426614174013', '123e4567-e89b-12d3-a456-426614174009', '123e4567-e89b-12d3-a456-426614174011',1)
+    ('123e4567-e89b-12d3-a456-426614174012', '123e4567-e89b-12d3-a456-426614174008', '123e4567-e89b-12d3-a456-426614174011'),
+    ('123e4567-e89b-12d3-a456-426614174013', '123e4567-e89b-12d3-a456-426614174009', '123e4567-e89b-12d3-a456-426614174011')
 ON CONFLICT DO NOTHING;
 
 -- Initialize Standard IVF Protocol
@@ -59,11 +59,11 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Initialize IVF Protocol Phases
-INSERT INTO treatment_protocol_phase (id, title, description, total_amount, position, treatment_protocol_id, phase_modifier_percentage, refund_percentage)
+INSERT INTO treatment_protocol_phase (id, title, description, position, treatment_protocol_id, phase_modifier_percentage, refund_percentage)
 VALUES
-    ('123e4567-e89b-12d3-a456-426614174015', 'Stimulation Phase', 'Ovarian stimulation and monitoring', 50000000.00, 1, '123e4567-e89b-12d3-a456-426614174014', 1.00, 0.50),
-    ('123e4567-e89b-12d3-a456-426614174016', 'Egg Retrieval Phase', 'Egg retrieval procedure', 30000000.00, 2, '123e4567-e89b-12d3-a456-426614174014', 1.00, 0.30),
-    ('123e4567-e89b-12d3-a456-426614174017', 'Embryo Transfer Phase', 'Embryo transfer procedure', 20000000.00, 3, '123e4567-e89b-12d3-a456-426614174014', 1.00, 0.20)
+    ('123e4567-e89b-12d3-a456-426614174015', 'Stimulation Phase', 'Ovarian stimulation and monitoring', 1, '123e4567-e89b-12d3-a456-426614174014', 1.00, 0.50),
+    ('123e4567-e89b-12d3-a456-426614174016', 'Egg Retrieval Phase', 'Egg retrieval procedure', 2, '123e4567-e89b-12d3-a456-426614174014', 1.00, 0.30),
+    ('123e4567-e89b-12d3-a456-426614174017', 'Embryo Transfer Phase', 'Embryo transfer procedure', 3, '123e4567-e89b-12d3-a456-426614174014', 1.00, 0.20)
 ON CONFLICT DO NOTHING;
 
 -- Initialize IVF Protocol Services
@@ -75,11 +75,11 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Initialize IVF Protocol Service Assignments
-INSERT INTO treatment_protocol_service (id, service_id, treatment_protocol_phase_id, amount)
+INSERT INTO treatment_protocol_service (id, service_id, treatment_protocol_phase_id)
 VALUES
-    ('123e4567-e89b-12d3-a456-426614174021', '123e4567-e89b-12d3-a456-426614174018', '123e4567-e89b-12d3-a456-426614174015', 1),
-    ('123e4567-e89b-12d3-a456-426614174022', '123e4567-e89b-12d3-a456-426614174019', '123e4567-e89b-12d3-a456-426614174016', 1),
-    ('123e4567-e89b-12d3-a456-426614174023', '123e4567-e89b-12d3-a456-426614174020', '123e4567-e89b-12d3-a456-426614174017', 1)
+    ('123e4567-e89b-12d3-a456-426614174021', '123e4567-e89b-12d3-a456-426614174018', '123e4567-e89b-12d3-a456-426614174015'),
+    ('123e4567-e89b-12d3-a456-426614174022', '123e4567-e89b-12d3-a456-426614174019', '123e4567-e89b-12d3-a456-426614174016'),
+    ('123e4567-e89b-12d3-a456-426614174023', '123e4567-e89b-12d3-a456-426614174020', '123e4567-e89b-12d3-a456-426614174017')
 ON CONFLICT DO NOTHING;
 
 -- Initialize IUI Protocol
@@ -89,10 +89,10 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Initialize IUI Protocol Phases
-INSERT INTO treatment_protocol_phase (id, title, description, total_amount, position, treatment_protocol_id, phase_modifier_percentage, refund_percentage)
+INSERT INTO treatment_protocol_phase (id, title, description, position, treatment_protocol_id, phase_modifier_percentage, refund_percentage)
 VALUES
-    ('123e4567-e89b-12d3-a456-426614174031', 'IUI Stimulation Phase', 'Ovarian stimulation for IUI', 30000000.00, 1, '123e4567-e89b-12d3-a456-426614174030', 1.00, 0.50),
-    ('123e4567-e89b-12d3-a456-426614174032', 'IUI Procedure Phase', 'IUI procedure', 20000000.00, 2, '123e4567-e89b-12d3-a456-426614174030', 1.00, 0.30)
+    ('123e4567-e89b-12d3-a456-426614174031', 'IUI Stimulation Phase', 'Ovarian stimulation for IUI', 1, '123e4567-e89b-12d3-a456-426614174030', 1.00, 0.50),
+    ('123e4567-e89b-12d3-a456-426614174032', 'IUI Procedure Phase', 'IUI procedure', 2, '123e4567-e89b-12d3-a456-426614174030', 1.00, 0.30)
 ON CONFLICT DO NOTHING;
 
 -- Initialize IUI Protocol Services
@@ -102,9 +102,9 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Initialize IUI Protocol Service Assignments
-INSERT INTO treatment_protocol_service (id, service_id, treatment_protocol_phase_id, amount)
+INSERT INTO treatment_protocol_service (id, service_id, treatment_protocol_phase_id)
 VALUES
-    ('123e4567-e89b-12d3-a456-426614174034', '123e4567-e89b-12d3-a456-426614174018', '123e4567-e89b-12d3-a456-426614174031', 1),
-    ('123e4567-e89b-12d3-a456-426614174035', '123e4567-e89b-12d3-a456-426614174033', '123e4567-e89b-12d3-a456-426614174032', 1)
+    ('123e4567-e89b-12d3-a456-426614174034', '123e4567-e89b-12d3-a456-426614174018', '123e4567-e89b-12d3-a456-426614174031'),
+    ('123e4567-e89b-12d3-a456-426614174035', '123e4567-e89b-12d3-a456-426614174033', '123e4567-e89b-12d3-a456-426614174032')
 ON CONFLICT DO NOTHING;
 
