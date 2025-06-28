@@ -13,8 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import java.util.UUID;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -59,7 +57,6 @@ public class AuthController {
 
             AuthResponse authResponse = new AuthResponse(
             accessToken,
-            refreshToken,
             newUser.getEmail(),
             newUser.getRole().getName().name(),
             newUser.getId()
@@ -100,7 +97,13 @@ public class AuthController {
             
             response.addCookie(cookie);
 
-            AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, user.getEmail(), user.getRole().getName().name(), user.getId());
+            AuthResponse authResponse = new AuthResponse(
+                accessToken, 
+                user.getEmail(), 
+                user.getRole().getName().name(), 
+                user.getId()
+            );
+
             return ResponseEntity.ok(new Response<>(authResponse, "Authentication successful", true));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(null, "Authentication failed!", false));
@@ -121,7 +124,12 @@ public class AuthController {
                 String newAccessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
 
                 // Trả về access token mới, giữ nguyên refresh token
-                AuthResponse authResponse = new AuthResponse(newAccessToken, refreshToken, email, user.getRole().getName().name(), user.getId());
+                AuthResponse authResponse = new AuthResponse(
+                    newAccessToken, 
+                    email, user.getRole().getName().name(), 
+                    user.getId()
+                );
+
                 return ResponseEntity.ok(new Response<>(authResponse, "Token refreshed successfully", true));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(null, "Refresh token expired", false));
@@ -139,7 +147,6 @@ public class AuthController {
         User user = userDetails.getUser();
         AuthResponse authResponse = new AuthResponse(
                 null,
-                null,
                 user.getEmail(),
                 user.getRole().getName().name(),
                 user.getId()
@@ -148,8 +155,8 @@ public class AuthController {
     }
 
         @GetMapping("/validate")
-    public ResponseEntity<String> validateToken() {
-        return ResponseEntity.ok("Token is valid");
+    public ResponseEntity<Response<String>> validateToken() {
+        return ResponseEntity.ok(new Response<>("Token is valid", "Token validation successful", true));
     }
 
     @PostMapping("/logout")
