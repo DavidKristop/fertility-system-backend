@@ -3,6 +3,7 @@ package com.group3.backend.dto.request.Protocol;
 import java.math.BigDecimal;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,6 @@ public class ProtocolPhaseUpdateRequest {
     private String refundCondition;
     @DecimalMin(value = "0.00", message = "Refund amount must be non-negative")
     private BigDecimal refundAmount;
-    private int position;
     
     
 }

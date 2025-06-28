@@ -3,7 +3,11 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "request_appointment")
@@ -41,6 +45,12 @@ public class RequestAppointment {
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     public enum Status {
         ACCEPTED,

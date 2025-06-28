@@ -1,47 +1,60 @@
 package com.group3.backend.controller;
 
-import com.group3.backend.model.Contract;
-import com.group3.backend.service.ContractService;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.group3.backend.dto.Response;
+import com.group3.backend.dto.response.ContractResponse;
+import com.group3.backend.mapper.ContractMapper;
+import com.group3.backend.service.ContractService;
+import com.group3.backend.utils.CurrentUserUtils;
 
 @RestController
 @RequestMapping("/api/contracts")
-@RequiredArgsConstructor
 public class ContractController {
+    @Autowired
+    private ContractService contractService;
 
-    private final ContractService contractService;
+    @Autowired
+    private CurrentUserUtils currentUserUtils;
 
-    @GetMapping("/patient/{id}")
-    public ResponseEntity<List<Contract>> getContractsByPatient(@PathVariable UUID id) {
-        return ResponseEntity.ok(contractService.getContractsByPatientId(id));
+    @Autowired
+    private ContractMapper contractMapper;
+
+    @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<Response<List<ContractResponse>>> getAllContractsByPatientId() {
+        return ResponseEntity.ok(new Response<>(contractService.getAllContractByPatientId(currentUserUtils.getCurrentUserId()).stream().map(contractMapper::toResponse).collect(Collectors.toList()), "Contracts retrieved successfully"));
+    }
+    
+    @GetMapping("/{contractId}")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<Response<ContractResponse>> getContractById(@PathVariable UUID contractId) {
+        return ResponseEntity.ok(new Response<>(
+            contractMapper.toResponse(
+                    contractService.getContractByIdAndPatientId(contractId, currentUserUtils.getCurrentUserId()
+                )
+            ),
+            "Contract retrieved successfully"));
     }
 
-    @PostMapping
-    public ResponseEntity<Contract> createContract(@RequestBody CreateContractRequest request) {
-        Contract created = contractService.createContract(
-                request.getTreatmentId(),
-                request.getSignDeadline(),
-                request.getContractUrl()
-        );
-        return ResponseEntity.ok(created);
-    }
-
-    @PutMapping("/{id}/sign")
-    public ResponseEntity<Contract> signContract(@PathVariable UUID id) {
-        return ResponseEntity.ok(contractService.signContract(id));
-    }
-
-    @Data
-    public static class CreateContractRequest {
-        private UUID treatmentId;
-        private Timestamp signDeadline;
-        private String contractUrl;
+    @PutMapping("/sign/{contractId}")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<Response<ContractResponse>> signContract(@PathVariable UUID contractId) {
+        return ResponseEntity.ok(new Response<>(
+            contractMapper.toResponse(
+                    contractService.signedContract(contractId, currentUserUtils.getCurrentUserId())
+                ),
+            "Contract signed successfully"));
     }
 }

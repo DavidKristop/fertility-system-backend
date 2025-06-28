@@ -23,7 +23,4 @@ public class TreatmentProtocolService {
     @ManyToOne
     @JoinColumn(name = "treatment_protocol_phase_id")
     private TreatmentProtocolPhase treatmentProtocolPhase;
-
-    @Column(name = "amount", nullable = false)
-    private int amount;
 }

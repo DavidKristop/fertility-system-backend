@@ -15,6 +15,7 @@ import com.group3.backend.model.User;
 import com.group3.backend.repository.UserRepository;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
+import com.group3.backend.exception.UnauthorizedAccessException;
 import com.group3.backend.exception.ResourceConflictException;
 
 import lombok.RequiredArgsConstructor;
@@ -27,18 +28,22 @@ public class RequestAppointmentService {
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
 
-    public RequestAppointment createRequestAppointment(RequestAppointmentRequest dto) {
+    public RequestAppointment createRequestAppointment(RequestAppointmentRequest dto, UUID patientId) {
         User doctor = userRepository.findById(dto.getDoctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
-        User patient = userRepository.findById(dto.getPatientId())
+        User patient = userRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
 
+        // if(scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(dto.getDoctorId(), dto.getAppointmentDatetime(), new Timestamp(dto.getAppointmentDatetime().getTime() + 45 * 60 * 1000)) != null) {
+        //     throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
+        // }
+        
         RequestAppointment request = RequestAppointment.builder()
                 .doctor(doctor)
                 .patient(patient)
                 .reason(dto.getReason())
                 .appointmentDatetime(dto.getAppointmentDatetime())
-                .status(RequestAppointment.Status.PENDING) // mặc định là Pending
+                .status(RequestAppointment.Status.PENDING) 
                 .build();
 
         return requestAppointmentRepository.save(request);
@@ -53,10 +58,13 @@ public class RequestAppointmentService {
     }
 
     @Transactional
-    public RequestAppointment acceptAppointment(UUID appointmentId) {
+    public RequestAppointment acceptAppointment(UUID appointmentId, UUID doctorId) {
         RequestAppointment appointment = requestAppointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
-
+        if(!appointment.getDoctor().getId().equals(doctorId)) {
+            throw new UnauthorizedAccessException("Doctor is not authorized to accept this appointment");
+        }
+            
         // Kiểm tra trạng thái cuộc hẹn (phải là Pending mới có thể chấp nhận)
         if (!appointment.getStatus().equals(RequestAppointment.Status.PENDING)) {
             throw new IllegalStateException("Appointment is already accepted or cancelled");

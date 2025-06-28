@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Response<?>> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Response<?>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         StringBuilder errorMessage = new StringBuilder("Validation failed. Errors:");
         
         ex.getBindingResult().getAllErrors().forEach(error -> {
@@ -28,6 +28,12 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new Response<>(null, errorMessage.toString(), false));
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Response<?>> handleValidationException(ValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new Response<>(null, ex.getMessage(), false));
     }
     
     @ExceptionHandler(ResourceConflictException.class)

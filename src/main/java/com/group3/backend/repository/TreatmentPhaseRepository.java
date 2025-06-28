@@ -9,4 +9,5 @@ import java.util.UUID;
 @Repository
 public interface TreatmentPhaseRepository extends JpaRepository<TreatmentPhase, UUID> {
     List<TreatmentPhase> findByTreatmentId(UUID treatmentId);
+    List<TreatmentPhase> findByIdIn(List<UUID> treatmentPhaseIds);
 }

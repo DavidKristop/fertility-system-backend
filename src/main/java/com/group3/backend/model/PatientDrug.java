@@ -39,4 +39,8 @@ public class PatientDrug {
     @ManyToOne
     @JoinColumn(name = "treatment_phase_id")
     private TreatmentPhase treatmentPhase;
+
+    @ManyToOne
+    @JoinColumn(name = "assign_drug_id")
+    private AssignDrug assignDrug;
 }

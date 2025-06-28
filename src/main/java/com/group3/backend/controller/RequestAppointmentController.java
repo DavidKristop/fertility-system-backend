@@ -1,17 +1,14 @@
 package com.group3.backend.controller;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +31,7 @@ import com.group3.backend.dto.response.RequestAppointment.RequestAppointmentResp
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.Treatment;
+import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.User;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.RequestAppointmentService;
@@ -58,6 +56,7 @@ public class RequestAppointmentController {
     private PaymentService paymentService;
 
     @Autowired
+    @Qualifier("appointmentRequestMapper")
     private AppointmentRequestMapper requestAppointmentMapper;
 
     @Autowired
@@ -67,7 +66,7 @@ public class RequestAppointmentController {
     @Validated
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<RequestAppointmentResponse>> createRequest(@Valid @RequestBody RequestAppointmentRequest request) {
-        RequestAppointment result = service.createRequestAppointment(request);
+        RequestAppointment result = service.createRequestAppointment(request, currentUserUtils.getCurrentUser().getId());
         return ResponseEntity.ok(new Response<>(
             requestAppointmentMapper.toResponse(result),
             "Request appointment created successfully"));
@@ -100,20 +99,18 @@ public class RequestAppointmentController {
     @PutMapping("/accept/{appointmentId}")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<RequestAppointmentResponse>> acceptAppointment(@PathVariable UUID appointmentId) {
-        RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId);
+        RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId, currentUserUtils.getCurrentUser().getId());
         
         // Create treatment based on consultation protocol
         TreatmentCreateRequest treatmentRequest = TreatmentCreateRequest.builder()
-            .startDate(LocalDate.now())
-            .endDate(acceptedAppointment.getAppointmentDatetime().toLocalDateTime().toLocalDate())
-            .diagnosis("Consultation")
+            .paymentMode(Treatment.PaymentMode.FULL)
+            .description("Consultation")
             .userId(acceptedAppointment.getPatient().getId())
             .doctorId(acceptedAppointment.getDoctor().getId())
             .protocolId(UUID.fromString(environmentConfig.getConsultationProtocolId()))
             .phases(List.of(TreatmentPhaseRequest.builder()
                 .title("Consultation Phase")
                 .description("Initial consultation phase")
-                .position(1)
                 .schedules(List.of(TreatmentScheduleRequest.builder()
                     .appointmentDateTime(acceptedAppointment.getAppointmentDatetime())
                     .estimatedTime(new Timestamp(acceptedAppointment.getAppointmentDatetime().getTime() + 45 * 60 * 1000))
@@ -130,15 +127,15 @@ public class RequestAppointmentController {
             .build();
 
         // Create treatment
-        Treatment createdTreatment = treatmentService.createTreatment(treatmentRequest);
+        Treatment createdTreatment = treatmentService.createTreatment(treatmentRequest,Treatment.Status.IN_PROGRESS);
 
         // Create payment request
         PaymentRequest paymentRequest = PaymentRequest.builder()
             .amount(createdTreatment.getPhases().get(0).getTotalAmount())
             .description("Consultation payment")
-            .paymentDeadline(Timestamp.from(acceptedAppointment.getAppointmentDatetime().toInstant()))
+            .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
             .userId(acceptedAppointment.getPatient().getId())
-            .treatmentPhaseId(createdTreatment.getPhases().get(0).getId())
+            .treatmentPhaseIds(createdTreatment.getPhases().stream().map(TreatmentPhase::getId).collect(Collectors.toList()))
             .build();
 
         paymentService.createPayment(paymentRequest);

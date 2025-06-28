@@ -11,8 +11,8 @@ import java.util.UUID;
 
 @Data
 public class RequestAppointmentRequest {
+    @NotNull(message = "Doctor ID is required")
     private UUID doctorId;
-    private UUID patientId;
     private String reason;
     @NotNull(message = "Appointment datetime is required")
     @MinDaysAhead

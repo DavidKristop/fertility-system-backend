@@ -3,9 +3,13 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "schedule")
@@ -41,6 +45,10 @@ public class Schedule {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
     @OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL)
     private ScheduleResult scheduleResult;
 
@@ -48,12 +56,19 @@ public class Schedule {
     private RequestAppointment requestAppointment;
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<ScheduleService> scheduleServices = new ArrayList<>();
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     public enum Status {
         PENDING,
         CHANGED,
-        CANCELED,
+        CANCELLED,
         DONE
     }
 }

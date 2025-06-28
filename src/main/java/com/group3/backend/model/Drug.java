@@ -3,8 +3,12 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "drug")
@@ -28,11 +32,21 @@ public class Drug {
     private BigDecimal price;
 
     @Column(name = "is_active")
-    private boolean isActive;
+    @Builder.Default
+    private boolean isActive = true;
 
     @Column(name = "unit")
     private String unit;
 
+    @Column(name = "last_deactivated")
+    private LocalDateTime lastDeactivated;
+
     @OneToMany(mappedBy = "drug")
     private List<PatientDrug> patientDrugs;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

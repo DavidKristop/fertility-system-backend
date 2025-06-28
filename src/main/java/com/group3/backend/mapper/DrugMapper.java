@@ -7,6 +7,5 @@ import com.group3.backend.model.Drug;
 
 @Mapper(componentModel = "spring")
 public interface DrugMapper {
-
     DrugResponse toResponse(Drug drug);
 }
