@@ -11,4 +11,5 @@ import com.group3.backend.model.Service;
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, UUID> {
     List<Service> findByIsActiveTrue();
+    boolean existsByName(String name);
 }

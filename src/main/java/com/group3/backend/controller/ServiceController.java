@@ -2,6 +2,7 @@ package com.group3.backend.controller;
 
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.ServiceCreateRequest;
+import com.group3.backend.dto.request.ServiceUpdateRequest;
 import com.group3.backend.dto.response.ServiceResponse;
 import com.group3.backend.mapper.ServiceMapper;
 import com.group3.backend.service.ServiceItemService;
@@ -47,5 +48,27 @@ public class ServiceController {
         Service service = serviceItemService.createService(request);
         ServiceResponse response = serviceMapper.toResponse(service);
         return ResponseEntity.ok(new Response<>(response, "Service created successfully"));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<Response<ServiceResponse>> update(@PathVariable UUID id, @RequestBody @Valid ServiceUpdateRequest request) {
+        Service service = serviceItemService.updateService(id, request);
+        ServiceResponse response = serviceMapper.toResponse(service);
+        return ResponseEntity.ok(new Response<>(response, "Service updated successfully"));
+    }
+
+    @PostMapping("/deactivate/{id}")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<Response<Void>> deactivate(@PathVariable UUID id) {
+        serviceItemService.deactivateService(id);
+        return ResponseEntity.ok(new Response<>(null, "Service deactivated successfully"));
+    }
+
+    @PostMapping("/reactivate/{id}")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<Response<Void>> reactivate(@PathVariable UUID id) {
+        serviceItemService.reActivateService(id);
+        return ResponseEntity.ok(new Response<>(null, "Service reactivated successfully"));
     }
 }
