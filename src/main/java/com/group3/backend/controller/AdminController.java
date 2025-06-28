@@ -30,7 +30,6 @@ public class AdminController {
 
             AuthResponse authResponse = new AuthResponse(
             null,
-            null,
             newUser.getEmail(),
             newUser.getRole().getName().name(),
             newUser.getId()
