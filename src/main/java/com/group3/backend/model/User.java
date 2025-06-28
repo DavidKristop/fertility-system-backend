@@ -58,9 +58,6 @@ public class User {
     @JsonIgnore
     private List<Reminder> reminders;
 
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private List<PaymentHistory> paymentHistories;
 
     @OneToMany(mappedBy = "patient")
     @JsonIgnore
@@ -75,8 +72,10 @@ public class User {
     private List<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "patient")
-    @JsonIgnore
-    private List<Schedule> schedules;
+    private List<Schedule> patientSchedules;
+
+    @OneToMany(mappedBy = "doctor")
+    private List<Schedule> doctorSchedules;
 
     @OneToMany(mappedBy = "patient")
     @JsonIgnore
@@ -84,11 +83,16 @@ public class User {
 
     @OneToMany(mappedBy = "doctor")
     @JsonIgnore
-    private List<Schedule> doctorSchedules;
-
-    @OneToMany(mappedBy = "doctor")
-    @JsonIgnore
     private List<RequestAppointment> doctorRequestAppointments;
+
+    @OneToMany(mappedBy = "patient")
+    private List<RequestAppointment> patientRequestAppointments;
+
+    @OneToMany(mappedBy = "user")
+    private List<Payment> payments;
+
+    @OneToMany(mappedBy = "user")
+    private List<Refund> refunds;
 
     
 }

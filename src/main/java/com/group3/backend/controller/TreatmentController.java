@@ -8,6 +8,7 @@ import com.group3.backend.model.Treatment;
 import com.group3.backend.service.TreatmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +22,7 @@ public class TreatmentController {
     private TreatmentMapper treatmentMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<TreatmentResponse>> createTreatment(@RequestBody TreatmentCreateRequest request) {
         Treatment treatment = treatmentService.createTreatment(request);
         TreatmentResponse response = treatmentMapper.toResponse(treatment);

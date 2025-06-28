@@ -2,7 +2,6 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -27,7 +26,7 @@ public class RequestAppointment {
     private User patient;
 
     @ManyToOne
-    @JoinColumn(name = "schedule_id", nullable = false)
+    @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 
     @Column(name = "reason")
@@ -36,13 +35,16 @@ public class RequestAppointment {
     @Column(name = "appointment_datetime", nullable = false)
     private Timestamp appointmentDatetime;
 
+    @Column(name = "rejected_reason")
+    private String rejectedReason;
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
     public enum Status {
-        Accept,
-        Denied,
-        Pending
+        ACCEPTED,
+        DENIED,
+        PENDING
     }
 }

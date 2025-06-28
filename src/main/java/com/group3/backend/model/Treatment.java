@@ -2,13 +2,10 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.group3.backend.constants.TreatmentStatus;
 
 @Entity
 @Table(name = "treatment")
@@ -31,45 +28,46 @@ public class Treatment {
     @Column(name = "diagnosis")
     private String diagnosis;
 
-    @Column(name = "total_amount", precision = 10, scale = 2)
-    private BigDecimal totalAmount;
-
+    @Column(name = "payment_mode", length = 20)
+    private String paymentMode;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
-    public TreatmentStatus getTreatmentStatus() {
-        return TreatmentStatus.fromString(status);
-    }
 
-    public void setTreatmentStatus(TreatmentStatus status) {
-        this.status = status.getDisplayName();
-    }
+
+    @ManyToOne
+    @JoinColumn(name = "current_phase_id")
+    private TreatmentPhase currentPhase;
+
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnore
     private User patient;
 
     @ManyToOne
     @JoinColumn(name = "doctor_id")
-    @JsonIgnore
     private User doctor;
 
     @ManyToOne
     @JoinColumn(name = "treatment_protocol_id")
-    @JsonIgnore
     private TreatmentProtocol treatmentProtocol;
 
     @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL)
-    @JsonIgnore
     private List<TreatmentPhase> phases;
 
     @OneToOne(mappedBy = "treatment")
-    @JsonIgnore
     private Contract contract;
 
     @OneToMany(mappedBy = "treatment")
-    @JsonIgnore
     private List<Feedback> feedbacks;
+
+
+    public enum Status {
+        IN_PROGRESS,
+        COMPLETED,
+        CANCELLED,
+        AWAITING_CONTRACT_SIGNED
+    }
 }
