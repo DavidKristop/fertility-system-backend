@@ -174,4 +174,27 @@ public class ScheduleController {
             "Schedule created successfully")
         );
     }
+
+    @GetMapping("/today-doctor")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<List<DoctorScheduleReponse>>> getTodayDoctorSchedules() {
+        List<Schedule> schedules = scheduleService.getTodayScheduleForDoctor(currentUserUtils.getCurrentUser().getId());
+        List<DoctorScheduleReponse> responses = schedules.stream()
+                .map(scheduleMapper::toDoctorScheduleRespone) // dùng mapper chuyển sang DTO phù hợp
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new Response<>(responses, "Today's doctor schedules retrieved successfully"));
+    }
+
+    @GetMapping("/today-patient")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<Response<List<PatientScheduleResponse>>> getTodayPatientSchedules() {
+        List<Schedule> schedules = scheduleService.getTodayScheduleForPatient(currentUserUtils.getCurrentUser().getId());
+        List<PatientScheduleResponse> responses = schedules.stream()
+                .map(scheduleMapper::toPatientScheduleResponse) // dùng mapper phù hợp
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new Response<>(responses, "Today's patient schedules retrieved successfully"));
+    }
+
 }

@@ -16,11 +16,14 @@ import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.ServiceRepository;
 import com.group3.backend.repository.TreatmentPhaseRepository;
 
+import com.group3.backend.config.TimeZoneConfig;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,6 +39,9 @@ public class ScheduleService {
 
     @Autowired
     private ServiceRepository serviceRepository;
+
+    @Autowired
+    private TimeZoneConfig timeZoneConfig;
 
     public List<Schedule> getAvailableDoctors(Integer year, Integer month) {
         List<Schedule> schedules = scheduleRepository.findAll();
@@ -170,5 +176,19 @@ public class ScheduleService {
             estimatedTime
         );
         return !overlappingSchedules.isEmpty();
+    }
+
+    public List<Schedule> getTodayScheduleForDoctor(UUID doctorId) {
+        LocalDate today = LocalDate.now(timeZoneConfig.defaultZoneId());
+        Timestamp start = Timestamp.valueOf(today.atTime(8, 0));
+        Timestamp end = Timestamp.valueOf(today.atTime(18, 0));
+        return scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(doctorId, start, end);
+    }
+
+    public List<Schedule> getTodayScheduleForPatient(UUID patientId) {
+        LocalDate today = LocalDate.now(timeZoneConfig.defaultZoneId());
+        Timestamp start = Timestamp.valueOf(today.atTime(8, 0));
+        Timestamp end = Timestamp.valueOf(today.atTime(18, 0));
+        return scheduleRepository.findByPatientIdAndAppointmentDateTimeBetween(patientId, start, end);
     }
 }
