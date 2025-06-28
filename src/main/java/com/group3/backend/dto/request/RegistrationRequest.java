@@ -20,7 +20,8 @@ public class RegistrationRequest {
     private String email;
 
     @NotBlank(message = "Phone number cannot be empty")
-    @Pattern(regexp = "^\\d{9,11}$", message = "Phone number must be 9–11 digits")
+    @Pattern(regexp = "^(0|84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|89]|9[0-4|6-9])[0-9]{7}$", 
+            message = "Phone number must be a valid Vietnam phone number")
     private String phone;
 
     @NotBlank(message = "Address cannot be empty")
