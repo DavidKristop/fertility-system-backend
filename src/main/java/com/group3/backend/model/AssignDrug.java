@@ -2,7 +2,13 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.security.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "assign_drug")
@@ -26,4 +32,10 @@ public class AssignDrug {
     @ManyToOne
     @JoinColumn(name = "payment_id")
     private Payment payment;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

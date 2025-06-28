@@ -125,7 +125,7 @@ public class AuthController {
         return ResponseEntity.ok(new Response<>(authResponse, "Authentication successful", true));
     }
 
-        @GetMapping("/validate")
+    @GetMapping("/validate")
     public ResponseEntity<String> validateToken() {
         return ResponseEntity.ok("Token is valid");
     }

@@ -2,9 +2,15 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.security.Timestamp;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 
 @Entity
@@ -64,6 +70,12 @@ public class Treatment {
 
     @OneToMany(mappedBy = "treatment")
     private List<Feedback> feedbacks;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     public enum PaymentMode {
         FULL,

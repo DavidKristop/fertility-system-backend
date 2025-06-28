@@ -9,6 +9,9 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
+
+import com.group3.backend.constants.RegexPattern;
+
 @Data
 public class RegistrationRequest {
     @NotBlank(message = "Username cannot be empty")
@@ -19,6 +22,7 @@ public class RegistrationRequest {
     private String email;
 
     @NotBlank(message = "Phone number cannot be empty")
+    @Pattern(regexp = RegexPattern.PHONE_NUMBER, message = "Invalid phone number format")
     private String phone;
 
     @NotBlank(message = "Address cannot be empty")
@@ -28,7 +32,7 @@ public class RegistrationRequest {
     private LocalDate dateOfBirth;
 
     @NotBlank(message = "Password cannot be empty")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{12,}$",
+    @Pattern(regexp = RegexPattern.PASSWORD,
                 message = "Password must be at least 12 characters and include uppercase, lowercase, number, and special character.")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;

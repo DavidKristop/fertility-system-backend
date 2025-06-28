@@ -10,6 +10,5 @@ import com.group3.backend.model.Service;
 
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, UUID> {
-    Service findByName(String name);
     List<Service> findByIsActiveTrue();
 }

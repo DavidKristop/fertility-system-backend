@@ -4,8 +4,12 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "payment")
@@ -50,6 +54,12 @@ public class Payment {
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<Refund> refunds;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
     
     public enum Status {
         PENDING,

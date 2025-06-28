@@ -2,6 +2,7 @@ package com.group3.backend.service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,7 @@ public class ContractService {
     public Contract createContract(ContractRequest contractRequest,Treatment treatment){
         Contract contract = Contract.builder()
                 .isSigned(contractRequest.isSigned())
-                .signDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
+                .signDeadline(LocalDateTime.now().plusDays(2))
                 .treatment(treatment)
                 .contractUrl(contractRequest.getContractUrl())
                 .build();

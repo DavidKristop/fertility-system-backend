@@ -1,6 +1,7 @@
 package com.group3.backend.dto.response;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.group3.backend.model.Blog;
@@ -20,8 +21,8 @@ public class BlogResponse {
     private String thumbnailUrl;
     private UUID authorId;
     private String authorName;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // Phương thức để chuyển Blog entity sang BlogResponse
     public static BlogResponse from(Blog blog) {
