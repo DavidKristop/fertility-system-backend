@@ -27,7 +27,7 @@ public class DrugService {
     private TimeZoneConfig timeZoneConfig;
 
     public Page<Drug> searchDrugs(String name, boolean isActive, Pageable pageable) {
-        return drugRepository.findByNameContainingAndIsActive(name, isActive, pageable);
+        return drugRepository.findByNameIgnoreCaseContainingAndIsActive(name, isActive, pageable);
     }
 
     public Drug getDrugById(UUID id) {

@@ -7,11 +7,13 @@ import com.group3.backend.exception.ValidationException;
 import com.group3.backend.model.Service;
 import com.group3.backend.repository.ServiceRepository;
 import com.group3.backend.config.TimeZoneConfig;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @org.springframework.stereotype.Service
@@ -22,12 +24,8 @@ public class ServiceItemService {
     @Autowired
     private TimeZoneConfig timeZoneConfig;
 
-    public List<Service> getAllServices(boolean onlyActive){
-        List<Service> services = onlyActive
-                ? serviceRepository.findByIsActiveTrue()
-                : serviceRepository.findAll();
-
-        return services;
+    public Page<Service> getServices(String name, boolean isActive, Pageable pageable){
+        return serviceRepository.findByNameIgnoreCaseContainingAndIsActive(name, isActive, pageable);
     }
 
     public Service getServiceById(UUID id){

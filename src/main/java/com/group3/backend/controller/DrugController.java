@@ -33,7 +33,7 @@ public class DrugController {
     public ResponseEntity<Response<Page<DrugResponse>>> list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "") String name,
             @RequestParam(defaultValue = "true") boolean isActive) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Drug> drugs = drugService.searchDrugs(name, isActive, pageable);

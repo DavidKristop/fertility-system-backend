@@ -123,7 +123,7 @@ public class TreatmentProtocolServiceService {
     }
 
     public Page<TreatmentProtocol> getProtocols(String title, boolean isActive, Pageable pageable) {
-        Page<TreatmentProtocol> protocols = protocolRepository.findByTitleContainingAndIsActive(title, isActive, pageable);
+        Page<TreatmentProtocol> protocols = protocolRepository.findByTitleIgnoreCaseContainingAndIsActive(title, isActive, pageable);
         protocols.forEach(protocol -> protocol.setPhases(sortProtocolPhase(protocol.getPhases())));
         return protocols;
     }
