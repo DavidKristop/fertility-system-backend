@@ -26,7 +26,8 @@ public class DrugCreateRequest {
     @DecimalMin(value = "1.00", message = "Price must be at least 1")
     private BigDecimal price;
     
-    @NotEmpty
+    @Min(value = 1, message = "Unit must be at least 1 character")
+    @Max(value = 50, message = "Unit must be at most 50 characters")
     private String unit;
     
 }
