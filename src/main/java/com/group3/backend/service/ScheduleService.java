@@ -154,8 +154,8 @@ public class ScheduleService {
         Treatment treatment = treatmentPhase.getTreatment();
         User doctor = treatment.getDoctor();
         User patient = treatment.getPatient();
-        
-        if(doctor.getId() != doctorId) {
+
+        if(!doctor.getId().equals(doctorId)) {
             throw new UnauthorizedAccessException("Doctor is not authorized to add schedule to this treatment phase");
         }
 
@@ -298,10 +298,11 @@ public class ScheduleService {
     }
 
     // Check thời gian hợp lệ
-    LocalDateTime now = LocalDateTime.now();
     Treatment treatment = schedule.getTreatmentPhase().getTreatment();
+    LocalDateTime now = LocalDateTime.now();
+    LocalDate treatmentEndDate = treatment.getEndDate().toLocalDate();
     if (request.getAppointmentDateTime().isBefore(now) ||
-        request.getAppointmentDateTime().isAfter(treatment.getEndDate().toInstant().atZone(timeZoneConfig.defaultZoneId()).toLocalDate().atStartOfDay())) {
+        request.getAppointmentDateTime().toLocalDate().isAfter(treatmentEndDate)) {
         throw new ResourceConflictException("Appointment time must be within treatment period");
     }
 
