@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -162,7 +163,7 @@ public class ScheduleController {
         PaymentRequest paymentRequest = PaymentRequest.builder()
             .amount(totalAmount)
             .description("Payment for additional schedule")
-            .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
+            .paymentDeadline(LocalDateTime.now().plusDays(2))
             .userId(currentUserUtils.getCurrentUser().getId())
             .scheduleIds(List.of(schedule.getId()))
             .build();

@@ -2,17 +2,15 @@ package com.group3.backend.service;
 
 import com.group3.backend.model.Payment;
 import com.group3.backend.repository.AssignDrugRepository;
-import com.group3.backend.repository.PatientDrugRepository;
 import com.group3.backend.repository.PaymentRepository;
 import com.group3.backend.repository.ScheduleRepository;
-import com.group3.backend.repository.TreatmentPhaseRepository;
 import com.group3.backend.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.group3.backend.dto.request.PaymentRequest;
@@ -32,7 +30,7 @@ public class PaymentService {
     @Transactional
     public Payment createPayment(PaymentRequest paymentRequest) {
         // Validate payment deadline
-        if (paymentRequest.getPaymentDeadline().toLocalDateTime().isBefore(Timestamp.valueOf(java.time.LocalDateTime.now()).toLocalDateTime())) {
+        if (paymentRequest.getPaymentDeadline().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Payment deadline cannot be in the past");
         }
         // Create payment
@@ -64,12 +62,12 @@ public class PaymentService {
         }
 
         // Check if payment deadline has passed
-        if (payment.getPaymentDeadline().toLocalDateTime().isBefore(Timestamp.valueOf(java.time.LocalDateTime.now()).toLocalDateTime())) {
+        if (payment.getPaymentDeadline().isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("Payment deadline has passed");
         }
 
         // Update payment status and method
-        payment.setPaymentDate(Timestamp.valueOf(java.time.LocalDateTime.now()));
+        payment.setPaymentDate(LocalDateTime.now());
         payment.setPaymentMethod(paymentMethod);
         payment.setStatus(Payment.Status.COMPLETED);
 

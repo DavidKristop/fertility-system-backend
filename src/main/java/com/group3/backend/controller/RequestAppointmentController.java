@@ -2,6 +2,7 @@ package com.group3.backend.controller;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -157,7 +158,7 @@ public class RequestAppointmentController {
                 .map(scheduleService -> scheduleService.getService().getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add))
             .description("Consultation payment")
-            .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
+            .paymentDeadline(LocalDateTime.now().plusDays(2))
             .userId(acceptedAppointment.getPatient().getId())
             .scheduleIds(List.of(schedule.getId()))
             .build();

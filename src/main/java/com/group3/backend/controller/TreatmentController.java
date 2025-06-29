@@ -12,6 +12,7 @@ import com.group3.backend.service.TreatmentService;
 import com.group3.backend.utils.CurrentUserUtils;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -97,7 +98,7 @@ public class TreatmentController {
             PaymentRequest paymentRequest = PaymentRequest.builder()
                 .amount(TreatmentService.calculatePhaseEstimatePrice(treatment.getCurrentPhase()))
                 .description("Payment for phase: " + treatment.getCurrentPhase().getTitle())
-                .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
+                .paymentDeadline(LocalDateTime.now().plusDays(2))
                 .userId(currentUserUtils.getCurrentUserId())
                 .build();
             paymentService.createPayment(paymentRequest);

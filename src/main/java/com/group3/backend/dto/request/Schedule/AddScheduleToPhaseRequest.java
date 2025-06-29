@@ -2,7 +2,6 @@ package com.group3.backend.dto.request.Schedule;
 
 import java.util.List;
 import java.util.UUID;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import com.group3.backend.constraints.MinDaysAhead;
@@ -14,7 +13,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class ScheduleCreateRequest {
+public class AddScheduleToPhaseRequest {
     @NotEmpty
     private UUID phaseId;
     @MinDaysAhead

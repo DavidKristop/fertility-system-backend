@@ -3,7 +3,7 @@ package com.group3.backend.dto.request;
 import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +18,7 @@ public class PaymentRequest {
     private BigDecimal amount;
     private String description;
     @NotNull
-    private Timestamp paymentDeadline;
+    private LocalDateTime paymentDeadline;
     @NotNull
     private UUID userId;
     @Builder.Default

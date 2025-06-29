@@ -15,14 +15,22 @@ import com.group3.backend.model.TreatmentProtocol;
 @Repository
 public interface TreatmentProtocolRepository extends JpaRepository<TreatmentProtocol, UUID> {
 
-    @Query("SELECT tp FROM TreatmentProtocol tp WHERE tp.id IN :ids AND tp.isActive = true " +
-            "AND tp.phases.drugs.drug.active = true " +
-            "AND tp.phases.services.service.active = true")
+    @Query("SELECT DISTINCT tp FROM TreatmentProtocol tp " +
+        "JOIN tp.phases phase " +
+        "JOIN phase.drugs drug " +
+        "JOIN phase.services service " +
+        "WHERE tp.id IN :ids AND tp.isActive = true " +
+        "AND drug.drug.isActive = true " +
+        "AND service.service.isActive = true")
     List<TreatmentProtocol> findByIdIn(@Param("ids") List<UUID> ids);
 
-    @Query("SELECT tp FROM TreatmentProtocol tp WHERE LOWER(tp.title) LIKE CONCAT('%', LOWER(:title), '%') AND tp.isActive = true " +
-            "AND tp.phases.drugs.drug.active = true " +
-            "AND tp.phases.services.service.active = true")
+    @Query("SELECT DISTINCT tp FROM TreatmentProtocol tp " +
+        "JOIN tp.phases phase " +
+        "JOIN phase.drugs drug " +
+        "JOIN phase.services service " +
+        "WHERE LOWER(tp.title) LIKE CONCAT('%', LOWER(:title), '%') AND tp.isActive = true " +
+        "AND drug.drug.isActive = true " +
+        "AND service.service.isActive = true")
     Page<TreatmentProtocol> findByTitleIgnoreCaseContainingAndIsActive(
             @Param("title") String title,
             @Param("isActive") boolean isActive,

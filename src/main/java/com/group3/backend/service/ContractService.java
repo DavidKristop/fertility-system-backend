@@ -68,7 +68,7 @@ public class ContractService {
 
     private void createPaymentBasedOnPaymentMode(Treatment treatment){
         PaymentRequest paymentRequest = PaymentRequest.builder()
-            .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
+            .paymentDeadline(LocalDateTime.now().plusDays(2))
             .userId(treatment.getPatient().getId())
             .build();
         if(treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)){

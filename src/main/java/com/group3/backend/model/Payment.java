@@ -3,7 +3,6 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -30,10 +29,10 @@ public class Payment {
     private String description;
 
     @Column(name = "payment_date")
-    private Timestamp paymentDate;
+    private LocalDateTime paymentDate;
 
     @Column(name = "payment_deadline")
-    private Timestamp paymentDeadline;
+    private LocalDateTime paymentDeadline;
 
     @Column(name = "payment_method")
     private String paymentMethod;
