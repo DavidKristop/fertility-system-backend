@@ -6,16 +6,15 @@ import jakarta.validation.constraints.NotNull;
 import com.group3.backend.constraints.MinDaysAhead;
 import com.group3.backend.constraints.WorkingHours;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 public class RequestAppointmentRequest {
+    @NotNull(message = "Doctor ID is required")
     private UUID doctorId;
-    private UUID patientId;
-    private String reason;
     @NotNull(message = "Appointment datetime is required")
     @MinDaysAhead
     @WorkingHours
-    private Timestamp appointmentDatetime;
+    private LocalDateTime appointmentDatetime;
 }

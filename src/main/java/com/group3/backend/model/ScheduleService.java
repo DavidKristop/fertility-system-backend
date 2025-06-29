@@ -26,7 +26,4 @@ public class ScheduleService {
 
     @Column(name = "notes")
     private String notes;
-
-    @Column(name = "amount")
-    private Integer amount;
 }

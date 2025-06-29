@@ -3,8 +3,12 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "payment")
@@ -25,10 +29,10 @@ public class Payment {
     private String description;
 
     @Column(name = "payment_date")
-    private Timestamp paymentDate;
+    private LocalDateTime paymentDate;
 
     @Column(name = "payment_deadline")
-    private Timestamp paymentDeadline;
+    private LocalDateTime paymentDeadline;
 
     @Column(name = "payment_method")
     private String paymentMethod;
@@ -41,10 +45,21 @@ public class Payment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "treatment_phase_id", nullable = false)
-    private TreatmentPhase treatmentPhase;
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
+    private List<Schedule> schedules;
 
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
+    private List<AssignDrug> assignDrugs;
+
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
+    private List<Refund> refunds;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+    
     public enum Status {
         PENDING,
         COMPLETED,

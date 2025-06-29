@@ -38,7 +38,6 @@ public class JwtService {
         return createToken(claims, email, accessTokenExpiration);
     }
 
-    // Tạo Refresh Token (không cần nhiều info)
     public String generateRefreshToken(String email) {
         return createToken(new HashMap<>(), email, refreshTokenExpiration);
     }

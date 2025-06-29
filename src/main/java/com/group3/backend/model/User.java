@@ -1,11 +1,15 @@
 package com.group3.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "users")
@@ -47,28 +51,22 @@ public class User {
     private Role role;
 
     @OneToOne(mappedBy = "user")
-    @JsonIgnore
     private PatientProfile patientProfile;
 
     @OneToOne(mappedBy = "user")
-    @JsonIgnore
     private DoctorProfile doctorProfile;
 
     @OneToMany(mappedBy = "sendTo")
-    @JsonIgnore
     private List<Reminder> reminders;
 
 
     @OneToMany(mappedBy = "patient")
-    @JsonIgnore
     private List<RequestAppointment> requestAppointments;
 
     @OneToMany(mappedBy = "author")
-    @JsonIgnore
     private List<Blog> blogs;
 
     @OneToMany(mappedBy = "user")
-    @JsonIgnore
     private List<Feedback> feedbacks;
 
     @OneToMany(mappedBy = "patient")
@@ -78,11 +76,9 @@ public class User {
     private List<Schedule> doctorSchedules;
 
     @OneToMany(mappedBy = "patient")
-    @JsonIgnore
     private List<Treatment> treatments;
 
     @OneToMany(mappedBy = "doctor")
-    @JsonIgnore
     private List<RequestAppointment> doctorRequestAppointments;
 
     @OneToMany(mappedBy = "patient")
@@ -94,5 +90,12 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Refund> refunds;
 
-    
+    @OneToMany(mappedBy = "user")
+    private List<FogetPassToken> forgetPassTokens;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

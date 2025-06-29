@@ -37,6 +37,6 @@ public class PatientDrug {
     private Integer amount;
 
     @ManyToOne
-    @JoinColumn(name = "treatment_phase_id")
-    private TreatmentPhase treatmentPhase;
+    @JoinColumn(name = "assign_drug_id")
+    private AssignDrug assignDrug;
 }

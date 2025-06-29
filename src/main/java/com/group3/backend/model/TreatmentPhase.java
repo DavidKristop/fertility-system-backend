@@ -25,28 +25,30 @@ public class TreatmentPhase {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "total_amount", precision = 10, scale = 2)
-    private BigDecimal totalAmount;
-
     @Column(name = "is_complete", nullable = false)
     private boolean isComplete;
 
     @Column(name = "position", nullable = false)
     private int position;
 
+    @Column(name = "phase_modifier_percentage", nullable = false)
+    private BigDecimal phaseModifierPercentage;
+
+    @Column(name = "refund_percentage", nullable = false)
+    private BigDecimal refundPercentage;
+
+    @OneToOne(mappedBy = "currentPhase")
+    private Treatment currentTreatment;
+
     @ManyToOne
     @JoinColumn(name = "treatment_id", nullable = false)
     private Treatment treatment;
 
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
-    private List<PatientDrug> patientDrugs = new ArrayList<>();
+    @Builder.Default
+    private List<AssignDrug> assignDrugs = new ArrayList<>();
 
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Schedule> schedules = new ArrayList<>();
-
-    @OneToMany(mappedBy = "treatmentPhase")
-    private List<Payment> payments;
-
-    @OneToMany(mappedBy = "treatmentPhase")
-    private List<Refund> refunds;
 }

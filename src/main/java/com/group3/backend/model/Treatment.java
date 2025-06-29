@@ -2,9 +2,15 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.security.Timestamp;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 
 @Entity
@@ -25,22 +31,21 @@ public class Treatment {
     @Column(name = "end_date")
     private Date endDate;
 
-    @Column(name = "diagnosis")
-    private String diagnosis;
+    @Column(name = "description")
+    private String description;
 
     @Column(name = "payment_mode", length = 20)
-    private String paymentMode;
+    @Enumerated(EnumType.STRING)
+    private PaymentMode paymentMode;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
+    
 
-
-
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "current_phase_id")
     private TreatmentPhase currentPhase;
-
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -57,12 +62,23 @@ public class Treatment {
     @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL)
     private List<TreatmentPhase> phases;
 
+
     @OneToOne(mappedBy = "treatment")
     private Contract contract;
 
     @OneToMany(mappedBy = "treatment")
     private List<Feedback> feedbacks;
 
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    public enum PaymentMode {
+        FULL,
+        BY_PHASE
+    }
 
     public enum Status {
         IN_PROGRESS,

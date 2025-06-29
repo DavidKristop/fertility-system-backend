@@ -2,10 +2,11 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "contract")
@@ -23,13 +24,18 @@ public class Contract {
     private Boolean isSigned;
 
     @Column(name = "sign_deadline")
-    private Timestamp signDeadline;
+    private LocalDateTime signDeadline;
 
     @ManyToOne
     @JoinColumn(name = "treatment_id")
-    @JsonIgnore
     private Treatment treatment;
 
     @Column(name = "contract_url")
     private String contractUrl;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }
