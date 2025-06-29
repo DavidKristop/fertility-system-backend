@@ -76,29 +76,30 @@ public class RequestAppointmentService {
         return requestAppointmentRepository.findByPatientId(patientId); 
     }
 
-    public Page<RequestAppointment> getDoctorsAppointments(UUID doctorId, String patientEmail, List<RequestAppointment.Status> statuses, Pageable pageable) {
-        LocalDateTime deadline = LocalDateTime.now().minusHours(24);
-        return requestAppointmentRepository.findByDoctorIdAndPatientEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeBefore(doctorId, patientEmail, statuses, deadline, pageable);
+    public Page<RequestAppointment> getDoctorsAppointments(UUID doctorId, String patientEmail, List<RequestAppointment.Status> statuses, LocalDateTime deadline, Pageable pageable) {
+        return requestAppointmentRepository.findByDoctorIdAndPatientEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeAfter(doctorId, patientEmail, statuses, deadline, pageable);
     }
 
-    public Page<RequestAppointment> getPatientsAppointments(UUID patientId, String doctorEmail, List<RequestAppointment.Status> statuses, Pageable pageable) {
-        LocalDateTime deadline = LocalDateTime.now().minusHours(24);
-        return requestAppointmentRepository.findByPatientIdAndDoctorEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeBefore(patientId, doctorEmail, statuses, deadline, pageable);
+    public Page<RequestAppointment> getPatientsAppointments(UUID patientId, String doctorEmail, List<RequestAppointment.Status> statuses, LocalDateTime deadline, Pageable pageable) {
+        return requestAppointmentRepository.findByPatientIdAndDoctorEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeAfter(patientId, doctorEmail, statuses, deadline, pageable);
     }
 
     @Transactional
     public RequestAppointment acceptAppointment(UUID appointmentId, UUID doctorId) {
         RequestAppointment appointment = requestAppointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+        
+        if(appointment.getAppointmentDatetime().isBefore(LocalDateTime.now().plusHours(24))) {
+            throw new ResourceConflictException("Appointment is must be accepted 24 hours before.");
+        }
+        
         if(!appointment.getDoctor().getId().equals(doctorId)) {
             throw new UnauthorizedAccessException("Doctor is not authorized to accept this appointment");
         }
             
-        // Kiểm tra trạng thái cuộc hẹn (phải là Pending mới có thể chấp nhận)
         if (!appointment.getStatus().equals(RequestAppointment.Status.PENDING)) {
             throw new IllegalStateException("Appointment is already accepted or cancelled");
         }
-
         // Check for schedule overlap
         LocalDateTime appointmentStart = appointment.getAppointmentDatetime();
         LocalDateTime appointmentEnd = appointmentStart.plusMinutes(45);
@@ -127,6 +128,23 @@ public class RequestAppointmentService {
 
         // Cập nhật trạng thái của cuộc hẹn
         appointment.setStatus(RequestAppointment.Status.ACCEPTED);
+
+        return requestAppointmentRepository.save(appointment);
+    }
+
+    public RequestAppointment cancelAppointment(UUID appointmentId, UUID doctorId) {
+        RequestAppointment appointment = requestAppointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+        
+        if(!appointment.getDoctor().getId().equals(doctorId)) {
+            throw new UnauthorizedAccessException("Doctor is not authorized to cancel this appointment");
+        }
+            
+        if (!appointment.getStatus().equals(RequestAppointment.Status.PENDING)) {
+            throw new IllegalStateException("Appointment is already accepted or cancelled");
+        }
+
+        appointment.setStatus(RequestAppointment.Status.DENIED);
 
         return requestAppointmentRepository.save(appointment);
     }

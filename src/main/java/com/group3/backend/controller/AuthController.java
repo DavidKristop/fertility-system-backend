@@ -64,8 +64,10 @@ public class AuthController {
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(authResponse, "User registered successfully"));
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(null, "Registration Error: " + e.getMessage(), false));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(null, "An unexpected error occurred during user registration: " + e.getMessage(), false));
         }
     }
