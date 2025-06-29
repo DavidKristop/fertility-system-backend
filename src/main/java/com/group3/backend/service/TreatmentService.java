@@ -10,6 +10,7 @@ import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.TreatmentProtocol;
+import com.group3.backend.model.TreatmentProtocolPhase;
 import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.PatientDrug;
 import com.group3.backend.model.Schedule;
@@ -158,20 +159,23 @@ public class TreatmentService {
                     Schedule schedule = new Schedule();
                     schedule.setDoctor(doctor);
                     schedule.setPatient(patient);
-                    schedule.setAppointmentDateTime(scheduleRequest.getAppointmentDateTime());
-                    schedule.setEstimatedTime(scheduleRequest.getEstimatedTime());
+                    schedule.setAppointmentDateTime(scheduleRequest.getAppointmentDateTime().toLocalDateTime());
+                    schedule.setEstimatedTime(scheduleRequest.getEstimatedTime().toLocalDateTime());
                     schedule.setStatus(Schedule.Status.PENDING);
                     schedule.setTreatmentPhase(phase);
 
-                    if(schedule.getEstimatedTime().getTime() <= schedule.getAppointmentDateTime().getTime()){
+                    if(schedule.getEstimatedTime().isBefore(schedule.getAppointmentDateTime())){
                         throw new ResourceConflictException("Estimated time must be greater than appointment time");
                     }
 
-                    if(schedule.getEstimatedTime().getTime() - schedule.getAppointmentDateTime().getTime() > 8 * 60 * 60 * 1000){
+                    if(schedule.getEstimatedTime().isAfter(schedule.getAppointmentDateTime().plusHours(8))){
                         throw new ResourceConflictException("Estimated time must be at most 8 hours after appointment time");
                     }
 
-                    if(checkOverlappingSchedule(doctor.getId(),scheduleRequest.getAppointmentDateTime(),scheduleRequest.getEstimatedTime())){
+                    if(!scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(
+                        doctor.getId(),
+                        scheduleRequest.getAppointmentDateTime().toLocalDateTime(),
+                        scheduleRequest.getEstimatedTime().toLocalDateTime()).isEmpty()){
                         throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
                     }
                     for (TreatmentServiceRequest serviceRequest : scheduleRequest.getServices()){
@@ -180,10 +184,9 @@ public class TreatmentService {
                             .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
                         scheduleService.setService(service);
                         scheduleService.setSchedule(schedule);
-                        scheduleService.setAmount(serviceRequest.getAmount());
                         scheduleService.setNotes(serviceRequest.getNotes());
                         schedule.getScheduleServices().add(scheduleService);
-                        totalAmount = totalAmount.add(service.getPrice().multiply(BigDecimal.valueOf(serviceRequest.getAmount())));
+                        totalAmount = totalAmount.add(service.getPrice());
                     }
 
                     phase.getSchedules().add(schedule);
@@ -191,31 +194,30 @@ public class TreatmentService {
             }
 
             // Create drug patients
-            if (phaseRequest.getDrugs() != null) {
-                for (TreatmentDrugRequest drugRequest : phaseRequest.getDrugs()) {
-                    PatientDrug patientDrug = new PatientDrug();
-                    Drug drug = drugRepository.findById(drugRequest.getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));
+            // if (phaseRequest.getDrugs() != null) {
+            //     for (TreatmentDrugRequest drugRequest : phaseRequest.getDrugs()) {
+            //         PatientDrug patientDrug = new PatientDrug();
+            //         Drug drug = drugRepository.findById(drugRequest.getId())
+            //             .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));
                     
-                    if(drugRequest.getStartDate().getTime() > drugRequest.getEndDate().getTime()){
-                        throw new ResourceConflictException("Start date must be before end date");
-                    }
+            //         if(drugRequest.getStartDate().getTime() > drugRequest.getEndDate().getTime()){
+            //             throw new ResourceConflictException("Start date must be before end date");
+            //         }
 
-                    patientDrug.setDrug(drug);
-                    patientDrug.setDosage(drugRequest.getDosage());
-                    patientDrug.setUsageInstructions(drugRequest.getUsageInstructions());
-                    patientDrug.setStartDate(drugRequest.getStartDate());
-                    patientDrug.setEndDate(drugRequest.getEndDate());
-                    patientDrug.setTreatmentPhase(phase);
-                    phase.getPatientDrugs().add(patientDrug);
-                    totalAmount = totalAmount.add(drug.getPrice().multiply(BigDecimal.valueOf(drugRequest.getAmount())));
-                }
-        }
+            //         patientDrug.setDrug(drug);
+            //         patientDrug.setDosage(drugRequest.getDosage());
+            //         patientDrug.setUsageInstructions(drugRequest.getUsageInstructions());
+            //         patientDrug.setStartDate(drugRequest.getStartDate());
+            //         patientDrug.setEndDate(drugRequest.getEndDate());
+            //         patientDrug.setTreatmentPhase(phase);
+            //         phase.getPatientDrugs().add(patientDrug);
+            //         totalAmount = totalAmount.add(drug.getPrice().multiply(BigDecimal.valueOf(drugRequest.getAmount())));
+            //     }
+            // }
             double phaseMultiplier = 1;
             if(treatment.getPaymentMode().equals(Treatment.PaymentMode.FULL)){
                 phaseMultiplier = 1.2;
             }
-            phase.setTotalAmount(totalAmount.multiply(BigDecimal.valueOf(phaseMultiplier)));
             phases.add(phase);
         }
 
@@ -225,14 +227,45 @@ public class TreatmentService {
         return treatment;
     }
 
-    
+    public static BigDecimal calculatePhaseEstimatePrice(TreatmentPhase phase){
+        BigDecimal phasePrice = BigDecimal.ZERO;
 
-    private boolean checkOverlappingSchedule(UUID doctorId,Timestamp appointmentDateTime, Timestamp estimatedTime){
-        List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(
-            doctorId,
-            appointmentDateTime,
-            estimatedTime
-        );
-        return !overlappingSchedules.isEmpty();
+        phasePrice.add(phase.getSchedules().stream()
+                .map(schedule -> {
+                    return schedule.getScheduleServices().stream()
+                    .map(scheduleService -> scheduleService.getService().getPrice())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
+
+        phasePrice.add(phase.getAssignDrugs().stream()
+                .map(assignDrug->{
+                    return assignDrug.getPatientDrugs().stream()
+                    .map(patientDrug->patientDrug.getDrug().getPrice()
+                    .multiply(BigDecimal.valueOf(patientDrug.getAmount())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
+
+        // Apply phase modifier percentage
+        if (phase.getPhaseModifierPercentage() != null) {
+            phasePrice = phasePrice.multiply(phase.getPhaseModifierPercentage());
+        }
+
+        return phasePrice;
     }
+
+    public static BigDecimal calculateEstimatedPrice(Treatment treatment) {
+        if (treatment.getPhases() == null || treatment.getPhases().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (TreatmentPhase phase : treatment.getPhases()) {
+            total = total.add(calculatePhaseEstimatePrice(phase));
+        }
+
+        return total;
+    }
+
 }

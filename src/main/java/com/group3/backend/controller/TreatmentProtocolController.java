@@ -2,16 +2,14 @@ package com.group3.backend.controller;
 
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.TreatmentProtocolCreateRequest;
-import com.group3.backend.dto.response.TreatmentProtocolResponse;
+import com.group3.backend.dto.response.TreatmentProtocolReponse.TreatmentProtocolResponse;
 import com.group3.backend.exception.ValidationException;
 import com.group3.backend.mapper.ProtocolMapper;
 import com.group3.backend.model.TreatmentProtocol;
 import com.group3.backend.service.TreatmentProtocolServiceService;
 
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

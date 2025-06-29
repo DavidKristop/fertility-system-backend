@@ -25,12 +25,6 @@ public class TreatmentPhase {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "refund_amount", precision = 10, scale = 2)
-    private BigDecimal refundAmount;
-
-    @Column(name = "total_amount", precision = 10, scale = 2)
-    private BigDecimal totalAmount;
-
     @Column(name = "is_complete", nullable = false)
     private boolean isComplete;
 
@@ -51,8 +45,10 @@ public class TreatmentPhase {
     private Treatment treatment;
 
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
-    private List<PatientDrug> patientDrugs = new ArrayList<>();
+    @Builder.Default
+    private List<AssignDrug> assignDrugs = new ArrayList<>();
 
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Schedule> schedules = new ArrayList<>();
 }
