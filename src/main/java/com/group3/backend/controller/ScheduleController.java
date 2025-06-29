@@ -2,6 +2,7 @@ package com.group3.backend.controller;
 
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.PaymentRequest;
+import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleCreateRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
 import com.group3.backend.dto.response.Schedule.DoctorScheduleReponse;
@@ -195,6 +196,31 @@ public class ScheduleController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(new Response<>(responses, "Today's patient schedules retrieved successfully"));
+    }
+
+    @PutMapping("/done/{id}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<DoctorScheduleReponse>> markScheduleAsDone(@PathVariable UUID id) {
+        UUID doctorId = currentUserUtils.getCurrentUser().getId();
+        Schedule updated = scheduleService.markScheduleAsDone(id, doctorId);
+        return ResponseEntity.ok(new Response<>(
+            scheduleMapper.toDoctorScheduleRespone(updated),
+            "Schedule marked as DONE successfully"
+        ));
+    }
+
+    @PutMapping("/change/{id}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<DoctorScheduleReponse>> changeSchedule(
+            @PathVariable UUID id,
+            @RequestBody ScheduleChangeRequest request) {
+
+        UUID doctorId = currentUserUtils.getCurrentUser().getId();
+        Schedule updated = scheduleService.changeScheduleTime(id, doctorId, request);
+        return ResponseEntity.ok(new Response<>(
+            scheduleMapper.toDoctorScheduleRespone(updated),
+            "Schedule updated successfully"
+        ));
     }
 
 }

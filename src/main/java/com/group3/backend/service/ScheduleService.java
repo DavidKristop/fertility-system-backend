@@ -1,5 +1,6 @@
 package com.group3.backend.service;
 
+import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleCreateRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
@@ -12,6 +13,7 @@ import com.group3.backend.model.Service;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.User;
+import com.group3.backend.model.Payment;
 import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.ServiceRepository;
 import com.group3.backend.repository.TreatmentPhaseRepository;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
@@ -169,13 +172,33 @@ public class ScheduleService {
         return schedules;
     }
 
-    private boolean checkOverlappingSchedule(UUID doctorId,Timestamp appointmentDateTime, Timestamp estimatedTime){
+    private boolean checkOverlappingSchedule(UUID doctorId, Timestamp appointmentDateTime, Timestamp estimatedTime) {
         List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(
             doctorId,
             appointmentDateTime,
             estimatedTime
         );
         return !overlappingSchedules.isEmpty();
+    }
+
+    // Overloaded method to exclude a specific scheduleId (for updates)
+    private boolean checkOverlappingSchedule(UUID doctorId, Timestamp newStart, Timestamp newEnd, UUID excludeScheduleId) {
+        List<Schedule> schedules = scheduleRepository.findByDoctorId(doctorId);
+
+    for (Schedule existing : schedules) {
+        if (existing.getId().equals(excludeScheduleId)) continue;
+        if (existing.getStatus() == Schedule.Status.CANCELLED) continue;
+
+        Timestamp existStart = existing.getAppointmentDateTime();
+        Timestamp existEnd = existing.getEstimatedTime();
+
+        // Check overlap logic
+        if (newStart.before(existEnd) && newEnd.after(existStart)) {
+            return true;
+        }
+    }
+
+    return false;
     }
 
     public List<Schedule> getTodayScheduleForDoctor(UUID doctorId) {
@@ -191,4 +214,72 @@ public class ScheduleService {
         Timestamp end = Timestamp.valueOf(today.atTime(18, 0));
         return scheduleRepository.findByPatientIdAndAppointmentDateTimeBetween(patientId, start, end);
     }
+
+    public Schedule markScheduleAsDone(UUID scheduleId, UUID doctorId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+            .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+        
+        if(!schedule.getDoctor().getId().equals(doctorId)) {
+            throw new UnauthorizedAccessException("You are not authorized to mark this schedule as done");
+        }
+
+        if(schedule.getStatus() != Schedule.Status.PENDING) {
+            throw new ResourceConflictException("Schedule is not in pending status");
+        }
+
+        if(schedule.getPayment() == null || schedule.getPayment().getStatus() != Payment.Status.COMPLETED) {
+            throw new ResourceConflictException("Schedule payment is not completed");
+        }
+
+        schedule.setStatus(Schedule.Status.DONE);
+        return scheduleRepository.save(schedule);
+    }
+
+    public Schedule changeScheduleTime(UUID scheduleId, UUID doctorId, ScheduleChangeRequest request) {
+    Schedule schedule = scheduleRepository.findById(scheduleId)
+        .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+
+    if (!schedule.getDoctor().getId().equals(doctorId)) {
+        throw new UnauthorizedAccessException("You are not allowed to modify this schedule");
+    }
+
+    if (schedule.getStatus() != Schedule.Status.PENDING) {
+        throw new ResourceConflictException("Only PENDING schedules can be changed");
+    }
+
+    if (schedule.getPayment().getStatus() == Payment.Status.CANCELED) {
+        throw new ResourceConflictException("Cannot modify schedule with cancelled payment");
+    }
+
+    // Check thời gian hợp lệ
+    Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+    Treatment treatment = schedule.getTreatmentPhase().getTreatment();
+    if (request.getAppointmentDateTime().before(now) ||
+        request.getAppointmentDateTime().after(Timestamp.valueOf(treatment.getEndDate().toInstant().atZone(timeZoneConfig.defaultZoneId()).toLocalDate().atStartOfDay()))) {
+        throw new ResourceConflictException("Appointment time must be within treatment period");
+    }
+
+    // EstimatedTime phải sau appointmentTime
+    if (!request.getEstimatedTime().after(request.getAppointmentDateTime())) {
+        throw new ResourceConflictException("Estimated time must be after appointment time");
+    }
+
+    // Thời gian khám <= 8 giờ
+    long duration = request.getEstimatedTime().getTime() - request.getAppointmentDateTime().getTime();
+    if (duration > 8 * 60 * 60 * 1000) {
+        throw new ResourceConflictException("Estimated time must not exceed 8 hours");
+    }
+
+    // Kiểm tra trùng lịch
+    if (checkOverlappingSchedule(doctorId, request.getAppointmentDateTime(), request.getEstimatedTime(), scheduleId)) {
+        throw new ResourceConflictException("This schedule conflicts with another");
+    }
+
+    // Cập nhật lịch
+    schedule.setAppointmentDateTime(request.getAppointmentDateTime());
+    schedule.setEstimatedTime(request.getEstimatedTime());
+
+    return scheduleRepository.save(schedule);
+}
+
 }
