@@ -5,6 +5,8 @@ import com.group3.backend.repository.RequestAppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.sql.Timestamp;
@@ -19,9 +21,9 @@ public class AppointmentScheduler {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime deadline = now.plus(1, ChronoUnit.DAYS);
 
-        requestAppointmentRepository.findByStatusAndAppointmentDatetimeLessThan(
+        requestAppointmentRepository.findByStatusAndAppointmentDatetimeBefore(
                 RequestAppointment.Status.PENDING,
-                Timestamp.from(deadline.toInstant())
+                LocalDateTime.of(deadline.toLocalDate(), deadline.toLocalTime())
         ).forEach(appointment -> {
             appointment.setStatus(RequestAppointment.Status.DENIED);
             requestAppointmentRepository.save(appointment);

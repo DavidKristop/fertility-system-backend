@@ -32,14 +32,14 @@ public class Schedule {
     private User patient;
 
     @ManyToOne
-    @JoinColumn(name = "treatment_phase_id", nullable = false)
+    @JoinColumn(name = "treatment_phase_id")
     private TreatmentPhase treatmentPhase;
 
     @Column(name = "appointment_datetime", nullable = false)
-    private Timestamp appointmentDateTime;
+    private LocalDateTime appointmentDateTime;
 
     @Column(name = "estimated_time")
-    private Timestamp estimatedTime;
+    private LocalDateTime estimatedTime;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

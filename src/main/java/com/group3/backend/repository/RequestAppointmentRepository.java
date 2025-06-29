@@ -1,23 +1,45 @@
 package com.group3.backend.repository;
 
 import com.group3.backend.model.RequestAppointment;
+import com.group3.backend.model.Schedule;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public interface RequestAppointmentRepository extends JpaRepository<RequestAppointment, UUID> {
     List<RequestAppointment> findByDoctorId(UUID doctorId);
+
     List<RequestAppointment> findByPatientId(UUID patientId);
 
-    @Query("SELECT ra FROM RequestAppointment ra " +
-            "WHERE ra.status = :status AND " +
-            "ra.appointmentDatetime < :deadline")
-    List<RequestAppointment> findByStatusAndAppointmentDatetimeLessThan(
-            @Param("status") RequestAppointment.Status status,
-            @Param("deadline") Timestamp deadline);
 
-    boolean existsByDoctorIdAndAppointmentDatetime(UUID doctorId, Timestamp appointmentDatetime);
+    List<RequestAppointment> findByStatusAndAppointmentDatetimeBefore(
+            RequestAppointment.Status status,
+            LocalDateTime deadline);
+
+
+    boolean existsByDoctorIdAndAppointmentDatetime(UUID doctorId, LocalDateTime appointmentDatetime);
+
+    boolean existsByPatientIdAndStatusIn(UUID patientId, List<RequestAppointment.Status> statuses);
+
+    boolean existsByPatientIdAndScheduleStatusIn(UUID patientId, List<Schedule.Status> statuses);
+
+    Page<RequestAppointment> findByDoctorIdAndPatientEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeBefore(
+            UUID doctorId,
+            String patientEmail,
+            List<RequestAppointment.Status> statuses,
+            LocalDateTime deadline,
+            Pageable pageable);
+
+    Page<RequestAppointment> findByPatientIdAndDoctorEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeBefore(
+            UUID patientId,
+            String doctorEmail,
+            List<RequestAppointment.Status> statuses,
+            LocalDateTime deadline,
+            Pageable pageable);
+    
+    
 }

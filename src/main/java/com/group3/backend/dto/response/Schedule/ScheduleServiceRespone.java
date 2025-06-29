@@ -1,15 +1,17 @@
-package com.group3.backend.dto.response.Treatment;
+
+package com.group3.backend.dto.response.Schedule;
+
+import java.math.BigDecimal;
+import java.util.UUID;
 
 import lombok.Data;
-import java.util.UUID;
-import java.math.BigDecimal;
 
 @Data
-public class TreatmentServiceResponse {
+public class ScheduleServiceRespone {
     private UUID id;
     private String name;
     private String description;
     private BigDecimal price;
     private boolean isActive;
-    private String unit;
+    private String notes;
 }

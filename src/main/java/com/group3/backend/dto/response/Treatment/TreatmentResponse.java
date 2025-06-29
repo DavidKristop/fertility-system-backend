@@ -2,10 +2,13 @@ package com.group3.backend.dto.response.Treatment;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+
+import com.group3.backend.dto.response.UserDoctorResponse;
+import com.group3.backend.dto.response.UserPatientResponse;
+import com.group3.backend.dto.response.TreatmentProtocolReponse.TreatmentProtocolResponse;
 
 @Data
 public class TreatmentResponse {
@@ -14,8 +17,8 @@ public class TreatmentResponse {
     private LocalDate endDate;
     private String description;
     private String status;
-    private UUID userId;
-    private UUID doctorId;
-    private UUID protocolId;
+    private UserPatientResponse patient;
+    private UserDoctorResponse doctor;
+    private TreatmentProtocolResponse protocol;
     private List<TreatmentPhaseResponse> phases;
 }

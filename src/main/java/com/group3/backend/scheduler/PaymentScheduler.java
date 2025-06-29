@@ -24,13 +24,11 @@ public class PaymentScheduler {
     private ScheduleRepository scheduleRepository;
     @Scheduled(cron = "0 0 * * * ?") // Runs every hour
     public void checkUnpaidPayments() {
-        // Get current time
-        LocalDateTime now = LocalDateTime.now();
         
         // Find all pending payments that have passed their deadline
         List<Payment> unpaidPayments = paymentRepository.findByStatusAndPaymentDeadlineLessThan(
             Payment.Status.PENDING,
-            Timestamp.from(now.toInstant(ZoneOffset.UTC))
+            LocalDateTime.now()
         );
 
         // For each unpaid payment, cancel the schedules

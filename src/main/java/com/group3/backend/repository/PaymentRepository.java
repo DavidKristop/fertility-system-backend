@@ -4,7 +4,7 @@ import com.group3.backend.model.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,5 +14,5 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
             "p.paymentDeadline < :deadline")
     List<Payment> findByStatusAndPaymentDeadlineLessThan(
             @Param("status") Payment.Status status,
-            @Param("deadline") Timestamp deadline);
+            @Param("deadline") LocalDateTime deadline);
 }
