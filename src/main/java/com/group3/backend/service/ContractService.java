@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.group3.backend.constants.TreatmentStatus;
 import com.group3.backend.dto.request.ContractRequest;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.exception.ResourceNotFoundException;

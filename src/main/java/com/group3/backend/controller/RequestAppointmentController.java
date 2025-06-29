@@ -7,6 +7,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
 import jakarta.validation.Valid;
@@ -23,6 +28,8 @@ import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
+import com.group3.backend.dto.request.ScheduleCreateRequest;
+import com.group3.backend.dto.request.ScheduleServiceCreateRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentPhaseRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
@@ -30,11 +37,13 @@ import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
 import com.group3.backend.dto.response.RequestAppointment.RequestAppointmentResponse;
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.model.RequestAppointment;
+import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.User;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.RequestAppointmentService;
+import com.group3.backend.service.ScheduleService;
 import com.group3.backend.service.TreatmentService;
 import com.group3.backend.utils.CurrentUserUtils;
 
@@ -56,6 +65,9 @@ public class RequestAppointmentController {
     private PaymentService paymentService;
 
     @Autowired
+    private ScheduleService scheduleService;
+
+    @Autowired
     @Qualifier("appointmentRequestMapper")
     private AppointmentRequestMapper requestAppointmentMapper;
 
@@ -72,25 +84,45 @@ public class RequestAppointmentController {
             "Request appointment created successfully"));
     }
 
-    @GetMapping("/doctor")
+    @GetMapping("/request-to-me")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<List<RequestAppointmentResponse>>> getAppointmentsByDoctor() {
+    public ResponseEntity<Response<Page<RequestAppointmentResponse>>> getDoctorAppointmentRequest(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String patientEmail,
+        @RequestParam(defaultValue = "PENDING") RequestAppointment.Status status
+    ) {
         User user = currentUserUtils.getCurrentUser();
-        List<RequestAppointment> appointments = service.getAppointmentsByDoctorId(user.getId());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<RequestAppointment> appointments = service.getDoctorsAppointments(
+            user.getId(),
+            patientEmail,
+            List.of(status),
+            pageable);
 
         return ResponseEntity.ok(new Response<>(
-        appointments.stream().map(requestAppointmentMapper::toResponse).collect(Collectors.toList()),
+        appointments.map(requestAppointmentMapper::toResponse),
          "Appointments retrieved successfully"));
     }
 
     @GetMapping("/patient")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
-    public ResponseEntity<Response<List<RequestAppointmentResponse>>> getAppointmentsByPatient() {
+    public ResponseEntity<Response<Page<RequestAppointmentResponse>>> getAppointmentsByPatient(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String doctorEmail,
+        @RequestParam(defaultValue = "PENDING") RequestAppointment.Status status
+    ) {
         User user = currentUserUtils.getCurrentUser();
-        List<RequestAppointment> appointments = service.getAppointmentsByPatientId(user.getId());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<RequestAppointment> appointments = service.getPatientsAppointments(
+            user.getId(),
+            doctorEmail,
+            List.of(status),
+            pageable);
 
         return ResponseEntity.ok(new Response<>(
-        appointments.stream().map(requestAppointmentMapper::toResponse).collect(Collectors.toList()),
+        appointments.map(requestAppointmentMapper::toResponse),
          "Appointments retrieved successfully"));
     }
     
@@ -101,33 +133,25 @@ public class RequestAppointmentController {
     public ResponseEntity<Response<RequestAppointmentResponse>> acceptAppointment(@PathVariable UUID appointmentId) {
         RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId, currentUserUtils.getCurrentUser().getId());
         
-        // Create treatment based on consultation protocol
-        TreatmentCreateRequest treatmentRequest = TreatmentCreateRequest.builder()
-            .paymentMode(Treatment.PaymentMode.FULL)
-            .description("Consultation")
-            .userId(acceptedAppointment.getPatient().getId())
-            .doctorId(acceptedAppointment.getDoctor().getId())
-            .protocolId(UUID.fromString(environmentConfig.getConsultationProtocolId()))
-            .phases(List.of(TreatmentPhaseRequest.builder()
-                .title("Consultation Phase")
-                .description("Initial consultation phase")
-                .schedules(List.of(TreatmentScheduleRequest.builder()
-                    .appointmentDateTime(acceptedAppointment.getAppointmentDatetime())
-                    .estimatedTime(new Timestamp(acceptedAppointment.getAppointmentDatetime().getTime() + 45 * 60 * 1000))
-                    .services(List.of(TreatmentServiceRequest.builder()
-                        .id(UUID.fromString(environmentConfig.getConsultationServiceId()))
-                        .amount(1)
-                        .build(),
-                        TreatmentServiceRequest.builder()
-                        .id(UUID.fromString(environmentConfig.getUltrasoundServiceId()))
-                        .amount(1)
-                        .build()))
-                    .build()))
-                .build()))
-            .build();
-
-        // Create treatment
-        Treatment createdTreatment = treatmentService.createTreatment(treatmentRequest,Treatment.Status.IN_PROGRESS);
+        // Create the schedule based on consultation protocol
+        Schedule schedule = scheduleService.createSchedule(
+            ScheduleCreateRequest.builder()
+                .patientId(acceptedAppointment.getPatient().getId())
+                .doctorId(acceptedAppointment.getDoctor().getId())
+                .appointmentDateTime(acceptedAppointment.getAppointmentDatetime())
+                .estimatedTime(acceptedAppointment.getAppointmentDatetime().plusMinutes(45))
+                .services(List.of(
+                    ScheduleServiceCreateRequest.builder()
+                    .serviceId(UUID.fromString(environmentConfig.getConsultationServiceId()))
+                    .notes("Consultation")
+                    .build(),
+                    ScheduleServiceCreateRequest.builder()
+                    .serviceId(UUID.fromString(environmentConfig.getUltrasoundProtocolServiceId()))
+                    .notes("Ultrasound")
+                    .build()
+                ))
+                .build()
+            );
 
         // Create payment request
         PaymentRequest paymentRequest = PaymentRequest.builder()

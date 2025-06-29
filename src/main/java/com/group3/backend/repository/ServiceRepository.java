@@ -1,5 +1,6 @@
 package com.group3.backend.repository;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -13,5 +14,6 @@ import com.group3.backend.model.Service;
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, UUID> {
     Page<Service> findByNameIgnoreCaseContainingAndIsActive(@Param("name") String name, @Param("isActive") boolean isActive, Pageable pageable);
+    List<Service> findByIdIn(List<UUID> ids);
     boolean existsByName(String name);
 }

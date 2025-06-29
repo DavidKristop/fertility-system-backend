@@ -3,6 +3,7 @@ package com.group3.backend.dto.request.Schedule;
 import java.util.List;
 import java.util.UUID;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import com.group3.backend.constraints.MinDaysAhead;
 import com.group3.backend.constraints.WorkingHours;
@@ -18,10 +19,10 @@ public class ScheduleCreateRequest {
     private UUID phaseId;
     @MinDaysAhead
     @WorkingHours
-    private Timestamp appointmentDateTime;
+    private LocalDateTime appointmentDateTime;
     @MinDaysAhead
     @WorkingHours
-    private Timestamp estimatedTime;
+    private LocalDateTime estimatedTime;
     @Size(min = 1, max = 8, message = "Each schedule must have between 1 and 8 services")
     private List<TreatmentServiceRequest> services;
 }
