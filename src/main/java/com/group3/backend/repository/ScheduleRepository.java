@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
-    List<Schedule> findByTreatmentPhaseId(UUID phaseId);
+    List<Schedule> findByScheduleServicesTreatmentPhaseId(UUID phaseId);
     List<Schedule> findByPatientId(UUID patientId);
     List<Schedule> findByDoctorId(UUID doctorId);
 

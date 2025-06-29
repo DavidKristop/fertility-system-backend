@@ -42,7 +42,7 @@ public class ContractScheduler {
             
             // Cancel all schedules in all phases of this treatment
             for (TreatmentPhase phase : treatment.getPhases()) {
-                List<Schedule> schedules = scheduleRepository.findByTreatmentPhaseId(phase.getId());
+                List<Schedule> schedules = scheduleRepository.findByScheduleServicesTreatmentPhaseId(phase.getId());
                 for (Schedule schedule : schedules) {
                     schedule.setStatus(Schedule.Status.CANCELLED);
                     scheduleRepository.save(schedule);

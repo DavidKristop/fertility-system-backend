@@ -20,16 +20,15 @@ import com.group3.backend.model.Drug;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.TreatmentRepository;
 import com.group3.backend.repository.TreatmentProtocolRepository;
-import com.group3.backend.repository.ServiceRepository;
-import com.group3.backend.repository.DrugRepository;
 import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -40,10 +39,6 @@ import java.util.stream.Collectors;
 public class TreatmentService {
     @Autowired
     private TreatmentRepository treatmentRepository;
-    @Autowired
-    private ServiceRepository serviceRepository;
-    @Autowired
-    private DrugRepository drugRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -59,8 +54,25 @@ public class TreatmentService {
         return treatmentRepository.findByDoctorId(doctorId);
     }
 
+    public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> statuses, String email, Pageable pageable){
+        return treatmentRepository.findByDoctorIdAndStatusInAndPatientEmailContainingIgnoreCase(doctorId, statuses, email, pageable);
+    }
+
+    public Page<Treatment> getPatientTreatment(UUID patientId, List<Treatment.Status> statuses, String email, Pageable pageable){
+        return treatmentRepository.findByPatientIdAndStatusInAndDoctorEmailContainingIgnoreCase(patientId, statuses, email, pageable);
+    }
+
+    public Page<Treatment> getManagerTreatment(String patientEmail, String doctorEmail, List<Treatment.Status> statuses, Pageable pageable){
+        return treatmentRepository.findByPatientEmailContainingIgnoreCaseAndDoctorEmailContainingIgnoreCaseAndStatusIn(patientEmail, doctorEmail, statuses, pageable);
+    }
+
     public Treatment getTreatmentByIdAndPatientId(UUID id, UUID patientId){
         return treatmentRepository.findByIdAndPatientId(id, patientId)
+            .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
+    }
+
+    public Treatment getTreatmentById(UUID id){
+        return treatmentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
     }
 
@@ -80,7 +92,7 @@ public class TreatmentService {
         }
 
         // Check if all schedules in current phase are complete
-        List<Schedule> schedules = scheduleRepository.findByTreatmentPhaseId(currentPhase.getId());
+        List<Schedule> schedules = scheduleRepository.findByScheduleServicesTreatmentPhaseId(currentPhase.getId());
         boolean allSchedulesComplete = schedules.stream()
             .allMatch(s -> s.getStatus() == Schedule.Status.DONE);
 
@@ -121,7 +133,7 @@ public class TreatmentService {
     }
 
     @Transactional
-    public Treatment createTreatment(TreatmentCreateRequest request, Treatment.Status treatmentStatus) {
+    public Treatment createTreatment(TreatmentCreateRequest request, UUID doctorId) {
         // Create treatment
         Treatment treatment = new Treatment();
         TreatmentProtocol protocol = treatmentProtocolRepository.findById(request.getProtocolId())
@@ -134,12 +146,12 @@ public class TreatmentService {
         // Fetch user objects from repository
         User patient = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
-        User doctor = userRepository.findById(request.getDoctorId())
+        User doctor = userRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
 
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
-        treatment.setStatus(treatmentStatus);
+        treatment.setStatus(Treatment.Status.AWAITING_CONTRACT_SIGNED);
         List<TreatmentPhase> phases = new ArrayList<>();
 
         // Create treatment phases based on protocol phases

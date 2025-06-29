@@ -3,7 +3,9 @@ package com.group3.backend.controller;
 import com.group3.backend.dto.response.Treatment.TreatmentResponse;
 import com.group3.backend.mapper.TreatmentMapper;
 import com.group3.backend.dto.Response;
+import com.group3.backend.dto.request.ContractRequest;
 import com.group3.backend.dto.request.PaymentRequest;
+import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequestWithContract;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.service.ContractService;
@@ -17,6 +19,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -42,32 +48,57 @@ public class TreatmentController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<TreatmentResponse>> createTreatment(@RequestBody TreatmentCreateRequestWithContract request) {
-        Treatment treatment = treatmentService.createTreatment(request.getTreatmentCreateRequest(), request.getContractCreateRequest().isSigned()?Treatment.Status.COMPLETED:Treatment.Status.IN_PROGRESS);
+    public ResponseEntity<Response<TreatmentResponse>> createTreatment(@RequestBody TreatmentCreateRequest request) {
+        Treatment treatment = treatmentService.createTreatment(request, currentUserUtils.getCurrentUserId());
         TreatmentResponse response = treatmentMapper.toResponse(treatment);
 
-        contractService.createContract(request.getContractCreateRequest(), treatment);
-
+        contractService.createContract(ContractRequest.builder()
+            .contractUrl("")
+            .isSigned(false)
+            .build(), treatment);
         return ResponseEntity.ok(new Response<>(response, "Treatment created successfully"));
     }
     
     @GetMapping("/patient")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
-    public ResponseEntity<Response<List<TreatmentResponse>>> getAllTreatmentsByPatientId() {
-        List<Treatment> treatments = treatmentService.getAllTreatmentsByPatientId(currentUserUtils.getCurrentUserId());
-        List<TreatmentResponse> response = treatments.stream()
-            .map(treatmentMapper::toResponse)
-            .collect(Collectors.toList());
+    public ResponseEntity<Response<Page<TreatmentResponse>>> getAllTreatmentsByPatientId(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String email,
+        @RequestParam(defaultValue = "IN_PROGRESS") Treatment.Status status
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Treatment> treatments = treatmentService.getPatientTreatment(currentUserUtils.getCurrentUserId(), List.of(status), email, pageable);
+        Page<TreatmentResponse> response = treatments.map(treatmentMapper::toResponse);
         return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
     }
 
     @GetMapping("/doctor")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<List<TreatmentResponse>>> getAllTreatmentsByDoctorId() {
-        List<Treatment> treatments = treatmentService.getAllTreatmentsByDoctorId(currentUserUtils.getCurrentUserId());
-        List<TreatmentResponse> response = treatments.stream()
-            .map(treatmentMapper::toResponse)
-            .collect(Collectors.toList());
+    public ResponseEntity<Response<Page<TreatmentResponse>>> getAllTreatmentsByDoctorId(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String email,
+        @RequestParam(defaultValue = "IN_PROGRESS") Treatment.Status status
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Treatment> treatments = treatmentService.getDoctorTreatment(currentUserUtils.getCurrentUserId(), List.of(status), email, pageable);
+        Page<TreatmentResponse> response = treatments.map(treatmentMapper::toResponse);
+        return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
+    }
+
+    @GetMapping("/manager")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<Response<Page<TreatmentResponse>>> getAllTreatmentsByManagerId(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String patientEmail,
+        @RequestParam(defaultValue = "") String doctorEmail,
+        @RequestParam(defaultValue = "IN_PROGRESS") Treatment.Status status
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Treatment> treatments = treatmentService.getManagerTreatment(patientEmail, doctorEmail, List.of(status), pageable);
+        Page<TreatmentResponse> response = treatments.map(treatmentMapper::toResponse);
         return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
     }
 
@@ -87,8 +118,16 @@ public class TreatmentController {
         return ResponseEntity.ok(new Response<>(response, "Treatment retrieved successfully"));
     }
 
+    @GetMapping("/manager/{treatmentId}")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<Response<TreatmentResponse>> getTreatmentByIdAndManagerId(@PathVariable UUID treatmentId) {
+        Treatment treatment = treatmentService.getTreatmentById(treatmentId);
+        TreatmentResponse response = treatmentMapper.toResponse(treatment);
+        return ResponseEntity.ok(new Response<>(response, "Treatment retrieved successfully"));
+    }
+
     @PostMapping("/{treatmentId}/next-phase")
-    @PreAuthorize("hasAnyAuthority('ROLE_DOCTOR', 'ROLE_PATIENT')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<TreatmentResponse>> moveToNextPhase(@PathVariable UUID treatmentId) {
         Treatment treatment = treatmentService.moveToNextPhase(treatmentId);
         

@@ -35,7 +35,6 @@ public class ContractService {
                 .contractUrl(contractRequest.getContractUrl())
                 .build();
         
-        if(contractRequest.isSigned())createPaymentBasedOnPaymentMode(treatment);
         return contractRepository.save(contract);
     }
 

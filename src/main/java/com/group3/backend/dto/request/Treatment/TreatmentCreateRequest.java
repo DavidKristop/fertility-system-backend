@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.group3.backend.model.Treatment;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 
 @Data
@@ -18,10 +19,8 @@ public class TreatmentCreateRequest {
     private Treatment.PaymentMode paymentMode;
     @NotEmpty
     private String description;
-    @NotEmpty
+    @NotNull
     private UUID userId;
-    @NotEmpty
-    private UUID doctorId;
-    @NotEmpty
+    @NotNull
     private UUID protocolId;
 }
