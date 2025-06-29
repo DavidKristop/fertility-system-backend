@@ -1,6 +1,5 @@
-package com.group3.backend.dto.response;
+package com.group3.backend.dto.response.TreatmentProtocolReponse;
 
-import com.group3.backend.dto.response.TreatmentProtocolPhaseResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

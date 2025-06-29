@@ -9,6 +9,7 @@ import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.mapper.ContractMapper;
 import com.group3.backend.mapper.DrugMapper;
 import com.group3.backend.mapper.TreatmentMapper;
+import com.group3.backend.mapper.UserMapper;
 
 @Configuration
 public class MapperConfig {
@@ -35,5 +36,11 @@ public class MapperConfig {
     @Primary
     public TreatmentMapper treatmentMapper() {
         return Mappers.getMapper(TreatmentMapper.class);
+    }
+
+    @Bean
+    @Primary
+    public UserMapper userMapper() {
+        return Mappers.getMapper(UserMapper.class);
     }
 }

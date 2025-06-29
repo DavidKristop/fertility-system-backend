@@ -2,9 +2,9 @@ package com.group3.backend.controller;
 
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.PaymentRequest;
-import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
-import com.group3.backend.dto.request.Schedule.ScheduleCreateRequest;
+import com.group3.backend.dto.request.Schedule.AddScheduleToPhaseRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
+import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
 import com.group3.backend.dto.response.Schedule.DoctorScheduleReponse;
 import com.group3.backend.dto.response.Schedule.PatientScheduleResponse;
 import com.group3.backend.dto.response.Schedule.ScheduleResponse;
@@ -22,7 +22,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -153,17 +154,17 @@ public class ScheduleController {
 
     @PostMapping("/new-schedule")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<ScheduleResponse>> addSchedule(@RequestBody ScheduleCreateRequest request) {
+    public ResponseEntity<Response<ScheduleResponse>> addSchedule(@RequestBody AddScheduleToPhaseRequest request) {
         Schedule schedule = scheduleService.addScheduleToPhase(request, currentUserUtils.getCurrentUser().getId());
         
         BigDecimal totalAmount = schedule.getScheduleServices().stream()
-                .map(scheduleService -> scheduleService.getService().getPrice().multiply(new BigDecimal(scheduleService.getAmount())))
+                .map(scheduleService -> scheduleService.getService().getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         PaymentRequest paymentRequest = PaymentRequest.builder()
             .amount(totalAmount)
             .description("Payment for additional schedule")
-            .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
+            .paymentDeadline(LocalDateTime.now().plusDays(2))
             .userId(currentUserUtils.getCurrentUser().getId())
             .scheduleIds(List.of(schedule.getId()))
             .build();

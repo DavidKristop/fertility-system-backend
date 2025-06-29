@@ -3,11 +3,17 @@ package com.group3.backend.service;
 import java.util.List;
 import java.util.UUID;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 import org.springframework.transaction.annotation.Transactional;
 import com.group3.backend.model.Schedule;
+import com.group3.backend.model.Treatment;
 import com.group3.backend.repository.ScheduleRepository;
+import com.group3.backend.repository.TreatmentRepository;
 import com.group3.backend.repository.RequestAppointmentRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.group3.backend.model.RequestAppointment;
@@ -27,21 +33,34 @@ public class RequestAppointmentService {
     private final RequestAppointmentRepository requestAppointmentRepository;
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
+    private final TreatmentRepository treatmentRepository;
 
     public RequestAppointment createRequestAppointment(RequestAppointmentRequest dto, UUID patientId) {
+        
+        if(requestAppointmentRepository.existsByPatientIdAndStatusIn(patientId, List.of(RequestAppointment.Status.PENDING))) {
+            throw new ResourceConflictException("Patient already has a pending appointment");
+        }
+
+        if(requestAppointmentRepository.existsByPatientIdAndScheduleStatusIn(patientId, List.of(Schedule.Status.PENDING))) {
+            throw new ResourceConflictException("Patient already has a pending consultation schedule");
+        }
+
+        if(treatmentRepository.existsByPatientIdAndStatusIn(patientId, List.of(Treatment.Status.IN_PROGRESS, Treatment.Status.AWAITING_CONTRACT_SIGNED))) {
+            throw new ResourceConflictException("Patient already has an in-progress or awaiting contract signed treatment");
+        }
+
+        if(dto.getAppointmentDatetime().isBefore(LocalDateTime.now().plusHours(72))){
+            throw new ResourceConflictException("Appointment must be at least 72 hours in advance");
+        }
+
         User doctor = userRepository.findById(dto.getDoctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
         User patient = userRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
-
-        // if(scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(dto.getDoctorId(), dto.getAppointmentDatetime(), new Timestamp(dto.getAppointmentDatetime().getTime() + 45 * 60 * 1000)) != null) {
-        //     throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
-        // }
-        
+     
         RequestAppointment request = RequestAppointment.builder()
                 .doctor(doctor)
                 .patient(patient)
-                .reason(dto.getReason())
                 .appointmentDatetime(dto.getAppointmentDatetime())
                 .status(RequestAppointment.Status.PENDING) 
                 .build();
@@ -55,6 +74,16 @@ public class RequestAppointmentService {
 
     public List<RequestAppointment> getAppointmentsByPatientId(UUID patientId) {
         return requestAppointmentRepository.findByPatientId(patientId); 
+    }
+
+    public Page<RequestAppointment> getDoctorsAppointments(UUID doctorId, String patientEmail, List<RequestAppointment.Status> statuses, Pageable pageable) {
+        LocalDateTime deadline = LocalDateTime.now().minusHours(24);
+        return requestAppointmentRepository.findByDoctorIdAndPatientEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeBefore(doctorId, patientEmail, statuses, deadline, pageable);
+    }
+
+    public Page<RequestAppointment> getPatientsAppointments(UUID patientId, String doctorEmail, List<RequestAppointment.Status> statuses, Pageable pageable) {
+        LocalDateTime deadline = LocalDateTime.now().minusHours(24);
+        return requestAppointmentRepository.findByPatientIdAndDoctorEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeBefore(patientId, doctorEmail, statuses, deadline, pageable);
     }
 
     @Transactional
@@ -71,8 +100,8 @@ public class RequestAppointmentService {
         }
 
         // Check for schedule overlap
-        Timestamp appointmentStart = appointment.getAppointmentDatetime();
-        Timestamp appointmentEnd = new Timestamp(appointmentStart.getTime() + 45 * 60 * 1000);
+        LocalDateTime appointmentStart = appointment.getAppointmentDatetime();
+        LocalDateTime appointmentEnd = appointmentStart.plusMinutes(45);
 
         // Find overlapping schedules for the same doctor
         List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(

@@ -2,23 +2,22 @@ package com.group3.backend.constraints;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import jakarta.validation.ConstraintViolationException;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-public class WorkingHoursValidator implements ConstraintValidator<WorkingHours, Timestamp> {
+public class WorkingHoursValidator implements ConstraintValidator<WorkingHours, LocalDateTime> {
     private static final LocalTime START_TIME = LocalTime.of(8, 0);
     private static final LocalTime END_TIME = LocalTime.of(18, 0);
 
     @Override
-    public boolean isValid(Timestamp value, ConstraintValidatorContext context) {
+    public boolean isValid(LocalDateTime value, ConstraintValidatorContext context) {
         if (value == null) {
             return true; 
         }
 
-        DayOfWeek dayOfWeek = value.toLocalDateTime().getDayOfWeek();
-        LocalTime time = value.toLocalDateTime().toLocalTime();
+        DayOfWeek dayOfWeek = value.getDayOfWeek();
+        LocalTime time = value.toLocalTime();
 
         // Check if it's a weekday
         if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {

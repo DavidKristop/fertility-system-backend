@@ -4,16 +4,16 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Data
 public class ScheduleChangeRequest {
 
     @NotNull(message = "Appointment datetime is required")
     @Future(message = "Appointment datetime must be in the future")
-    private Timestamp appointmentDateTime;
+    private LocalDateTime appointmentDateTime;
 
     @NotNull(message = "Estimated time is required")
     @Future(message = "Estimated time must be in the future")
-    private Timestamp estimatedTime;
+    private LocalDateTime estimatedTime;
 }
