@@ -1,7 +1,9 @@
 package com.group3.backend.dto.request;
 
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +16,8 @@ import java.time.LocalDate;
 import com.group3.backend.constants.RegexPattern;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegistrationRequest {
     @NotBlank(message = "Username cannot be empty")
     private String username;
