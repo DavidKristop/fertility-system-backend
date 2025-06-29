@@ -11,5 +11,4 @@ public class TreatmentPatientDrugResponse{
     private String dosage;
     private String usageInstructions;
     private int amount;
-    private String unit;
 }

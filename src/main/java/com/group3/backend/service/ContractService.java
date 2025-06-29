@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.group3.backend.constants.TreatmentStatus;
 import com.group3.backend.dto.request.ContractRequest;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
@@ -69,28 +68,21 @@ public class ContractService {
 
     private void createPaymentBasedOnPaymentMode(Treatment treatment){
         PaymentRequest paymentRequest = PaymentRequest.builder()
-            .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
+            .paymentDeadline(LocalDateTime.now().plusDays(2))
             .userId(treatment.getPatient().getId())
             .build();
         if(treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)){
             List<UUID> treatmentPhaseIds = new ArrayList<>();
             TreatmentPhase firstPhase = treatment.getPhases().get(0);
             treatmentPhaseIds.add(firstPhase.getId());
-            paymentRequest.setTreatmentPhaseIds(treatmentPhaseIds);
-            paymentRequest.setAmount(firstPhase.getTotalAmount());
+            paymentRequest.setAmount(TreatmentService.calculatePhaseEstimatePrice(firstPhase));
             paymentRequest.setDescription("Payment for phase: "+firstPhase.getTitle());
         }
         else{
-            paymentRequest.setTreatmentPhaseIds(treatment.getPhases().stream().map(TreatmentPhase::getId).collect(Collectors.toList()));
-            paymentRequest.setAmount(calculateTotalAmount(treatment.getPhases()));
+            paymentRequest.setAmount(TreatmentService.calculateEstimatedPrice(treatment));
             paymentRequest.setDescription("Payment for your full treatment");
         }
         paymentService.createPayment(paymentRequest);
     }
 
-    private BigDecimal calculateTotalAmount(List<TreatmentPhase> phases) {
-        return phases.stream()
-                .map(TreatmentPhase::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }
