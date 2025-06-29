@@ -22,9 +22,7 @@ public class PaymentRequest {
     @NotNull
     private UUID userId;
     @Builder.Default
-    private List<UUID> treatmentPhaseIds = new ArrayList<>();
-    @Builder.Default
     private List<UUID> scheduleIds = new ArrayList<>();
     @Builder.Default
-    private List<UUID> patientDrugIds = new ArrayList<>();
+    private List<UUID> assignDrugIds = new ArrayList<>();
 }

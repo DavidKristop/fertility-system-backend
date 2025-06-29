@@ -1,5 +1,6 @@
 package com.group3.backend.controller;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
@@ -54,9 +55,6 @@ public class RequestAppointmentController {
 
     @Autowired
     private RequestAppointmentService service;
-    
-    @Autowired
-    private TreatmentService treatmentService;
     
     @Autowired
     private EnvironmentConfig environmentConfig;
@@ -155,11 +153,13 @@ public class RequestAppointmentController {
 
         // Create payment request
         PaymentRequest paymentRequest = PaymentRequest.builder()
-            .amount(createdTreatment.getPhases().get(0).getTotalAmount())
+            .amount(schedule.getScheduleServices().stream()
+                .map(scheduleService -> scheduleService.getService().getPrice())
+                .reduce(BigDecimal.ZERO, BigDecimal::add))
             .description("Consultation payment")
             .paymentDeadline(new Timestamp(new Timestamp(System.currentTimeMillis()).getTime() + 2 * 24 * 60 * 60 * 1000))
             .userId(acceptedAppointment.getPatient().getId())
-            .treatmentPhaseIds(createdTreatment.getPhases().stream().map(TreatmentPhase::getId).collect(Collectors.toList()))
+            .scheduleIds(List.of(schedule.getId()))
             .build();
 
         paymentService.createPayment(paymentRequest);

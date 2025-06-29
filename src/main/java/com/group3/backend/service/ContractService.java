@@ -75,21 +75,14 @@ public class ContractService {
             List<UUID> treatmentPhaseIds = new ArrayList<>();
             TreatmentPhase firstPhase = treatment.getPhases().get(0);
             treatmentPhaseIds.add(firstPhase.getId());
-            paymentRequest.setTreatmentPhaseIds(treatmentPhaseIds);
-            paymentRequest.setAmount(firstPhase.getTotalAmount());
+            paymentRequest.setAmount(TreatmentService.calculatePhaseEstimatePrice(firstPhase));
             paymentRequest.setDescription("Payment for phase: "+firstPhase.getTitle());
         }
         else{
-            paymentRequest.setTreatmentPhaseIds(treatment.getPhases().stream().map(TreatmentPhase::getId).collect(Collectors.toList()));
-            paymentRequest.setAmount(calculateTotalAmount(treatment.getPhases()));
+            paymentRequest.setAmount(TreatmentService.calculateEstimatedPrice(treatment));
             paymentRequest.setDescription("Payment for your full treatment");
         }
         paymentService.createPayment(paymentRequest);
     }
 
-    private BigDecimal calculateTotalAmount(List<TreatmentPhase> phases) {
-        return phases.stream()
-                .map(TreatmentPhase::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }

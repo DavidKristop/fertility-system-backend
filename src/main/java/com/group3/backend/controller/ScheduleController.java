@@ -2,7 +2,7 @@ package com.group3.backend.controller;
 
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.PaymentRequest;
-import com.group3.backend.dto.request.Schedule.ScheduleCreateRequest;
+import com.group3.backend.dto.request.Schedule.AddScheduleToPhaseRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
 import com.group3.backend.dto.response.Schedule.DoctorScheduleReponse;
 import com.group3.backend.dto.response.Schedule.PatientScheduleResponse;
@@ -152,11 +152,11 @@ public class ScheduleController {
 
     @PostMapping("/new-schedule")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<ScheduleResponse>> addSchedule(@RequestBody ScheduleCreateRequest request) {
+    public ResponseEntity<Response<ScheduleResponse>> addSchedule(@RequestBody AddScheduleToPhaseRequest request) {
         Schedule schedule = scheduleService.addScheduleToPhase(request, currentUserUtils.getCurrentUser().getId());
         
         BigDecimal totalAmount = schedule.getScheduleServices().stream()
-                .map(scheduleService -> scheduleService.getService().getPrice().multiply(new BigDecimal(scheduleService.getAmount())))
+                .map(scheduleService -> scheduleService.getService().getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         PaymentRequest paymentRequest = PaymentRequest.builder()

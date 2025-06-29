@@ -22,7 +22,6 @@ import com.group3.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -188,7 +187,6 @@ public class ScheduleService {
             schedule.getScheduleServices().add(scheduleService);
             totalAmount = totalAmount.add(service.getPrice().multiply(BigDecimal.valueOf(serviceRequest.getAmount())));
         }
-        treatmentPhase.setTotalAmount(totalAmount.add(treatmentPhase.getTotalAmount()));
         treatmentPhaseRepository.save(treatmentPhase);
         return scheduleRepository.save(schedule);
     }

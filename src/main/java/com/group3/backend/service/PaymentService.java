@@ -1,7 +1,7 @@
 package com.group3.backend.service;
 
 import com.group3.backend.model.Payment;
-import com.group3.backend.model.Schedule;
+import com.group3.backend.repository.AssignDrugRepository;
 import com.group3.backend.repository.PatientDrugRepository;
 import com.group3.backend.repository.PaymentRepository;
 import com.group3.backend.repository.ScheduleRepository;
@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
@@ -29,9 +27,7 @@ public class PaymentService {
     @Autowired
     private ScheduleRepository scheduleRepository;
     @Autowired
-    private PatientDrugRepository patientDrugRepository;
-    @Autowired
-    private TreatmentPhaseRepository treatmentPhaseRepository;
+    private AssignDrugRepository assignDrugRepository;
 
     @Transactional
     public Payment createPayment(PaymentRequest paymentRequest) {
@@ -41,15 +37,14 @@ public class PaymentService {
         }
         // Create payment
         Payment payment = Payment.builder()
-            // .amount(paymentRequest.getAmount())
-            // .description(paymentRequest.getDescription())
-            // .paymentDeadline(paymentRequest.getPaymentDeadline())
-            // .status(Payment.Status.PENDING)
-            // .user(userRepository.findById(paymentRequest.getUserId())
-            //     .orElseThrow(() -> new ResourceNotFoundException("User not found")))
-            // .treatmentPhases(treatmentPhaseRepository.findByIdIn(paymentRequest.getTreatmentPhaseIds()))
-            // .schedules(scheduleRepository.findByIdIn(paymentRequest.getScheduleIds()))
-            // .patientDrugs(patientDrugRepository.findByIdIn(paymentRequest.getPatientDrugIds()))
+            .amount(paymentRequest.getAmount())
+            .description(paymentRequest.getDescription())
+            .paymentDeadline(paymentRequest.getPaymentDeadline())
+            .status(Payment.Status.PENDING)
+            .user(userRepository.findById(paymentRequest.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")))
+            .schedules(scheduleRepository.findByIdIn(paymentRequest.getScheduleIds()))
+            .assignDrugs(assignDrugRepository.findByIdIn(paymentRequest.getAssignDrugIds()))
             .build();
 
         // Save payment
