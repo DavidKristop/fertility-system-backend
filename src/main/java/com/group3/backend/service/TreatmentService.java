@@ -15,6 +15,7 @@ import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.PatientDrug;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Service;
+import com.group3.backend.model.AssignDrug;
 import com.group3.backend.model.Drug;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.TreatmentRepository;
@@ -135,90 +136,58 @@ public class TreatmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
         User doctor = userRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
-        
+
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
         treatment.setStatus(treatmentStatus);
         List<TreatmentPhase> phases = new ArrayList<>();
 
-        // Create treatment phases
-        for (int i=0;i<request.getPhases().size();i++) {
-            TreatmentPhaseRequest phaseRequest = request.getPhases().get(i);
+        // Create treatment phases based on protocol phases
+        List<TreatmentProtocolPhase> protocolPhases = protocol.getPhases();
+        protocolPhases.sort(Comparator.comparingInt(TreatmentProtocolPhase::getPosition));
+
+        for (int i = 0; i < protocolPhases.size(); i++) {
+            TreatmentProtocolPhase protocolPhase = protocolPhases.get(i);
             TreatmentPhase phase = new TreatmentPhase();
-            phase.setTitle(phaseRequest.getTitle());
-            phase.setDescription(phaseRequest.getDescription());
+            phase.setTitle(protocolPhase.getTitle());
+            phase.setDescription(protocolPhase.getDescription());
             phase.setTreatment(treatment);
             phase.setPosition(i);
-            
-            // Calculate total amount for phase
-            BigDecimal totalAmount = BigDecimal.ZERO;
-            
-            //Create schedule
-            if(phaseRequest.getSchedules() != null){
-                for (TreatmentScheduleRequest scheduleRequest : phaseRequest.getSchedules()){
-                    Schedule schedule = new Schedule();
-                    schedule.setDoctor(doctor);
-                    schedule.setPatient(patient);
-                    schedule.setAppointmentDateTime(scheduleRequest.getAppointmentDateTime().toLocalDateTime());
-                    schedule.setEstimatedTime(scheduleRequest.getEstimatedTime().toLocalDateTime());
-                    schedule.setStatus(Schedule.Status.PENDING);
-                    schedule.setTreatmentPhase(phase);
+            phase.setPhaseModifierPercentage(protocolPhase.getPhaseModifierPercentage());
+            phase.setRefundPercentage(protocolPhase.getRefundPercentage());
+            phase.setComplete(false);
 
-                    if(schedule.getEstimatedTime().isBefore(schedule.getAppointmentDateTime())){
-                        throw new ResourceConflictException("Estimated time must be greater than appointment time");
-                    }
-
-                    if(schedule.getEstimatedTime().isAfter(schedule.getAppointmentDateTime().plusHours(8))){
-                        throw new ResourceConflictException("Estimated time must be at most 8 hours after appointment time");
-                    }
-
-                    if(!scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(
-                        doctor.getId(),
-                        scheduleRequest.getAppointmentDateTime().toLocalDateTime(),
-                        scheduleRequest.getEstimatedTime().toLocalDateTime()).isEmpty()){
-                        throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
-                    }
-                    for (TreatmentServiceRequest serviceRequest : scheduleRequest.getServices()){
-                        ScheduleService scheduleService = new ScheduleService();
-                        Service service = serviceRepository.findById(serviceRequest.getId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
-                        scheduleService.setService(service);
-                        scheduleService.setSchedule(schedule);
-                        scheduleService.setNotes(serviceRequest.getNotes());
-                        schedule.getScheduleServices().add(scheduleService);
-                        totalAmount = totalAmount.add(service.getPrice());
-                    }
-
-                    phase.getSchedules().add(schedule);
-                }
+            // Add services from protocol phase
+            List<ScheduleService> scheduleServices = new ArrayList<>();
+            for (Service service : protocolPhase.getServices().stream()
+            .map(protocolService->protocolService.getService()).toList()) {
+                ScheduleService scheduleService = new ScheduleService();
+                scheduleService.setService(service);
+                scheduleService.setTreatmentPhase(phase);
+                scheduleServices.add(scheduleService);
             }
 
-            // Create drug patients
-            // if (phaseRequest.getDrugs() != null) {
-            //     for (TreatmentDrugRequest drugRequest : phaseRequest.getDrugs()) {
-            //         PatientDrug patientDrug = new PatientDrug();
-            //         Drug drug = drugRepository.findById(drugRequest.getId())
-            //             .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));
-                    
-            //         if(drugRequest.getStartDate().getTime() > drugRequest.getEndDate().getTime()){
-            //             throw new ResourceConflictException("Start date must be before end date");
-            //         }
-
-            //         patientDrug.setDrug(drug);
-            //         patientDrug.setDosage(drugRequest.getDosage());
-            //         patientDrug.setUsageInstructions(drugRequest.getUsageInstructions());
-            //         patientDrug.setStartDate(drugRequest.getStartDate());
-            //         patientDrug.setEndDate(drugRequest.getEndDate());
-            //         patientDrug.setTreatmentPhase(phase);
-            //         phase.getPatientDrugs().add(patientDrug);
-            //         totalAmount = totalAmount.add(drug.getPrice().multiply(BigDecimal.valueOf(drugRequest.getAmount())));
-            //     }
-            // }
-            double phaseMultiplier = 1;
-            if(treatment.getPaymentMode().equals(Treatment.PaymentMode.FULL)){
-                phaseMultiplier = 1.2;
+            // Add drugs from protocol phase
+            List<PatientDrug> patientDrugs = new ArrayList<>();
+            for (Drug drug : protocolPhase.getDrugs().stream()
+            .map(protocolDrug->protocolDrug.getDrug()).toList()) {
+                PatientDrug patientDrug = new PatientDrug();
+                patientDrug.setDrug(drug);
+                patientDrugs.add(patientDrug);
             }
+            AssignDrug assignDrug = new AssignDrug();
+            assignDrug.setPatientDrugs(patientDrugs);
+            assignDrug.setTreatmentPhase(phase);
+            assignDrug.setStatus(AssignDrug.Status.PENDING);
+            
+            phase.setAssignDrugs(List.of(assignDrug));
+            phase.setScheduleServices(scheduleServices);
             phases.add(phase);
+        }
+
+        // Set first phase as current phase
+        if (!phases.isEmpty()) {
+            treatment.setCurrentPhase(phases.get(0));
         }
 
         treatment.setPhases(phases);
@@ -230,12 +199,8 @@ public class TreatmentService {
     public static BigDecimal calculatePhaseEstimatePrice(TreatmentPhase phase){
         BigDecimal phasePrice = BigDecimal.ZERO;
 
-        phasePrice.add(phase.getSchedules().stream()
-                .map(schedule -> {
-                    return schedule.getScheduleServices().stream()
-                    .map(scheduleService -> scheduleService.getService().getPrice())
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-                })
+        phasePrice.add(phase.getScheduleServices().stream()
+                .map(scheduleService -> scheduleService.getService().getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
 
         phasePrice.add(phase.getAssignDrugs().stream()

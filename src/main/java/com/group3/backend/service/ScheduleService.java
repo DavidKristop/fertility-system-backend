@@ -115,7 +115,6 @@ public class ScheduleService {
             return com.group3.backend.model.ScheduleService.builder()
                 .service(service)
                 .schedule(schedule)
-                .notes(scheduleServiceCreateRequest.getNotes())
                 .build();
         }).collect(Collectors.toList());
 
@@ -156,15 +155,26 @@ public class ScheduleService {
             throw new ResourceConflictException("Treatment is not in progress");
         }
 
+
+
         Schedule schedule = Schedule.builder()
             .appointmentDateTime(scheduleCreateRequest.getAppointmentDateTime())
             .estimatedTime(scheduleCreateRequest.getEstimatedTime())
             .doctor(doctor)
             .patient(patient)
-            .treatmentPhase(treatmentPhase)
             .status(Schedule.Status.PENDING)
             .build();
         
+        for (TreatmentServiceRequest serviceRequest : scheduleCreateRequest.getServices()){
+            com.group3.backend.model.ScheduleService scheduleService = new com.group3.backend.model.ScheduleService();
+            Service service = serviceRepository.findById(serviceRequest.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+            scheduleService.setService(service);
+            scheduleService.setSchedule(schedule);
+            scheduleService.setTreatmentPhase(treatmentPhase);
+            schedule.getScheduleServices().add(scheduleService);
+        }
+    
         if(schedule.getEstimatedTime().isBefore(schedule.getAppointmentDateTime())){
             throw new ResourceConflictException("Estimated time must be greater than appointment time");
         }
@@ -176,17 +186,7 @@ public class ScheduleService {
         if(checkOverlappingSchedule(doctor.getId(),schedule.getAppointmentDateTime(),schedule.getEstimatedTime())){
             throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
         }
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        for (TreatmentServiceRequest serviceRequest : scheduleCreateRequest.getServices()){
-            com.group3.backend.model.ScheduleService scheduleService = new com.group3.backend.model.ScheduleService();
-            Service service = serviceRepository.findById(serviceRequest.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
-            scheduleService.setService(service);
-            scheduleService.setSchedule(schedule);
-            scheduleService.setNotes(serviceRequest.getNotes());
-            schedule.getScheduleServices().add(scheduleService);
-            totalAmount = totalAmount.add(service.getPrice().multiply(BigDecimal.valueOf(serviceRequest.getAmount())));
-        }
+        
         treatmentPhaseRepository.save(treatmentPhase);
         return scheduleRepository.save(schedule);
     }

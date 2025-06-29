@@ -50,5 +50,5 @@ public class TreatmentPhase {
 
     @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Schedule> schedules = new ArrayList<>();
+    private List<ScheduleService> scheduleServices = new ArrayList<>();
 }

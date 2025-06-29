@@ -11,7 +11,6 @@ import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.TreatmentService;
 import com.group3.backend.utils.CurrentUserUtils;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
