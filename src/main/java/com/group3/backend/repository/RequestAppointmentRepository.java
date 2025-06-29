@@ -16,9 +16,13 @@ public interface RequestAppointmentRepository extends JpaRepository<RequestAppoi
     List<RequestAppointment> findByPatientId(UUID patientId);
 
 
-    List<RequestAppointment> findByStatusAndAppointmentDatetimeBefore(
+    List<RequestAppointment> findByStatusAndAppointmentDatetimeAfter(
             RequestAppointment.Status status,
             LocalDateTime deadline);
+
+    List<RequestAppointment> findByStatusAndAppointmentDatetimeBefore(
+                RequestAppointment.Status status,
+                LocalDateTime deadline);
 
 
     boolean existsByDoctorIdAndAppointmentDatetime(UUID doctorId, LocalDateTime appointmentDatetime);
@@ -27,14 +31,14 @@ public interface RequestAppointmentRepository extends JpaRepository<RequestAppoi
 
     boolean existsByPatientIdAndScheduleStatusIn(UUID patientId, List<Schedule.Status> statuses);
 
-    Page<RequestAppointment> findByDoctorIdAndPatientEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeBefore(
+    Page<RequestAppointment> findByDoctorIdAndPatientEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeAfter(
             UUID doctorId,
             String patientEmail,
             List<RequestAppointment.Status> statuses,
             LocalDateTime deadline,
             Pageable pageable);
 
-    Page<RequestAppointment> findByPatientIdAndDoctorEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeBefore(
+    Page<RequestAppointment> findByPatientIdAndDoctorEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeAfter(
             UUID patientId,
             String doctorEmail,
             List<RequestAppointment.Status> statuses,

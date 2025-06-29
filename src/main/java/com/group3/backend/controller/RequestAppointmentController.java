@@ -1,11 +1,9 @@
 package com.group3.backend.controller;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,21 +30,14 @@ import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
 import com.group3.backend.dto.request.ScheduleCreateRequest;
 import com.group3.backend.dto.request.ScheduleServiceCreateRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentPhaseRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
 import com.group3.backend.dto.response.RequestAppointment.RequestAppointmentResponse;
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.Schedule;
-import com.group3.backend.model.Treatment;
-import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.User;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.RequestAppointmentService;
 import com.group3.backend.service.ScheduleService;
-import com.group3.backend.service.TreatmentService;
 import com.group3.backend.utils.CurrentUserUtils;
 
 @RestController
@@ -93,10 +84,12 @@ public class RequestAppointmentController {
     ) {
         User user = currentUserUtils.getCurrentUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        LocalDateTime deadline = LocalDateTime.now().plusHours(24);
         Page<RequestAppointment> appointments = service.getDoctorsAppointments(
             user.getId(),
             patientEmail,
             List.of(status),
+            deadline,
             pageable);
 
         return ResponseEntity.ok(new Response<>(
@@ -104,7 +97,7 @@ public class RequestAppointmentController {
          "Appointments retrieved successfully"));
     }
 
-    @GetMapping("/patient")
+    @GetMapping("/my-request")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<Page<RequestAppointmentResponse>>> getAppointmentsByPatient(
         @RequestParam(defaultValue = "0") int page,
@@ -114,10 +107,12 @@ public class RequestAppointmentController {
     ) {
         User user = currentUserUtils.getCurrentUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        LocalDateTime deadline = LocalDateTime.now();
         Page<RequestAppointment> appointments = service.getPatientsAppointments(
             user.getId(),
             doctorEmail,
             List.of(status),
+            deadline,
             pageable);
 
         return ResponseEntity.ok(new Response<>(
@@ -145,7 +140,7 @@ public class RequestAppointmentController {
                     .notes("Consultation")
                     .build(),
                     ScheduleServiceCreateRequest.builder()
-                    .serviceId(UUID.fromString(environmentConfig.getUltrasoundProtocolServiceId()))
+                    .serviceId(UUID.fromString(environmentConfig.getUltrasoundServiceId()))
                     .notes("Ultrasound")
                     .build()
                 ))
@@ -167,6 +162,14 @@ public class RequestAppointmentController {
         
         return ResponseEntity.ok(new Response<>(requestAppointmentMapper.toResponse(acceptedAppointment),
          "Appointment accepted successfully"));
+    }
+
+    @PutMapping("/cancel/{appointmentId}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<RequestAppointmentResponse>> cancelAppointment(@PathVariable UUID appointmentId) {
+        RequestAppointment cancelledAppointment = service.cancelAppointment(appointmentId, currentUserUtils.getCurrentUser().getId());
+        return ResponseEntity.ok(new Response<>(requestAppointmentMapper.toResponse(cancelledAppointment),
+         "Appointment cancelled successfully"));
     }
 
 }
