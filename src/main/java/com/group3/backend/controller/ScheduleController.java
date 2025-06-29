@@ -4,6 +4,7 @@ import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.Schedule.AddScheduleToPhaseRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
+import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
 import com.group3.backend.dto.response.Schedule.DoctorScheduleReponse;
 import com.group3.backend.dto.response.Schedule.PatientScheduleResponse;
 import com.group3.backend.dto.response.Schedule.ScheduleResponse;
@@ -21,7 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,4 +176,52 @@ public class ScheduleController {
             "Schedule created successfully")
         );
     }
+
+    @GetMapping("/today-doctor")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<List<DoctorScheduleReponse>>> getTodayDoctorSchedules() {
+        List<Schedule> schedules = scheduleService.getTodayScheduleForDoctor(currentUserUtils.getCurrentUser().getId());
+        List<DoctorScheduleReponse> responses = schedules.stream()
+                .map(scheduleMapper::toDoctorScheduleRespone) // dùng mapper chuyển sang DTO phù hợp
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new Response<>(responses, "Today's doctor schedules retrieved successfully"));
+    }
+
+    @GetMapping("/today-patient")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<Response<List<PatientScheduleResponse>>> getTodayPatientSchedules() {
+        List<Schedule> schedules = scheduleService.getTodayScheduleForPatient(currentUserUtils.getCurrentUser().getId());
+        List<PatientScheduleResponse> responses = schedules.stream()
+                .map(scheduleMapper::toPatientScheduleResponse) // dùng mapper phù hợp
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new Response<>(responses, "Today's patient schedules retrieved successfully"));
+    }
+
+    @PutMapping("/done/{id}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<DoctorScheduleReponse>> markScheduleAsDone(@PathVariable UUID id) {
+        UUID doctorId = currentUserUtils.getCurrentUser().getId();
+        Schedule updated = scheduleService.markScheduleAsDone(id, doctorId);
+        return ResponseEntity.ok(new Response<>(
+            scheduleMapper.toDoctorScheduleRespone(updated),
+            "Schedule marked as DONE successfully"
+        ));
+    }
+
+    @PutMapping("/change/{id}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<DoctorScheduleReponse>> changeSchedule(
+            @PathVariable UUID id,
+            @RequestBody ScheduleChangeRequest request) {
+
+        UUID doctorId = currentUserUtils.getCurrentUser().getId();
+        Schedule updated = scheduleService.changeScheduleTime(id, doctorId, request);
+        return ResponseEntity.ok(new Response<>(
+            scheduleMapper.toDoctorScheduleRespone(updated),
+            "Schedule updated successfully"
+        ));
+    }
+
 }
