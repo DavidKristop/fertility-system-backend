@@ -23,12 +23,7 @@ public class RegistrationRequest {
     private String email;
 
     @NotBlank(message = "Phone number cannot be empty")
-<<<<<<< HEAD
     @Pattern(regexp = RegexPattern.PHONE_NUMBER, message = "Invalid phone number format")
-=======
-    @Pattern(regexp = "^(0|84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|89]|9[0-4|6-9])[0-9]{7}$", 
-            message = "Phone number must be a valid Vietnam phone number")
->>>>>>> c1a497e277bf6a3f587b8fe8fd4b516334464a06
     private String phone;
 
     @NotBlank(message = "Address cannot be empty")
@@ -39,14 +34,8 @@ public class RegistrationRequest {
     private LocalDate dateOfBirth;
 
     @NotBlank(message = "Password cannot be empty")
-<<<<<<< HEAD
     @Pattern(regexp = RegexPattern.PASSWORD,
                 message = "Password must be at least 12 characters and include uppercase, lowercase, number, and special character.")
     @Size(min = 8, message = "Password must be at least 8 characters long")
-=======
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,32}$",
-                message = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.")
-    @Size(min = 8, max = 32, message = "Password must be between 8 and 32 characters long")
->>>>>>> c1a497e277bf6a3f587b8fe8fd4b516334464a06
     private String password;
 }
