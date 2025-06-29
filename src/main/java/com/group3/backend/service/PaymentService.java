@@ -2,10 +2,8 @@ package com.group3.backend.service;
 
 import com.group3.backend.model.Payment;
 import com.group3.backend.repository.AssignDrugRepository;
-import com.group3.backend.repository.PatientDrugRepository;
 import com.group3.backend.repository.PaymentRepository;
 import com.group3.backend.repository.ScheduleRepository;
-import com.group3.backend.repository.TreatmentPhaseRepository;
 import com.group3.backend.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
