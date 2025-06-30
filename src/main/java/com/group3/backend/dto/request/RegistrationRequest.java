@@ -39,7 +39,7 @@ public class RegistrationRequest {
 
     @NotBlank(message = "Password cannot be empty")
     @Pattern(regexp = RegexPattern.PASSWORD,
-                message = "Password must be at least 12 characters and include uppercase, lowercase, number, and special character.")
+                message = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 }

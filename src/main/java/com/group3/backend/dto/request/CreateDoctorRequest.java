@@ -6,6 +6,8 @@ import java.time.LocalDate;
 
 import java.math.BigDecimal;
 
+import com.group3.backend.constants.RegexPattern;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,8 +22,7 @@ public class CreateDoctorRequest {
     private String email;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^(0|84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|89]|9[0-4|6-9])[0-9]{7}$", 
-            message = "Phone number must be a valid Vietnam phone number")
+    @Pattern(regexp = RegexPattern.PHONE_NUMBER, message = "Invalid phone number format")
     private String phone;
 
     @NotBlank(message = "Address is required")
@@ -32,9 +33,9 @@ public class CreateDoctorRequest {
     private LocalDate dateOfBirth;
 
     @NotBlank(message = "Password cannot be empty")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,32}$",
+    @Pattern(regexp = RegexPattern.PASSWORD,
                 message = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.")
-    @Size(min = 8, max = 32, message = "Password must be between 8 and 32 characters long")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
     // DoctorProfile info
