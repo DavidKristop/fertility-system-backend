@@ -47,7 +47,7 @@ public class ContractService {
         if(!contract.getTreatment().getPatient().getId().equals(patientId)){
             throw new UnauthorizedAccessException("You are not authorized to sign this contract");
         }
-        contract.setSigned(true);
+        contract.setIsSigned(true);
         createPaymentBasedOnPaymentMode(contract.getTreatment());
         treatment.setStatus(Treatment.Status.IN_PROGRESS);
         contract.setTreatment(treatment);

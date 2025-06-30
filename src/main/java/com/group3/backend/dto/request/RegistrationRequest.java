@@ -1,7 +1,9 @@
 package com.group3.backend.dto.request;
 
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +16,8 @@ import java.time.LocalDate;
 import com.group3.backend.constants.RegexPattern;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegistrationRequest {
     @NotBlank(message = "Username cannot be empty")
     private String username;
@@ -35,7 +39,7 @@ public class RegistrationRequest {
 
     @NotBlank(message = "Password cannot be empty")
     @Pattern(regexp = RegexPattern.PASSWORD,
-                message = "Password must be at least 12 characters and include uppercase, lowercase, number, and special character.")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+                message = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.")
+    @Size(min = 8, max = 32, message = "Password must be between 8 and 32 characters long")
     private String password;
 }
