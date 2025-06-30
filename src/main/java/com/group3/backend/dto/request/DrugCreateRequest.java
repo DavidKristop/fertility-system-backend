@@ -3,6 +3,7 @@ package com.group3.backend.dto.request;
 import java.math.BigDecimal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -17,17 +18,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DrugCreateRequest {
     @NotBlank(message = "Name is required")
+    @Size(min = 1, max = 50, message = "Name must be between 1 and 50 characters")
     private String name;
     
-    @Min(value = 1, message = "Description must be at least 1 character")
-    @Max(value = 200, message = "Description must be at most 200 characters")
+    @Size(min = 1, max = 200, message = "Description must be between 1 and 200 characters")
     private String description;
     
     @DecimalMin(value = "1.00", message = "Price must be at least 1")
     private BigDecimal price;
     
-    @Min(value = 1, message = "Unit must be at least 1 character")
-    @Max(value = 50, message = "Unit must be at most 50 characters")
+    @Size(min = 1, max = 50, message = "Unit must be between 1 and 50 characters")
     private String unit;
     
 }
