@@ -2,7 +2,6 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -33,11 +32,8 @@ public class RequestAppointment {
     @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 
-    @Column(name = "reason")
-    private String reason;
-
     @Column(name = "appointment_datetime", nullable = false)
-    private Timestamp appointmentDatetime;
+    private LocalDateTime appointmentDatetime;
 
     @Column(name = "rejected_reason")
     private String rejectedReason;

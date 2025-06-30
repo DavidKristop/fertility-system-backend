@@ -41,13 +41,11 @@ public class Treatment {
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
-
     
 
     @OneToOne
     @JoinColumn(name = "current_phase_id")
     private TreatmentPhase currentPhase;
-
 
     @ManyToOne
     @JoinColumn(name = "user_id")

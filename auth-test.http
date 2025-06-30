@@ -11,8 +11,8 @@
 # Content-Type: application/json
 
 # {
-#   "username": "testuser",
-#   "email": "test@example.com",
+#   "username": "doctor01tuser",
+#   "email": "doctor01@example.com",
 #   "password": "Abcd@12345678",
 #   "confirmPassword": "Abcd@12345678"
 # }

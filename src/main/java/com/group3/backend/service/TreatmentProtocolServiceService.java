@@ -155,39 +155,39 @@ public class TreatmentProtocolServiceService {
         return protocolRepository.save(protocol);
     }
 
-    // private BigDecimal calculateEstimatedPrice(TreatmentProtocol protocol) {
-    //     if (protocol.getPhases() == null || protocol.getPhases().isEmpty()) {
-    //         return BigDecimal.ZERO;
-    //     }
+    public static BigDecimal calculateEstimatedPrice(TreatmentProtocol protocol) {
+        if (protocol.getPhases() == null || protocol.getPhases().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
 
-    //     BigDecimal total = BigDecimal.ZERO;
-    //     for (TreatmentProtocolPhase phase : protocol.getPhases()) {
-    //         BigDecimal phasePrice = BigDecimal.ZERO;
+        BigDecimal total = BigDecimal.ZERO;
+        for (TreatmentProtocolPhase phase : protocol.getPhases()) {
+            BigDecimal phasePrice = BigDecimal.ZERO;
 
-    //         // Calculate services price
-    //         if (phase.getServices() != null) {
-    //             phasePrice = phase.getServices().stream()
-    //                     .map(service -> service.getService().getPrice())
-    //                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-    //         }
+            // Calculate services price
+            if (phase.getServices() != null) {
+                phasePrice = phase.getServices().stream()
+                        .map(service -> service.getService().getPrice())
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+            }
 
-    //         // Calculate drugs price
-    //         if (phase.getDrugs() != null) {
-    //             phasePrice = phasePrice.add(phase.getDrugs().stream()
-    //                     .map(drug -> drug.getDrug().getPrice().multiply(BigDecimal.valueOf(drug.getAmount())))
-    //                     .reduce(BigDecimal.ZERO, BigDecimal::add));
-    //         }
+            // Calculate drugs price
+            if (phase.getDrugs() != null) {
+                phasePrice = phasePrice.add(phase.getDrugs().stream()
+                        .map(drug -> drug.getDrug().getPrice().multiply(BigDecimal.valueOf(drug.getAmount())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add));
+            }
 
-    //         // Apply phase modifier percentage
-    //         if (phase.getPhaseModifierPercentage() != null) {
-    //             phasePrice = phasePrice.multiply(phase.getPhaseModifierPercentage());
-    //         }
+            // Apply phase modifier percentage
+            if (phase.getPhaseModifierPercentage() != null) {
+                phasePrice = phasePrice.multiply(phase.getPhaseModifierPercentage());
+            }
 
-    //         total = total.add(phasePrice);
-    //     }
+            total = total.add(phasePrice);
+        }
 
-    //     return total;
-    // }
+        return total;
+    }
 
     private List<TreatmentProtocolPhase> sortProtocolPhase(List<TreatmentProtocolPhase> phases) {
         return phases.stream()

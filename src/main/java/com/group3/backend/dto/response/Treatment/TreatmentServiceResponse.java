@@ -11,4 +11,5 @@ public class TreatmentServiceResponse {
     private String description;
     private BigDecimal price;
     private boolean isActive;
+    private String unit;
 }

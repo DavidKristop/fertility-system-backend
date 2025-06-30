@@ -21,7 +21,7 @@ public class Contract {
     private UUID id;
 
     @Column(name = "is_signed")
-    private boolean isSigned;
+    private Boolean isSigned;
 
     @Column(name = "sign_deadline")
     private LocalDateTime signDeadline;

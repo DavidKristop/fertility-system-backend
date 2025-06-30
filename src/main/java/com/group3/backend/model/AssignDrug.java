@@ -3,8 +3,8 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.security.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -26,8 +26,12 @@ public class AssignDrug {
     @JoinColumn(name = "treatment_phase_id", nullable = false)
     private TreatmentPhase treatmentPhase;
 
-    @Column(nullable = false)
-    private String status;
+    @Column(name = "status",nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Column(name = "complete_date", nullable = true)
+    private LocalDateTime completeDate;
 
     @ManyToOne
     @JoinColumn(name = "payment_id")
@@ -38,4 +42,14 @@ public class AssignDrug {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "assignDrug")
+    private List<PatientDrug> patientDrugs;
+
+    public enum Status {
+        PENDING,
+        COMPLETED,
+        CANCELLED
+    }
+
 }

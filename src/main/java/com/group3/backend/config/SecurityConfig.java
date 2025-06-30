@@ -47,12 +47,15 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/welcome", "/api/auth/signup", "/api/auth/signin",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
-                                "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**"
+                                "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**",
+                                "/api/protocols/**","/api/auth/forgot-password", "/api/auth/reset-password"
                         ).permitAll()
                         .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/patient/**").hasAuthority("ROLE_PATIENT")
                         .requestMatchers("/api/auth/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/doctor-management/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                         .requestMatchers("/api/drugs").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
                         .requestMatchers("/api/drugs/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
                         .requestMatchers("/api/services").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
