@@ -297,13 +297,16 @@ public class ScheduleService {
         throw new ResourceConflictException("Cannot modify schedule with cancelled payment");
     }
 
-    // Check thời gian hợp lệ
-    Treatment treatment = schedule.getTreatmentPhase().getTreatment();
-    LocalDateTime now = LocalDateTime.now();
-    LocalDate treatmentEndDate = treatment.getEndDate().toLocalDate();
-    if (request.getAppointmentDateTime().isBefore(now) ||
-        request.getAppointmentDateTime().toLocalDate().isAfter(treatmentEndDate)) {
-        throw new ResourceConflictException("Appointment time must be within treatment period");
+    // Check thời gian hợp  nếu thuộc vào 1 treatment
+    Treatment treatment;
+    if(schedule.getScheduleServices().get(0).getTreatmentPhase() != null){
+        treatment = schedule.getScheduleServices().get(0).getTreatmentPhase().getTreatment();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate treatmentEndDate = treatment.getEndDate().toLocalDate();
+        if (request.getAppointmentDateTime().isBefore(now) ||
+            request.getAppointmentDateTime().toLocalDate().isAfter(treatmentEndDate)) {
+            throw new ResourceConflictException("Appointment time must be within treatment period");
+        }
     }
 
     // EstimatedTime phải sau appointmentTime
