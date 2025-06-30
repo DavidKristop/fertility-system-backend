@@ -9,6 +9,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.group3.backend.dto.request.ContractRequest;
@@ -42,7 +44,7 @@ public class ContractService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contract not found"));
         Treatment treatment = contract.getTreatment();
-        if(contract.getTreatment().getPatient().getId() != patientId){
+        if(!contract.getTreatment().getPatient().getId().equals(patientId)){
             throw new UnauthorizedAccessException("You are not authorized to sign this contract");
         }
         contract.setSigned(true);
@@ -55,14 +57,27 @@ public class ContractService {
     public Contract getContractByIdAndPatientId(UUID contractId, UUID patientId){
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contract not found"));
-        if(contract.getTreatment().getPatient().getId() != patientId){
-            throw new UnauthorizedAccessException("You are not authorized to sign this contract");
+        if(!contract.getTreatment().getPatient().getId().equals(patientId)){
+            throw new UnauthorizedAccessException("You are not authorized to view this contract");
         }
         return contract;
     }
 
+    public Contract getContractById(UUID contractId){
+        return contractRepository.findById(contractId)
+                .orElseThrow(() -> new ResourceNotFoundException("Contract not found"));
+    }
+
+    public Page<Contract> getPatientContract(UUID patientId, boolean isSigned, Pageable pageable){
+        return contractRepository.findByIsSignedAndTreatmentPatientId(isSigned, patientId, pageable);
+    } 
+
     public List<Contract> getAllContractByPatientId(UUID patientId){
         return contractRepository.findByTreatmentPatientId(patientId);
+    }
+
+    public Page<Contract> getAllContract(boolean isSigned, Pageable pageable){
+        return contractRepository.findByIsSigned(isSigned, pageable);
     }
 
     private void createPaymentBasedOnPaymentMode(Treatment treatment){
@@ -74,7 +89,7 @@ public class ContractService {
             List<UUID> treatmentPhaseIds = new ArrayList<>();
             TreatmentPhase firstPhase = treatment.getPhases().get(0);
             treatmentPhaseIds.add(firstPhase.getId());
-            paymentRequest.setAmount(TreatmentService.calculatePhaseEstimatePrice(firstPhase));
+            paymentRequest.setAmount(TreatmentService.calculatePhaseEstimatePrice(firstPhase, true));
             paymentRequest.setDescription("Payment for phase: "+firstPhase.getTitle());
         }
         else{

@@ -134,7 +134,7 @@ public class TreatmentController {
         //Create payment request if payment mode is BY_PHASE
         if(treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)){
             PaymentRequest paymentRequest = PaymentRequest.builder()
-                .amount(TreatmentService.calculatePhaseEstimatePrice(treatment.getCurrentPhase()))
+                .amount(TreatmentService.calculatePhaseEstimatePrice(treatment.getCurrentPhase(), treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)))
                 .description("Payment for phase: " + treatment.getCurrentPhase().getTitle())
                 .paymentDeadline(LocalDateTime.now().plusDays(2))
                 .userId(currentUserUtils.getCurrentUserId())

@@ -26,21 +26,13 @@ public class ContractScheduler {
     // Runs every hour
     @Scheduled(cron = "0 0 * * * ?")
     public void checkUnsignedContracts() {
-        // Get current time
         LocalDateTime now = LocalDateTime.now();
         
-        // Convert LocalDateTime to Timestamp
-        Timestamp deadline = Timestamp.valueOf(now);
-        
-        // Find all contracts that:
-        // 1. Are not signed
-        // 2. Have passed their sign deadline
-        List<Contract> expiredContracts = contractRepository.findByIsSignedAndSignDeadlineLessThan(false, deadline);
+        List<Contract> expiredContracts = contractRepository.findByIsSignedAndSignDeadlineLessThan(false, now);
 
         for (Contract contract : expiredContracts) {
             Treatment treatment = contract.getTreatment();
             
-            // Cancel all schedules in all phases of this treatment
             for (TreatmentPhase phase : treatment.getPhases()) {
                 List<Schedule> schedules = scheduleRepository.findByScheduleServicesTreatmentPhaseId(phase.getId());
                 for (Schedule schedule : schedules) {

@@ -208,24 +208,31 @@ public class TreatmentService {
         return treatment;
     }
 
-    public static BigDecimal calculatePhaseEstimatePrice(TreatmentPhase phase){
+    public static BigDecimal calculatePhaseEstimatePrice(TreatmentPhase phase, boolean includePhaseModifier){
         BigDecimal phasePrice = BigDecimal.ZERO;
 
-        phasePrice.add(phase.getScheduleServices().stream()
-                .map(scheduleService -> scheduleService.getService().getPrice())
-                .reduce(BigDecimal.ZERO, BigDecimal::add));
-
-        phasePrice.add(phase.getAssignDrugs().stream()
-                .map(assignDrug->{
-                    return assignDrug.getPatientDrugs().stream()
-                    .map(patientDrug->patientDrug.getDrug().getPrice()
-                    .multiply(BigDecimal.valueOf(patientDrug.getAmount())))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // Calculate service prices
+        BigDecimal servicePrice = phase.getScheduleServices().stream()
+                .map(scheduleService ->{
+                    System.out.println("Service price: "+scheduleService.getService().getPrice());
+                    return scheduleService.getService().getPrice();
                 })
-                .reduce(BigDecimal.ZERO, BigDecimal::add));
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        phasePrice = phasePrice.add(servicePrice);
+        System.out.println("Phase price after services: "+phasePrice);
+
+        // Calculate drug prices
+        BigDecimal drugPrice = phase.getAssignDrugs().stream()
+                .map(assignDrug -> assignDrug.getPatientDrugs().stream()
+                    .map(patientDrug -> patientDrug.getDrug().getPrice()
+                        .multiply(BigDecimal.valueOf(patientDrug.getAmount())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        phasePrice = phasePrice.add(drugPrice);
+        System.out.println("Phase price after drugs: "+phasePrice);
 
         // Apply phase modifier percentage
-        if (phase.getPhaseModifierPercentage() != null) {
+        if (includePhaseModifier && phase.getPhaseModifierPercentage() != null) {
             phasePrice = phasePrice.multiply(phase.getPhaseModifierPercentage());
         }
 
@@ -239,7 +246,7 @@ public class TreatmentService {
 
         BigDecimal total = BigDecimal.ZERO;
         for (TreatmentPhase phase : treatment.getPhases()) {
-            total = total.add(calculatePhaseEstimatePrice(phase));
+            total = total.add(calculatePhaseEstimatePrice(phase, treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)));
         }
 
         return total;

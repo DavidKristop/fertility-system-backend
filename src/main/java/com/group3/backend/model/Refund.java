@@ -5,7 +5,6 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -27,7 +26,7 @@ public class Refund {
     private BigDecimal amount;
 
     @Column(name = "refund_date", nullable = false)
-    private Timestamp refundDate;
+    private LocalDateTime refundDate;
 
     @Column(name = "refund_method", nullable = false)
     private String refundMethod;

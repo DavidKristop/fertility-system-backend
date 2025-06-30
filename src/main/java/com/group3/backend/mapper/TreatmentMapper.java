@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {ProtocolMapper.class, UserMapper.class})
 public interface TreatmentMapper {
@@ -23,7 +24,7 @@ public interface TreatmentMapper {
     @Mapping(target = "schedules", expression = "java(getScheduledServices(phase))")
     TreatmentPhaseResponse map(TreatmentPhase phase);
 
-    @Mapping(target = "service", expression = "java(schedule.getScheduleServices().stream().findFirst().map(this::map).orElse(null))")
+    @Mapping(target = "services", expression = "java(schedule.getScheduleServices().stream().map(this::map).collect(Collectors.toList()))")
     TreatmentScheduleResponse map(Schedule schedule);
 
     @Mapping(source = "service.id", target = "id")
@@ -51,8 +52,9 @@ public interface TreatmentMapper {
                 Schedule schedule = scheduleService.getSchedule();
                 if(schedules.stream().anyMatch(s -> s.getId().equals(schedule.getId()))) continue;
                 TreatmentScheduleResponse scheduleResponse = map(schedule);
-                TreatmentServiceResponse serviceResponse = map(scheduleService);
-                scheduleResponse.setService(serviceResponse);
+                List<TreatmentServiceResponse> serviceResponse = schedule.getScheduleServices().stream()
+                .map(this::map).collect(Collectors.toList());
+                scheduleResponse.setServices(serviceResponse);
                 schedules.add(scheduleResponse);
             }
         }

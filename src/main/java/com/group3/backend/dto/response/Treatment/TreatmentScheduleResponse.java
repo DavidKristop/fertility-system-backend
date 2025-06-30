@@ -10,5 +10,5 @@ public class TreatmentScheduleResponse {
     private UUID id;
     private LocalDateTime appointmentDateTime;
     private LocalDateTime estimatedTime;
-    private TreatmentServiceResponse service;
+    private List<TreatmentServiceResponse> services;
 }

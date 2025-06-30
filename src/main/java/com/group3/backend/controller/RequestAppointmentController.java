@@ -137,11 +137,9 @@ public class RequestAppointmentController {
                 .services(List.of(
                     ScheduleServiceCreateRequest.builder()
                     .serviceId(UUID.fromString(environmentConfig.getConsultationServiceId()))
-                    .notes("Consultation")
                     .build(),
                     ScheduleServiceCreateRequest.builder()
                     .serviceId(UUID.fromString(environmentConfig.getUltrasoundServiceId()))
-                    .notes("Ultrasound")
                     .build()
                 ))
                 .build()

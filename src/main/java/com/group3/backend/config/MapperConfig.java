@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Primary;
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.mapper.ContractMapper;
 import com.group3.backend.mapper.DrugMapper;
+import com.group3.backend.mapper.PaymentMapper;
 import com.group3.backend.mapper.TreatmentMapper;
 import com.group3.backend.mapper.UserMapper;
 
@@ -42,5 +43,11 @@ public class MapperConfig {
     @Primary
     public UserMapper userMapper() {
         return Mappers.getMapper(UserMapper.class);
+    }
+
+    @Bean
+    @Primary
+    public PaymentMapper paymentMapper() {
+        return Mappers.getMapper(PaymentMapper.class);
     }
 }
