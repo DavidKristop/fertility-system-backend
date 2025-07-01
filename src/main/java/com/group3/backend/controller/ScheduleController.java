@@ -82,6 +82,21 @@ public class ScheduleController {
         ));
     }
 
+    @GetMapping("/available-doctors/today/{doctorId}")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<Response<List<PatientScheduleResponse>>> getAvailableDoctorsToday(
+            @PathVariable(required = false) UUID doctorId) {
+        List<Schedule> schedules = scheduleService.getTodayScheduleForDoctor(doctorId);
+        
+        List<PatientScheduleResponse> responses = schedules.stream()
+                .map(scheduleMapper::toPatientScheduleResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new Response<>(
+            responses,
+            "Available doctors retrieved successfully"
+        ));
+    }
+
     @GetMapping("/available-doctors")
     @PreAuthorize("hasAnyAuthority('ROLE_PATIENT', 'ROLE_MANAGER', 'ROLE_DOCTOR', 'ROLE_ADMIN')")
     public ResponseEntity<Response<List<PatientScheduleResponse>>> getAvailableDoctors(
