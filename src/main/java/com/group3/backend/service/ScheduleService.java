@@ -25,11 +25,8 @@ import com.group3.backend.config.TimeZoneConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -106,8 +103,18 @@ public class ScheduleService {
             throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
         }
 
-        
-        
+        if(scheduleCreateRequest.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(3))) {
+            throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
+        }
+
+        if(!scheduleCreateRequest.getEstimatedTime().isAfter(scheduleCreateRequest.getAppointmentDateTime().plusMinutes(10))) {
+            throw new ResourceConflictException("Estimated time must be after appointment time by at least 10 minutes");
+        }
+
+        if(scheduleCreateRequest.getEstimatedTime().isAfter(scheduleCreateRequest.getAppointmentDateTime().plusHours(2))){
+            throw new ResourceConflictException("Estimated time must be at most 2 hours after appointment time");
+        }
+
         Schedule schedule = Schedule.builder()
         .appointmentDateTime(scheduleCreateRequest.getAppointmentDateTime())
         .estimatedTime(scheduleCreateRequest.getEstimatedTime())
@@ -247,6 +254,11 @@ public class ScheduleService {
     return false;
     }
 
+    
+    public List<Schedule> getAppointmentsByDoctorId(UUID doctorId, LocalDateTime start, LocalDateTime end, Schedule.Status status) {
+        return scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetweenAndStatus(doctorId, start, end, status);
+    }
+
     public List<Schedule> getTodayScheduleForDoctor(UUID doctorId) {
         LocalDate today = LocalDate.now(timeZoneConfig.defaultZoneId());
         LocalDateTime start = today.atTime(8, 0);
@@ -297,32 +309,26 @@ public class ScheduleService {
         throw new ResourceConflictException("Cannot modify schedule with cancelled payment");
     }
 
-    // Check thời gian hợp  nếu thuộc vào 1 treatment
-    Treatment treatment;
-    if(schedule.getScheduleServices().get(0).getTreatmentPhase() != null){
-        treatment = schedule.getScheduleServices().get(0).getTreatmentPhase().getTreatment();
-        LocalDateTime now = LocalDateTime.now();
-        LocalDate treatmentEndDate = treatment.getEndDate().toLocalDate();
-        if (request.getAppointmentDateTime().isBefore(now) ||
-            request.getAppointmentDateTime().toLocalDate().isAfter(treatmentEndDate)) {
-            throw new ResourceConflictException("Appointment time must be within treatment period");
-        }
-    }
-
     // EstimatedTime phải sau appointmentTime
     if (!request.getEstimatedTime().isAfter(request.getAppointmentDateTime())) {
         throw new ResourceConflictException("Estimated time must be after appointment time");
     }
 
-    // Thời gian khám <= 8 giờ
-    Duration duration = Duration.between(request.getAppointmentDateTime(), request.getEstimatedTime());
-    if (duration.toHours() > 8) {
-        throw new ResourceConflictException("Estimated time must not exceed 8 hours");
-    }
-
     // Kiểm tra trùng lịch
     if (checkOverlappingSchedule(doctorId, request.getAppointmentDateTime(), request.getEstimatedTime(), scheduleId)) {
         throw new ResourceConflictException("This schedule conflicts with another");
+    }
+
+    if(request.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(3))) {
+        throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
+    }
+
+    if(!request.getEstimatedTime().isAfter(request.getAppointmentDateTime().plusMinutes(10))) {
+        throw new ResourceConflictException("Estimated time must be after appointment time by at least 10 minutes");
+    }
+
+    if(request.getEstimatedTime().isAfter(request.getAppointmentDateTime().plusHours(2))){
+        throw new ResourceConflictException("Estimated time must be at most 2 hours after appointment time");
     }
 
     // Cập nhật lịch

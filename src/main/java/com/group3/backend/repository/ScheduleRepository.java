@@ -27,4 +27,12 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     );
 
     List<Schedule> findByIdIn(List<UUID> ids);
+
+    List<Schedule> findByDoctorIdAndAppointmentDateTimeBetweenAndStatus(
+        UUID doctorId,
+        LocalDateTime appointmentDateTimeStart,
+        LocalDateTime appointmentDateTimeEnd,
+        Schedule.Status status
+    );
+
 }

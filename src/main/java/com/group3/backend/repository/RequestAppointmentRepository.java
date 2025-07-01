@@ -43,7 +43,5 @@ public interface RequestAppointmentRepository extends JpaRepository<RequestAppoi
             String doctorEmail,
             List<RequestAppointment.Status> statuses,
             LocalDateTime deadline,
-            Pageable pageable);
-    
-    
+            Pageable pageable);    
 }

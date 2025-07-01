@@ -49,8 +49,8 @@ public class RequestAppointmentService {
             throw new ResourceConflictException("Patient already has an in-progress or awaiting contract signed treatment");
         }
 
-        if(dto.getAppointmentDatetime().isBefore(LocalDateTime.now().plusHours(72))){
-            throw new ResourceConflictException("Appointment must be at least 72 hours in advance");
+        if(dto.getAppointmentDatetime().isBefore(LocalDateTime.now().plusDays(3))){
+            throw new ResourceConflictException("Appointment must be at least 3 days in advance");
         }
 
         User doctor = userRepository.findById(dto.getDoctorId())
@@ -90,7 +90,7 @@ public class RequestAppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
         
         if(appointment.getAppointmentDatetime().isBefore(LocalDateTime.now().plusHours(24))) {
-            throw new ResourceConflictException("Appointment is must be accepted 24 hours before.");
+            throw new ResourceConflictException("Appointment must be accepted 24 hours before.");
         }
         
         if(!appointment.getDoctor().getId().equals(doctorId)) {

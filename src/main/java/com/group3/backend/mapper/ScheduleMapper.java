@@ -17,8 +17,6 @@ public interface ScheduleMapper {
     @Mapping(source = "patient", target = "patient", qualifiedByName = "toUserPatientResponse")
     DoctorScheduleReponse toDoctorScheduleRespone(Schedule schedule);
 
-    @Mapping(source = "scheduleServices", target = "services")
-    @Mapping(source = "scheduleResult", target = "scheduleResult")
     @Mapping(source = "doctor", target = "doctor", qualifiedByName = "toUserDoctorResponse")
     PatientScheduleResponse toPatientScheduleResponse(Schedule schedule);
 
