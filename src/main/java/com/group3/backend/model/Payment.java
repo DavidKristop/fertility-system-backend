@@ -35,7 +35,8 @@ public class Payment {
     private LocalDateTime paymentDeadline;
 
     @Column(name = "payment_method")
-    private String paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -59,6 +60,12 @@ public class Payment {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    public enum PaymentMethod {
+        CASH,
+        CREDIT_CARD,
+        PAYPAL,
+    }
     
     public enum Status {
         PENDING,

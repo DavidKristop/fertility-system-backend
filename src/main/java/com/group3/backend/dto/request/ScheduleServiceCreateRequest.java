@@ -13,8 +13,4 @@ import lombok.Data;
 public class ScheduleServiceCreateRequest {
     @NotNull
     private UUID serviceId;
-    
-    @Min(value = 1, message = "Notes must be at least 1 character")
-    @Max(value = 50, message = "Notes must be at most 50 characters")
-    private String notes;
 }

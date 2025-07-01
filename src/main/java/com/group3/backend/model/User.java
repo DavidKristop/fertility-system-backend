@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -94,6 +95,10 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<FogetPassToken> forgetPassTokens;
+
+    @Column(name = "is_active")
+    @Builder.Default
+    private boolean isActive = true;
 
     @CreatedDate
     private LocalDateTime createdAt;

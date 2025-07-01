@@ -16,4 +16,5 @@ public class TreatmentPhaseResponse {
     private BigDecimal phaseModifierPercentage;
     private List<TreatmentScheduleResponse> schedules;
     private List<TreatmentAssignDrugReponse> assignDrugs;
+    private List<TreatmentServiceResponse> unsetServices;
 }

@@ -14,5 +14,4 @@ public class TreatmentServiceRequest {
     private UUID id;
     @Min(value = 1, message = "Amount of service must be greater than 0")
     private Integer amount;
-    private String notes;
 }

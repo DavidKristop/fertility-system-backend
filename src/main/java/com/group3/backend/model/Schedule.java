@@ -31,10 +31,6 @@ public class Schedule {
     @JoinColumn(name = "patient_id", nullable = false)
     private User patient;
 
-    @ManyToOne
-    @JoinColumn(name = "treatment_phase_id")
-    private TreatmentPhase treatmentPhase;
-
     @Column(name = "appointment_datetime", nullable = false)
     private LocalDateTime appointmentDateTime;
 

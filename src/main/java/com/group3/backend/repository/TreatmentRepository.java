@@ -1,6 +1,9 @@
 package com.group3.backend.repository;
 
 import com.group3.backend.model.Treatment;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -13,6 +16,27 @@ public interface TreatmentRepository extends JpaRepository<Treatment, UUID> {
     List<Treatment> findByDoctorId(UUID doctorId);
     Optional<Treatment> findByIdAndPatientId(UUID id, UUID patientId);
     Optional<Treatment> findByIdAndDoctorId(UUID id, UUID doctorId);
+
+    Page<Treatment> findByDoctorIdAndStatusInAndPatientEmailContainingIgnoreCase(
+        UUID doctorId,
+        List<Treatment.Status> statuses,
+        String patientEmail,
+        Pageable pageable
+    );
+
+    Page<Treatment> findByPatientIdAndStatusInAndDoctorEmailContainingIgnoreCase(
+        UUID patientId,
+        List<Treatment.Status> statuses,
+        String doctorEmail,
+        Pageable pageable
+    );
+
+    Page<Treatment> findByPatientEmailContainingIgnoreCaseAndDoctorEmailContainingIgnoreCaseAndStatusIn(
+        String patientEmail,
+        String doctorEmail,
+        List<Treatment.Status> statuses,
+        Pageable pageable
+    );
 
     boolean existsByPatientIdAndStatusIn(UUID patientId, List<Treatment.Status> statuses);
 }
