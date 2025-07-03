@@ -1,4 +1,4 @@
--- SELECT * FROM users;
+SELECT * FROM users;
 -- SELECT * FROM role;
 -- SELECT * FROM patient_profile;
 -- SELECT * FROM treatment;

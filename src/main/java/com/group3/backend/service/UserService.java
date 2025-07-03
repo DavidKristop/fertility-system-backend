@@ -23,7 +23,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.UUID;
 
-import javax.print.Doc;
 
 @Service
 @RequiredArgsConstructor
@@ -154,7 +153,7 @@ public class UserService implements UserDetailsService {
         );
     }
 
-        public User getUserByEmail(String email) {
+    public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }

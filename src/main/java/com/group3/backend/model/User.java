@@ -48,7 +48,8 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
-    @Column(nullable = false)
+    @Builder.Default
+    @Column(name = "is_verify", nullable = false)
     private boolean isVerify = false;
 
     @ManyToOne

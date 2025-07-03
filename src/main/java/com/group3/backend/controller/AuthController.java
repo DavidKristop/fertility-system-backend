@@ -5,47 +5,24 @@ import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.dto.response.AuthResponse;
 import com.group3.backend.model.User;
-import com.group3.backend.model.VerifyEmailToken;
-import com.group3.backend.service.JwtService;
+import com.group3.backend.service.AuthService;
 import com.group3.backend.service.UserDetailsImpl;
-import com.group3.backend.service.UserService;
-import com.group3.backend.repository.VerifyEmailTokenRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService service;
-
-    private final JwtService jwtService;
-
-    private final AuthenticationManager authenticationManager;
-
-    private final VerifyEmailTokenRepository verifyEmailTokenRepository;
-
-    @Autowired
-    private JavaMailSender mailSender;
+    private final AuthService service;
 
     @GetMapping("/welcome")
     public String welcome() {
@@ -54,124 +31,17 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<Response<AuthResponse>> signup(@Valid @RequestBody RegistrationRequest registrationRequest, HttpServletResponse response) {
-        try {
-            User newUser = service.registerUser(registrationRequest);
-
-            String accessToken = jwtService.generateAccessToken(newUser.getEmail(), newUser.getId(), newUser.getRole().getName().name());
-            String refreshToken = jwtService.generateRefreshToken(newUser.getEmail());
-
-            // Set refresh token vào cookie
-            Cookie cookie = new Cookie("refreshToken", refreshToken);
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-            
-            response.addCookie(cookie);
-
-            AuthResponse authResponse = new AuthResponse(
-            accessToken,
-            newUser.getEmail(),
-            newUser.getRole().getName().name(),
-            newUser.getId()
-        );
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(authResponse, "User registered successfully"));
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(null, "Registration Error: " + e.getMessage(), false));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response<>(null, "An unexpected error occurred during user registration: " + e.getMessage(), false));
-        }
+        return service.signup(registrationRequest, response);
     }
 
     @PostMapping("/signin")
     public ResponseEntity<Response<AuthResponse>> signin(@RequestBody LoginRequest authRequest, HttpServletResponse response) {
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
-            );
-        } catch (UsernameNotFoundException | BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(null, "Invalid email or password.", false));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Response<>(null, "An unexpected error occurred: " + e.getMessage(), false));
-        }
-
-        if (authentication.isAuthenticated()) {
-            User user = service.getUserByEmail(authRequest.getEmail());
-
-            if (!user.isVerify()) {
-            // Xoá token cũ nếu có
-            verifyEmailTokenRepository.deleteByUser(user);
-
-            // Tạo token mới
-            String token = UUID.randomUUID().toString();
-            VerifyEmailToken verifyToken = new VerifyEmailToken();
-            verifyToken.setToken(token);
-            verifyToken.setUser(user);
-            verifyToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
-            verifyEmailTokenRepository.save(verifyToken);
-
-            // Gửi email xác thực
-            sendVerificationEmail(user.getEmail(), token);
-
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null, "Email is not verified. A verification email has been sent.", false));
-        }
-
-            String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
-            String refreshToken = jwtService.generateRefreshToken(user.getEmail());
-
-            // Set refresh token as HttpOnly cookie
-            Cookie cookie = new Cookie("refreshToken", refreshToken);
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-            
-            response.addCookie(cookie);
-
-            AuthResponse authResponse = new AuthResponse(
-                accessToken, 
-                user.getEmail(), 
-                user.getRole().getName().name(), 
-                user.getId()
-            );
-
-            return ResponseEntity.ok(new Response<>(authResponse, "Authentication successful", true));
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(null, "Authentication failed!", false));
-        }
+        return service.signin(authRequest, response);
     }
 
-        @PostMapping("/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<Response<AuthResponse>> refreshToken(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
-        if (refreshToken == null || refreshToken.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(null, "Refresh token is missing", false));
-        }
-
-        try {
-            String email = jwtService.extractEmail(refreshToken);
-            User user = service.getUserByEmail(email);
-
-            if (!jwtService.isTokenExpired(refreshToken)) {
-                String newAccessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
-
-                // Trả về access token mới, giữ nguyên refresh token
-                AuthResponse authResponse = new AuthResponse(
-                    newAccessToken, 
-                    email, user.getRole().getName().name(), 
-                    user.getId()
-                );
-
-                return ResponseEntity.ok(new Response<>(authResponse, "Token refreshed successfully", true));
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(null, "Refresh token expired", false));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(null, "Invalid refresh token", false));
-        }
+        return service.refreshToken(refreshToken);
     }
 
 
@@ -206,16 +76,4 @@ public class AuthController {
         return ResponseEntity.ok(new Response<>("Logged out successfully", "Logout success", true));
     }
 
-    private void sendVerificationEmail(String toEmail, String token) {
-    String link = "http://localhost:5173/verify-email?token=" + token;
-    String subject = "Email Verification";
-    String text = "Please verify your email by clicking the link below:\n" + link;
-
-    SimpleMailMessage message = new SimpleMailMessage();
-    message.setTo(toEmail);
-    message.setSubject(subject);
-    message.setText(text);
-
-    mailSender.send(message);
-}
 }
