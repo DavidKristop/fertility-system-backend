@@ -48,6 +48,9 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(nullable = false)
+    private boolean isVerify = false;
+
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;

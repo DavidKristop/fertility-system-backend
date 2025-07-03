@@ -5,14 +5,20 @@ import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.dto.response.AuthResponse;
 import com.group3.backend.model.User;
+import com.group3.backend.model.VerifyEmailToken;
 import com.group3.backend.service.JwtService;
 import com.group3.backend.service.UserDetailsImpl;
 import com.group3.backend.service.UserService;
+import com.group3.backend.repository.VerifyEmailTokenRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,6 +28,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,6 +41,11 @@ public class AuthController {
     private final JwtService jwtService;
 
     private final AuthenticationManager authenticationManager;
+
+    private final VerifyEmailTokenRepository verifyEmailTokenRepository;
+
+    @Autowired
+    private JavaMailSender mailSender;
 
     @GetMapping("/welcome")
     public String welcome() {
@@ -88,6 +101,26 @@ public class AuthController {
 
         if (authentication.isAuthenticated()) {
             User user = service.getUserByEmail(authRequest.getEmail());
+
+            if (!user.isVerify()) {
+            // Xoá token cũ nếu có
+            verifyEmailTokenRepository.deleteByUser(user);
+
+            // Tạo token mới
+            String token = UUID.randomUUID().toString();
+            VerifyEmailToken verifyToken = new VerifyEmailToken();
+            verifyToken.setToken(token);
+            verifyToken.setUser(user);
+            verifyToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+            verifyEmailTokenRepository.save(verifyToken);
+
+            // Gửi email xác thực
+            sendVerificationEmail(user.getEmail(), token);
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, "Email is not verified. A verification email has been sent.", false));
+        }
+
             String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
             String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
@@ -172,4 +205,17 @@ public class AuthController {
 
         return ResponseEntity.ok(new Response<>("Logged out successfully", "Logout success", true));
     }
+
+    private void sendVerificationEmail(String toEmail, String token) {
+    String link = "http://localhost:5173/verify-email?token=" + token;
+    String subject = "Email Verification";
+    String text = "Please verify your email by clicking the link below:\n" + link;
+
+    SimpleMailMessage message = new SimpleMailMessage();
+    message.setTo(toEmail);
+    message.setSubject(subject);
+    message.setText(text);
+
+    mailSender.send(message);
+}
 }
