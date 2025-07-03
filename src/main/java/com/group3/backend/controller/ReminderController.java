@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +48,17 @@ public class ReminderController {
         Page<Reminder> reminders = reminderService.getReminderToUser(userId, pageable);
         Page<ReminderReponse> response = reminders.map(reminderMapper::toResponse);
         return ResponseEntity.ok(new Response<>(response, "Reminders retrieved successfully"));
+    }
+
+    @PutMapping("/{reminderId}/read")
+    @PreAuthorize("hasAnyAuthority('ROLE_PATIENT', 'ROLE_DOCTOR', 'ROLE_MANAGER')")
+    public ResponseEntity<Response<ReminderReponse>> updateIsReadReminder(
+        @PathVariable UUID reminderId
+    ) {
+        UUID userId = currentUserUtils.getCurrentUserId();
+        Reminder updatedReminder = reminderService.updateIsReadReminder(reminderId, userId);
+        ReminderReponse response = reminderMapper.toResponse(updatedReminder);
+        return ResponseEntity.ok(new Response<>(response, "Reminder updated successfully"));
     }
 
 }

@@ -10,4 +10,5 @@ public class ReminderReponse {
     private String title;
     private String content;
     private UserRespones sendTo;
+    private boolean isRead;
 }
