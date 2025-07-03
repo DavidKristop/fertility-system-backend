@@ -54,7 +54,7 @@ public class TreatmentService {
         return treatmentRepository.findByDoctorId(doctorId);
     }
 
-    public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> statuses, String email, Pageable pageable){
+public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> statuses, String email, Pageable pageable){
         return treatmentRepository.findByDoctorIdAndStatusInAndPatientEmailContainingIgnoreCase(doctorId, statuses, email, pageable);
     }
 
@@ -149,6 +149,10 @@ public class TreatmentService {
         User doctor = userRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
 
+        if(treatmentRepository.existsByPatientIdAndStatusIn(patient.getId(), List.of(Treatment.Status.IN_PROGRESS, Treatment.Status.AWAITING_CONTRACT_SIGNED))){
+            throw new ResourceConflictException("Patient already has an in progress treatment or they are waiting to sign contract for one of their treatment");
+        }
+            
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
         treatment.setStatus(Treatment.Status.AWAITING_CONTRACT_SIGNED);

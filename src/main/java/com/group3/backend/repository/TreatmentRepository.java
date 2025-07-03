@@ -17,6 +17,11 @@ public interface TreatmentRepository extends JpaRepository<Treatment, UUID> {
     Optional<Treatment> findByIdAndPatientId(UUID id, UUID patientId);
     Optional<Treatment> findByIdAndDoctorId(UUID id, UUID doctorId);
 
+    Optional<Treatment> findByPatientIdAndStatusIn(
+        UUID patientId,
+        List<Treatment.Status> status
+    );
+
     Page<Treatment> findByDoctorIdAndStatusInAndPatientEmailContainingIgnoreCase(
         UUID doctorId,
         List<Treatment.Status> statuses,

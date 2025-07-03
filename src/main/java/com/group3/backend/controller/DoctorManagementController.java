@@ -5,6 +5,7 @@ import com.group3.backend.dto.response.DoctorResponse;
 import com.group3.backend.dto.response.UserDoctorResponse;
 import com.group3.backend.mapper.UserMapper;
 import com.group3.backend.model.User;
+import com.group3.backend.constants.Roles;
 import com.group3.backend.dto.Response;
 import com.group3.backend.service.UserManagementService;
 import com.group3.backend.service.UserService;
@@ -34,6 +35,7 @@ public class DoctorManagementController {
     private final UserMapper userMapper;
 
     @PostMapping("/new-doctor")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     public ResponseEntity<Response<DoctorResponse>> createDoctor(@Valid @RequestBody CreateDoctorRequest request) {
         try {
             DoctorResponse createdDoctor = userService.createDoctorAccount(request);
@@ -56,7 +58,7 @@ public class DoctorManagementController {
         @RequestParam(defaultValue = "") String name
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<User> doctors = userManagementService.getUsers("ROLE_DOCTOR", name, true, pageable);
+        Page<User> doctors = userManagementService.getUsers(Roles.ROLE_DOCTOR, name, true, pageable);
         return ResponseEntity.ok(new Response<>(doctors.map(userMapper::toUserDoctorResponse), "Doctors retrieved successfully", true));
     }
 }

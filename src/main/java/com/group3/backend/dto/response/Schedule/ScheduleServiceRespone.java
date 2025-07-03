@@ -13,5 +13,4 @@ public class ScheduleServiceRespone {
     private String description;
     private BigDecimal price;
     private boolean isActive;
-    private String notes;
 }

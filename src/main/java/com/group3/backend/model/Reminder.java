@@ -23,6 +23,10 @@ public class Reminder {
     @Column(nullable = false)
     private String content;
 
+    @Column(name = "is_read", nullable = false)
+    @Builder.Default
+    private boolean isRead = false;
+
     @ManyToOne
     @JoinColumn(name = "send_to", nullable = false)
     private User sendTo;

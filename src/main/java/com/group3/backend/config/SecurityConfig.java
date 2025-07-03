@@ -58,7 +58,6 @@ public class SecurityConfig {
                     .requestMatchers("/api/auth/patient/**").hasAuthority("ROLE_PATIENT")
                     .requestMatchers("/api/auth/admin/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
-                    .requestMatchers("/api/doctor-management/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                     .requestMatchers("/api/drugs").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
                     .requestMatchers("/api/drugs/**").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
                     .requestMatchers("/api/services").hasAnyAuthority("ROLE_DOCTOR", "ROLE_MANAGER")
