@@ -1,9 +1,10 @@
-SELECT * FROM users;
+-- SELECT * FROM users;
 -- SELECT * FROM role;
 -- SELECT * FROM patient_profile;
-SELECT * FROM treatment;
-SELECT * FROM contract
+-- SELECT * FROM treatment;
+-- SELECT * FROM contract
 -- SELECT * FROM doctor_profile;
+
 
 
 -- tạo treatment mẫu
