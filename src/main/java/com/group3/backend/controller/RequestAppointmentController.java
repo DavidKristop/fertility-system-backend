@@ -80,7 +80,7 @@ public class RequestAppointmentController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "") String patientEmail,
-        @RequestParam(defaultValue = "PENDING") RequestAppointment.Status status
+        @RequestParam(defaultValue = "PENDING") List<RequestAppointment.Status> status
     ) {
         User user = currentUserUtils.getCurrentUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -88,7 +88,7 @@ public class RequestAppointmentController {
         Page<RequestAppointment> appointments = service.getDoctorsAppointments(
             user.getId(),
             patientEmail,
-            List.of(status),
+            status,
             deadline,
             pageable);
 
@@ -103,7 +103,7 @@ public class RequestAppointmentController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "") String doctorEmail,
-        @RequestParam(defaultValue = "PENDING") RequestAppointment.Status status
+        @RequestParam(defaultValue = "PENDING") List<RequestAppointment.Status> status
     ) {
         User user = currentUserUtils.getCurrentUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -111,7 +111,7 @@ public class RequestAppointmentController {
         Page<RequestAppointment> appointments = service.getPatientsAppointments(
             user.getId(),
             doctorEmail,
-            List.of(status),
+            status,
             deadline,
             pageable);
 
@@ -164,8 +164,8 @@ public class RequestAppointmentController {
 
     @PutMapping("/cancel/{appointmentId}")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<RequestAppointmentResponse>> cancelAppointment(@PathVariable UUID appointmentId) {
-        RequestAppointment cancelledAppointment = service.cancelAppointment(appointmentId, currentUserUtils.getCurrentUser().getId());
+    public ResponseEntity<Response<RequestAppointmentResponse>> cancelAppointment(@PathVariable UUID appointmentId, @RequestBody String rejectedReason) {
+        RequestAppointment cancelledAppointment = service.cancelAppointment(appointmentId, currentUserUtils.getCurrentUser().getId(), rejectedReason);
         return ResponseEntity.ok(new Response<>(requestAppointmentMapper.toResponse(cancelledAppointment),
          "Appointment cancelled successfully"));
     }

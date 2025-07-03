@@ -1,5 +1,6 @@
 package com.group3.backend.repository;
 
+import com.group3.backend.constants.Roles;
 import com.group3.backend.model.User;
 
 import org.springframework.data.domain.Page;
@@ -15,5 +16,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByFullName(String fullName);
     List<User> findAllByRoleName(String roleName);
 
-    Page<User> findAllByRoleNameAndFullNameIgnoreCaseContainingAndIsActive(String roleName, String fullName, boolean isActive, Pageable pageable);
+    Page<User> findAllByRoleNameAndFullNameIgnoreCaseContainingAndIsActive(Roles roleName, String fullName, boolean isActive, Pageable pageable);
 }

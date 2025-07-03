@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.group3.backend.dto.response.UserDoctorResponse;
 import com.group3.backend.dto.response.UserPatientResponse;
+import com.group3.backend.dto.response.Schedule.ScheduleResponse;
 import com.group3.backend.model.RequestAppointment;
 
 import lombok.Data;
@@ -19,4 +20,5 @@ public class RequestAppointmentResponse {
     private String rejectedReason;
     private LocalDateTime appointmentDatetime;
     private RequestAppointment.Status status;
+    private ScheduleResponse schedule;
 }

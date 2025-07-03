@@ -46,6 +46,8 @@ public class ScheduleService {
 
     @Autowired
     private TimeZoneConfig timeZoneConfig;
+
+    @Autowired
     private UserRepository userRepository;
 
     public List<Schedule> getAvailableDoctors(Integer year, Integer month) {
@@ -99,10 +101,7 @@ public class ScheduleService {
             throw new ResourceConflictException("The id for doctor does not have the role of doctor");
         }
 
-        if(checkOverlappingSchedule(doctor.getId(),scheduleCreateRequest.getAppointmentDateTime(),scheduleCreateRequest.getEstimatedTime())){
-            throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
-        }
-
+        
         if(scheduleCreateRequest.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(3))) {
             throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
         }
@@ -114,6 +113,14 @@ public class ScheduleService {
         if(scheduleCreateRequest.getEstimatedTime().isAfter(scheduleCreateRequest.getAppointmentDateTime().plusHours(2))){
             throw new ResourceConflictException("Estimated time must be at most 2 hours after appointment time");
         }
+        
+        List<Schedule> existingSchedules = scheduleRepository.findByDoctorIdAndStatus(
+            doctor.getId(), Schedule.Status.PENDING
+        );
+        if(checkOverlappingSchedule(doctor.getId(),scheduleCreateRequest.getAppointmentDateTime(),scheduleCreateRequest.getEstimatedTime(),existingSchedules)){
+            throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
+        }
+
 
         Schedule schedule = Schedule.builder()
         .appointmentDateTime(scheduleCreateRequest.getAppointmentDateTime())
@@ -197,7 +204,10 @@ public class ScheduleService {
             throw new ResourceConflictException("Estimated time must be at most 8 hours after appointment time");
         }
 
-        if(checkOverlappingSchedule(doctor.getId(),schedule.getAppointmentDateTime(),schedule.getEstimatedTime())){
+        List<Schedule> existingSchedules = scheduleRepository.findByDoctorIdAndStatus(
+            doctor.getId(), Schedule.Status.PENDING
+        );
+        if(checkOverlappingSchedule(doctor.getId(),schedule.getAppointmentDateTime(),schedule.getEstimatedTime(), existingSchedules )){
             throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
         }
         
@@ -225,33 +235,22 @@ public class ScheduleService {
         return schedules;
     }
 
-    private boolean checkOverlappingSchedule(UUID doctorId,LocalDateTime appointmentDateTime, LocalDateTime estimatedTime){
-        List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(
-            doctorId,
-            appointmentDateTime,
-            estimatedTime
-        );
-        return !overlappingSchedules.isEmpty();
-    }
+    public static boolean checkOverlappingSchedule(UUID doctorId, LocalDateTime newStart, LocalDateTime newEnd, List<Schedule> schedules) {
 
-    // Overloaded method to exclude a specific scheduleId (for updates)
-    private boolean checkOverlappingSchedule(UUID doctorId, LocalDateTime newStart, LocalDateTime newEnd, UUID excludeScheduleId) {
-        List<Schedule> schedules = scheduleRepository.findByDoctorId(doctorId);
+        for (Schedule existing : schedules) {
+            LocalDateTime existStart = existing.getAppointmentDateTime();
+            LocalDateTime existEnd = existing.getEstimatedTime();
 
-    for (Schedule existing : schedules) {
-        if (existing.getId().equals(excludeScheduleId)) continue;
-        if (existing.getStatus() == Schedule.Status.CANCELLED) continue;
-
-        LocalDateTime existStart = existing.getAppointmentDateTime();
-        LocalDateTime existEnd = existing.getEstimatedTime();
-
-        // Check overlap logic
-        if (newStart.isBefore(existEnd) && newEnd.isAfter(existStart)) {
-            return true;
+            // Check overlap logic
+            if ((newStart.isBefore(existEnd) && newEnd.isAfter(existStart))||
+                (newStart.isBefore(existStart) && newEnd.isAfter(existStart))||
+                (newStart.isBefore(existEnd) && newEnd.isAfter(existEnd))||
+                (newStart.isBefore(existStart) && newEnd.isAfter(existEnd))) {
+                return true;
+            }
         }
-    }
 
-    return false;
+        return false;
     }
 
     
@@ -294,48 +293,52 @@ public class ScheduleService {
     }
 
     public Schedule changeScheduleTime(UUID scheduleId, UUID doctorId, ScheduleChangeRequest request) {
-    Schedule schedule = scheduleRepository.findById(scheduleId)
-        .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+            .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
 
-    if (!schedule.getDoctor().getId().equals(doctorId)) {
-        throw new UnauthorizedAccessException("You are not allowed to modify this schedule");
+        if (!schedule.getDoctor().getId().equals(doctorId)) {
+            throw new UnauthorizedAccessException("You are not allowed to modify this schedule");
+        }
+
+        if (schedule.getStatus() != Schedule.Status.PENDING) {
+            throw new ResourceConflictException("Only PENDING schedules can be changed");
+        }
+
+        if (schedule.getPayment().getStatus() == Payment.Status.CANCELED) {
+            throw new ResourceConflictException("Cannot modify schedule with cancelled payment");
+        }
+
+        // EstimatedTime phải sau appointmentTime
+        if (!request.getEstimatedTime().isAfter(request.getAppointmentDateTime())) {
+            throw new ResourceConflictException("Estimated time must be after appointment time");
+        }
+
+        
+        if(request.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(3))) {
+            throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
+        }
+        
+        if(!request.getEstimatedTime().isAfter(request.getAppointmentDateTime().plusMinutes(10))) {
+            throw new ResourceConflictException("Estimated time must be after appointment time by at least 10 minutes");
+        }
+        
+        if(request.getEstimatedTime().isAfter(request.getAppointmentDateTime().plusHours(2))){
+            throw new ResourceConflictException("Estimated time must be at most 2 hours after appointment time");
+        }
+        
+        List<Schedule> existingSchedules = scheduleRepository.findByDoctorIdAndStatusAndIdNot(
+            doctorId, Schedule.Status.PENDING, scheduleId
+        );
+        // Kiểm tra trùng lịch
+        if (checkOverlappingSchedule(doctorId, request.getAppointmentDateTime(), request.getEstimatedTime(), existingSchedules)) {
+            throw new ResourceConflictException("This schedule conflicts with another");
+        }
+        
+        // Cập nhật lịch
+        schedule.setAppointmentDateTime(request.getAppointmentDateTime());
+        schedule.setEstimatedTime(request.getEstimatedTime());
+
+        return scheduleRepository.save(schedule);
     }
-
-    if (schedule.getStatus() != Schedule.Status.PENDING) {
-        throw new ResourceConflictException("Only PENDING schedules can be changed");
-    }
-
-    if (schedule.getPayment().getStatus() == Payment.Status.CANCELED) {
-        throw new ResourceConflictException("Cannot modify schedule with cancelled payment");
-    }
-
-    // EstimatedTime phải sau appointmentTime
-    if (!request.getEstimatedTime().isAfter(request.getAppointmentDateTime())) {
-        throw new ResourceConflictException("Estimated time must be after appointment time");
-    }
-
-    // Kiểm tra trùng lịch
-    if (checkOverlappingSchedule(doctorId, request.getAppointmentDateTime(), request.getEstimatedTime(), scheduleId)) {
-        throw new ResourceConflictException("This schedule conflicts with another");
-    }
-
-    if(request.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(3))) {
-        throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
-    }
-
-    if(!request.getEstimatedTime().isAfter(request.getAppointmentDateTime().plusMinutes(10))) {
-        throw new ResourceConflictException("Estimated time must be after appointment time by at least 10 minutes");
-    }
-
-    if(request.getEstimatedTime().isAfter(request.getAppointmentDateTime().plusHours(2))){
-        throw new ResourceConflictException("Estimated time must be at most 2 hours after appointment time");
-    }
-
-    // Cập nhật lịch
-    schedule.setAppointmentDateTime(request.getAppointmentDateTime());
-    schedule.setEstimatedTime(request.getEstimatedTime());
-
-    return scheduleRepository.save(schedule);
-}
 
 }
