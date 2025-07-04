@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.group3.backend.dto.response.Treatment.TreatmentAssignDrugReponse;
-import com.group3.backend.dto.response.Treatment.TreatmentScheduleResponse;
+import com.group3.backend.dto.response.Treatment.TreatmentServiceResponse;
 import com.group3.backend.model.Payment;
 
 import lombok.Data;
@@ -21,7 +21,7 @@ public class PaymentResponse {
     private String paymentMethod;
     private Payment.Status status;
     private UUID userId;
-    private List<TreatmentScheduleResponse> schedules;
+    private List<TreatmentServiceResponse> scheduleServices;
     private List<TreatmentAssignDrugReponse> assignDrugs;
     private List<RefundResponse> refunds;
     private LocalDateTime createdAt;

@@ -2,6 +2,7 @@ package com.group3.backend.service;
 
 import com.group3.backend.constants.Roles;
 import com.group3.backend.dto.request.ScheduleCreateRequest;
+import com.group3.backend.dto.request.ScheduleServiceCreateRequest;
 import com.group3.backend.dto.request.Schedule.AddScheduleToPhaseRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
@@ -16,11 +17,13 @@ import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.User;
 import com.group3.backend.model.Payment;
+import com.group3.backend.model.RequestAppointment;
+import com.group3.backend.repository.RequestAppointmentRepository;
 import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.ServiceRepository;
 import com.group3.backend.repository.TreatmentPhaseRepository;
 import com.group3.backend.repository.UserRepository;
-
+import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.config.TimeZoneConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +46,13 @@ public class ScheduleService {
 
     @Autowired
     private ServiceRepository serviceRepository;
+
+    @Autowired
+    private RequestAppointmentRepository requestAppointmentRepository;
+    
+    @Autowired
+    private EnvironmentConfig environmentConfig;
+    
 
     @Autowired
     private TimeZoneConfig timeZoneConfig;
@@ -85,6 +95,29 @@ public class ScheduleService {
         if(month == null) month = LocalDate.now().getMonthValue();
         
         return filterDate(schedules, year, month);
+    }
+
+    public Schedule createScheduleBasedOnRequest (RequestAppointment requestAppointment){
+        Schedule schedule = createSchedule(
+            ScheduleCreateRequest.builder()
+                .patientId(requestAppointment.getPatient().getId())
+                .doctorId(requestAppointment.getDoctor().getId())
+                .appointmentDateTime(requestAppointment.getAppointmentDatetime())
+                .estimatedTime(requestAppointment.getAppointmentDatetime().plusMinutes(45))
+                .services(List.of(
+                    ScheduleServiceCreateRequest.builder()
+                    .serviceId(UUID.fromString(environmentConfig.getConsultationServiceId()))
+                    .build(),
+                    ScheduleServiceCreateRequest.builder()
+                    .serviceId(UUID.fromString(environmentConfig.getUltrasoundServiceId()))
+                    .build()
+                ))
+                .build()
+            );
+        
+        requestAppointment.setSchedule(schedule);
+        requestAppointmentRepository.save(requestAppointment);
+        return schedule;
     }
 
     public Schedule createSchedule(ScheduleCreateRequest scheduleCreateRequest) {
@@ -284,9 +317,11 @@ public class ScheduleService {
             throw new ResourceConflictException("Schedule is not in pending status");
         }
 
-        if(schedule.getPayment() == null || schedule.getPayment().getStatus() != Payment.Status.COMPLETED) {
-            throw new ResourceConflictException("Schedule payment is not completed");
-        }
+        schedule.getScheduleServices().forEach(scheduleService ->{
+            if(scheduleService.getPayment().getStatus() != Payment.Status.COMPLETED) {
+                throw new ResourceConflictException("The payment for this schedule is not completed.");
+            }
+        });
 
         schedule.setStatus(Schedule.Status.DONE);
         return scheduleRepository.save(schedule);
@@ -303,16 +338,6 @@ public class ScheduleService {
         if (schedule.getStatus() != Schedule.Status.PENDING) {
             throw new ResourceConflictException("Only PENDING schedules can be changed");
         }
-
-        if (schedule.getPayment().getStatus() == Payment.Status.CANCELED) {
-            throw new ResourceConflictException("Cannot modify schedule with cancelled payment");
-        }
-
-        // EstimatedTime phải sau appointmentTime
-        if (!request.getEstimatedTime().isAfter(request.getAppointmentDateTime())) {
-            throw new ResourceConflictException("Estimated time must be after appointment time");
-        }
-
         
         if(request.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(3))) {
             throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");

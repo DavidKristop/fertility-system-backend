@@ -2,10 +2,12 @@ package com.group3.backend.service;
 
 import com.group3.backend.model.Payment;
 import com.group3.backend.model.Schedule;
+import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.AssignDrug;
 import com.group3.backend.repository.AssignDrugRepository;
 import com.group3.backend.repository.PaymentRepository;
 import com.group3.backend.repository.ScheduleRepository;
+import com.group3.backend.repository.ScheduleServiceRepository;
 import com.group3.backend.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +30,9 @@ public class PaymentService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private ScheduleRepository scheduleRepository;
-    @Autowired
     private AssignDrugRepository assignDrugRepository;
+    @Autowired
+    private ScheduleServiceRepository scheduleServiceRepository;
 
     @Transactional
     public Payment createPayment(PaymentRequest paymentRequest) {
@@ -49,15 +51,15 @@ public class PaymentService {
             .build();
 
         // Get schedules and assign drugs
-        List<Schedule> schedules = scheduleRepository.findByIdIn(paymentRequest.getScheduleIds());
+        List<ScheduleService> scheduleServices = scheduleServiceRepository.findByIdIn(paymentRequest.getScheduleServiceIds());
         List<AssignDrug> assignDrugs = assignDrugRepository.findByIdIn(paymentRequest.getAssignDrugIds());
 
         // Set payment reference for each schedule and assign drug
-        schedules.forEach(schedule -> schedule.setPayment(payment));
+        scheduleServices.forEach(scheduleService -> scheduleService.setPayment(payment));
         assignDrugs.forEach(assignDrug -> assignDrug.setPayment(payment));
 
         // Set the relationships in payment
-        payment.setSchedules(schedules);
+        payment.setScheduleServices(scheduleServices);
         payment.setAssignDrugs(assignDrugs);
 
         // Save payment
@@ -66,12 +68,12 @@ public class PaymentService {
         return savedPayment;
     }
 
-    public Page<Payment> getPatientPayment(UUID patientId, Payment.Status status, Pageable pageable){
-        return paymentRepository.findByUserIdAndStatus(patientId, status, pageable);
+    public Page<Payment> getPatientPayment(UUID patientId, List<Payment.Status> statuses, Pageable pageable){
+        return paymentRepository.findByUserIdAndStatusIn(patientId, statuses, pageable);
     }
 
-    public Page<Payment> getPaymentByPatientEmail(String email, Payment.Status status, Pageable pageable){
-        return paymentRepository.findByUserEmailIgnoreCaseContainingAndStatus(email, status, pageable);
+    public Page<Payment> getPaymentByPatientEmail(String email, List<Payment.Status> statuses, Pageable pageable){
+        return paymentRepository.findByUserEmailIgnoreCaseContainingAndStatusIn(email, statuses, pageable);
     }
 
     public Payment getPaymentByIdAndUserId(UUID id, UUID userId){
@@ -134,10 +136,10 @@ public class PaymentService {
         // Update payment status
         payment.setStatus(Payment.Status.CANCELED);
 
-        // Cancel associated treatment phases and their schedules
-        payment.getSchedules().forEach(schedule -> {
-            schedule.setStatus(Schedule.Status.CANCELLED);
-            scheduleRepository.save(schedule);
+        // Cancel associated treatment phases and their schedule services
+        payment.getScheduleServices().forEach(scheduleService -> {
+            if(scheduleService.getSchedule() != null) scheduleService.getSchedule().setStatus(Schedule.Status.CANCELLED);
+            scheduleServiceRepository.save(scheduleService);
         });
 
         payment.getAssignDrugs().forEach(assignDrug -> {
