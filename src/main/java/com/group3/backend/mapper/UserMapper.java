@@ -6,10 +6,14 @@ import org.mapstruct.Named;
 
 import com.group3.backend.dto.response.UserDoctorResponse;
 import com.group3.backend.dto.response.UserPatientResponse;
+import com.group3.backend.dto.response.UserRespones;
 import com.group3.backend.model.User;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
+    @Mapping(source = "role.name",target = "role")
+    UserRespones toUserResponse(User user);
+
     @Mapping(source = "doctorProfile.specialty",target = "specialty")
     @Mapping(source = "doctorProfile.degree",target = "degree")
     @Mapping(source = "doctorProfile.yearsOfExperience",target = "yearsOfExperience")

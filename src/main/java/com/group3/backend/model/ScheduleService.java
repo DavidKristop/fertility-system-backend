@@ -24,6 +24,7 @@ public class ScheduleService {
     @JoinColumn(name = "service_id")
     private Service service;
 
-    @Column(name = "notes")
-    private String notes;
+    @ManyToOne
+    @JoinColumn(name = "treatment_phase_id")
+    private TreatmentPhase treatmentPhase;
 }

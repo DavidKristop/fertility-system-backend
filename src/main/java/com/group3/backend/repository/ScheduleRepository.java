@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
-    List<Schedule> findByTreatmentPhaseId(UUID phaseId);
+    List<Schedule> findByScheduleServicesTreatmentPhaseId(UUID phaseId);
     List<Schedule> findByPatientId(UUID patientId);
     List<Schedule> findByDoctorId(UUID doctorId);
 
@@ -27,4 +27,22 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     );
 
     List<Schedule> findByIdIn(List<UUID> ids);
+
+    List<Schedule> findByDoctorIdAndAppointmentDateTimeBetweenAndStatus(
+        UUID doctorId,
+        LocalDateTime appointmentDateTimeStart,
+        LocalDateTime appointmentDateTimeEnd,
+        Schedule.Status status
+    );
+
+    List<Schedule> findByDoctorIdAndStatus(
+        UUID id,
+        Schedule.Status status
+    );
+
+    List<Schedule> findByDoctorIdAndStatusAndIdNot(
+        UUID doctorId,
+        Schedule.Status status,
+        UUID id
+    );
 }

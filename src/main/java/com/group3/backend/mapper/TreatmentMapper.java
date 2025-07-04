@@ -5,6 +5,9 @@ import com.group3.backend.model.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {ProtocolMapper.class, UserMapper.class})
 public interface TreatmentMapper {
@@ -17,10 +20,11 @@ public interface TreatmentMapper {
     TreatmentResponse toResponse(Treatment treatment);
 
     @Mapping(source = "assignDrugs", target = "assignDrugs")
-    @Mapping(source = "schedules", target = "schedules")
+    @Mapping(target = "unsetServices", expression = "java(getUnsetServices(phase))")
+    @Mapping(target = "schedules", expression = "java(getScheduledServices(phase))")
     TreatmentPhaseResponse map(TreatmentPhase phase);
 
-    @Mapping(source = "scheduleServices", target = "services")
+    @Mapping(target = "services", expression = "java(schedule.getScheduleServices().stream().map(this::map).collect(Collectors.toList()))")
     TreatmentScheduleResponse map(Schedule schedule);
 
     @Mapping(source = "service.id", target = "id")
@@ -30,6 +34,32 @@ public interface TreatmentMapper {
     @Mapping(source = "service.unit", target = "unit")
     @Mapping(source = "service.active", target = "active")
     TreatmentServiceResponse map(ScheduleService scheduleService);
+
+    default List<TreatmentServiceResponse> getUnsetServices(TreatmentPhase phase) {
+        List<TreatmentServiceResponse> unsetServices = new ArrayList<>();
+        for (ScheduleService scheduleService : phase.getScheduleServices()) {
+            if (scheduleService.getSchedule() == null) {
+                unsetServices.add(map(scheduleService));
+            }
+        }
+        return unsetServices;
+    }
+
+    default List<TreatmentScheduleResponse> getScheduledServices(TreatmentPhase phase) {
+        List<TreatmentScheduleResponse> schedules = new ArrayList<>();
+        for (ScheduleService scheduleService : phase.getScheduleServices()) {
+            if (scheduleService.getSchedule() != null) {
+                Schedule schedule = scheduleService.getSchedule();
+                if(schedules.stream().anyMatch(s -> s.getId().equals(schedule.getId()))) continue;
+                TreatmentScheduleResponse scheduleResponse = map(schedule);
+                List<TreatmentServiceResponse> serviceResponse = schedule.getScheduleServices().stream()
+                .map(this::map).collect(Collectors.toList());
+                scheduleResponse.setServices(serviceResponse);
+                schedules.add(scheduleResponse);
+            }
+        }
+        return schedules;
+    }
     
     @Mapping(source = "drug", target = "drug")
     TreatmentPatientDrugResponse map(PatientDrug patientDrug);

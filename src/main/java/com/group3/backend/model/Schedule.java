@@ -10,9 +10,11 @@ import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "schedule")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,10 +32,6 @@ public class Schedule {
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
     private User patient;
-
-    @ManyToOne
-    @JoinColumn(name = "treatment_phase_id")
-    private TreatmentPhase treatmentPhase;
 
     @Column(name = "appointment_datetime", nullable = false)
     private LocalDateTime appointmentDateTime;

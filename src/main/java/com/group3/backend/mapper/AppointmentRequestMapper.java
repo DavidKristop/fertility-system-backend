@@ -14,6 +14,7 @@ public interface AppointmentRequestMapper {
 
     @Mapping(source = "doctor", target = "doctor", qualifiedByName = "toUserDoctorResponse")
     @Mapping(source = "patient", target = "patient", qualifiedByName = "toUserPatientResponse")
+    @Mapping(source = "schedule", target = "schedule")
     RequestAppointmentResponse toResponse(RequestAppointment requestAppointment);
 
     @Named("toUserDoctorResponse")

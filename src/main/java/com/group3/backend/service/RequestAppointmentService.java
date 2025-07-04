@@ -2,7 +2,6 @@ package com.group3.backend.service;
 
 import java.util.List;
 import java.util.UUID;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -10,12 +9,14 @@ import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.TreatmentRepository;
+import com.group3.backend.repository.ReminderRepository;
 import com.group3.backend.repository.RequestAppointmentRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.group3.backend.model.Reminder;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.UserRepository;
@@ -34,6 +35,7 @@ public class RequestAppointmentService {
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
     private final TreatmentRepository treatmentRepository;
+    private final ReminderRepository reminderRepository;
 
     public RequestAppointment createRequestAppointment(RequestAppointmentRequest dto, UUID patientId) {
         
@@ -49,14 +51,21 @@ public class RequestAppointmentService {
             throw new ResourceConflictException("Patient already has an in-progress or awaiting contract signed treatment");
         }
 
-        if(dto.getAppointmentDatetime().isBefore(LocalDateTime.now().plusHours(72))){
-            throw new ResourceConflictException("Appointment must be at least 72 hours in advance");
+        if(dto.getAppointmentDatetime().isBefore(LocalDateTime.now().plusDays(3))){
+            throw new ResourceConflictException("Appointment must be at least 3 days in advance");
         }
 
+        
         User doctor = userRepository.findById(dto.getDoctorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
         User patient = userRepository.findById(patientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+        
+        List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndStatus(doctor.getId(), Schedule.Status.PENDING);
+
+        if (ScheduleService.checkOverlappingSchedule(doctor.getId(), dto.getAppointmentDatetime(), dto.getAppointmentDatetime().plusMinutes(45), overlappingSchedules)) {
+            throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
+        }
      
         RequestAppointment request = RequestAppointment.builder()
                 .doctor(doctor)
@@ -90,7 +99,7 @@ public class RequestAppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
         
         if(appointment.getAppointmentDatetime().isBefore(LocalDateTime.now().plusHours(24))) {
-            throw new ResourceConflictException("Appointment is must be accepted 24 hours before.");
+            throw new ResourceConflictException("Appointment must be accepted 24 hours before.");
         }
         
         if(!appointment.getDoctor().getId().equals(doctorId)) {
@@ -105,13 +114,9 @@ public class RequestAppointmentService {
         LocalDateTime appointmentEnd = appointmentStart.plusMinutes(45);
 
         // Find overlapping schedules for the same doctor
-        List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetween(
-            appointment.getDoctor().getId(),
-            appointmentStart,
-            appointmentEnd
-        );
+        List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndStatus(doctorId, Schedule.Status.PENDING);
 
-        if (!overlappingSchedules.isEmpty()) {
+        if (ScheduleService.checkOverlappingSchedule(doctorId, appointmentStart, appointmentEnd, overlappingSchedules)) {
             throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
         }
 
@@ -126,13 +131,19 @@ public class RequestAppointmentService {
             throw new ResourceConflictException("Patient already has another appointment during this time");
         }
 
+        setAllOverlappingAppointmentsToDenied(appointment.getDoctor().getId(), appointment.getId(), appointmentStart, appointmentEnd);
+
         // Cập nhật trạng thái của cuộc hẹn
         appointment.setStatus(RequestAppointment.Status.ACCEPTED);
-
+        reminderRepository.save(Reminder.builder()
+                .title("Appointment Reminder")
+                .content("Congratulations! Your requested appointment with " + appointment.getDoctor().getFullName() + " on " + appointment.getAppointmentDatetime() +" has been accepted.")
+                .sendTo(appointment.getPatient())
+                .build());
         return requestAppointmentRepository.save(appointment);
     }
 
-    public RequestAppointment cancelAppointment(UUID appointmentId, UUID doctorId) {
+    public RequestAppointment cancelAppointment(UUID appointmentId, UUID doctorId, String rejectedReason) {
         RequestAppointment appointment = requestAppointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
         
@@ -141,12 +152,43 @@ public class RequestAppointmentService {
         }
             
         if (!appointment.getStatus().equals(RequestAppointment.Status.PENDING)) {
-            throw new IllegalStateException("Appointment is already accepted or cancelled");
+            throw new IllegalStateException("Appointment has already been accepted or cancelled");
         }
 
         appointment.setStatus(RequestAppointment.Status.DENIED);
-
+        appointment.setRejectedReason(rejectedReason);
+        reminderRepository.save(Reminder.builder()
+                .title("Appointment request Denied")
+                .content("We're sorry, but your appointment request with " + appointment.getDoctor().getFullName() + " on " + appointment.getAppointmentDatetime() + " has been cancelled. Reason: " + rejectedReason)
+                .sendTo(appointment.getPatient())
+                .build());
         return requestAppointmentRepository.save(appointment);
+    }
+
+    private void setAllOverlappingAppointmentsToDenied(UUID doctorId, UUID excludeAppointmentId, LocalDateTime newStart, LocalDateTime newEnd){
+
+        List<RequestAppointment> overlappingAppointments = requestAppointmentRepository.findByDoctorIdAndStatusAndIdNot(doctorId, RequestAppointment.Status.PENDING, excludeAppointmentId);
+
+        for (RequestAppointment appointment : overlappingAppointments) {
+            LocalDateTime appointmentStart = appointment.getAppointmentDatetime();
+            LocalDateTime appointmentEnd = appointmentStart.plusMinutes(45);
+
+            // Check if the appointment overlaps with the new time
+            if ((newStart.isBefore(appointmentEnd) && newEnd.isAfter(appointmentStart))||
+                (newStart.isBefore(appointmentStart) && newEnd.isAfter(appointmentStart))||
+                (newStart.isBefore(appointmentEnd) && newEnd.isAfter(appointmentEnd))||
+                (newStart.isBefore(appointmentStart) && newEnd.isAfter(appointmentEnd))) {
+                appointment.setStatus(RequestAppointment.Status.DENIED);
+                appointment.setRejectedReason("Your request has been rejected because the doctor has already accepted another appointment that overlaps with your schedule.");
+                reminderRepository.save(Reminder.builder()
+                        .title("Appointment request Denied")
+                        .content("We're sorry, but your appointment request with " + appointment.getDoctor().getFullName() + " on " + appointment.getAppointmentDatetime() + " has been denied. Because the doctor has already accepted another appointment that overlaps with your schedule.")
+                        .sendTo(appointment.getPatient())
+                        .build());
+            }
+        }
+
+        requestAppointmentRepository.saveAll(overlappingAppointments);
     }
 
 }

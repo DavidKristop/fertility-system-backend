@@ -5,14 +5,15 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "refund")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,7 +28,7 @@ public class Refund {
     private BigDecimal amount;
 
     @Column(name = "refund_date", nullable = false)
-    private Timestamp refundDate;
+    private LocalDateTime refundDate;
 
     @Column(name = "refund_method", nullable = false)
     private String refundMethod;

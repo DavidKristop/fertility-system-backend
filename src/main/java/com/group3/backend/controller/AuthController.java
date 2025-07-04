@@ -1,5 +1,20 @@
 package com.group3.backend.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
@@ -8,20 +23,11 @@ import com.group3.backend.model.User;
 import com.group3.backend.service.JwtService;
 import com.group3.backend.service.UserDetailsImpl;
 import com.group3.backend.service.UserService;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -59,6 +65,7 @@ public class AuthController {
             accessToken,
             newUser.getEmail(),
             newUser.getRole().getName().name(),
+            newUser.getFullName(),
             newUser.getId()
         );
 
@@ -102,7 +109,8 @@ public class AuthController {
             AuthResponse authResponse = new AuthResponse(
                 accessToken, 
                 user.getEmail(), 
-                user.getRole().getName().name(), 
+                user.getRole().getName().name(),
+                user.getFullName(),
                 user.getId()
             );
 
@@ -128,7 +136,8 @@ public class AuthController {
                 // Trả về access token mới, giữ nguyên refresh token
                 AuthResponse authResponse = new AuthResponse(
                     newAccessToken, 
-                    email, user.getRole().getName().name(), 
+                    email, user.getRole().getName().name(),
+                    user.getFullName(),
                     user.getId()
                 );
 
@@ -151,12 +160,13 @@ public class AuthController {
                 null,
                 user.getEmail(),
                 user.getRole().getName().name(),
+                user.getFullName(),
                 user.getId()
             );
         return ResponseEntity.ok(new Response<>(authResponse, "Authentication successful", true));
     }
 
-        @GetMapping("/validate")
+    @GetMapping("/validate")
     public ResponseEntity<Response<String>> validateToken() {
         return ResponseEntity.ok(new Response<>("Token is valid", "Token validation successful", true));
     }

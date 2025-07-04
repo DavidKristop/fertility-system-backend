@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RequestAppointmentRepository extends JpaRepository<RequestAppointment, UUID> {
@@ -15,6 +16,21 @@ public interface RequestAppointmentRepository extends JpaRepository<RequestAppoi
 
     List<RequestAppointment> findByPatientId(UUID patientId);
 
+    List<RequestAppointment> findByDoctorIdAndStatusAndIdNot(
+        UUID doctorId,
+        RequestAppointment.Status status,
+        UUID id
+    );
+
+    Optional<RequestAppointment> findByPatientIdAndStatus(
+        UUID patientId,
+        RequestAppointment.Status status);
+
+    Optional<RequestAppointment> findByPatientIdAndStatusAndScheduleStatus(
+        UUID patientId,
+        RequestAppointment.Status status,
+        Schedule.Status scheduleStatus
+    );
 
     List<RequestAppointment> findByStatusAndAppointmentDatetimeAfter(
             RequestAppointment.Status status,
@@ -31,6 +47,12 @@ public interface RequestAppointmentRepository extends JpaRepository<RequestAppoi
 
     boolean existsByPatientIdAndScheduleStatusIn(UUID patientId, List<Schedule.Status> statuses);
 
+    List<RequestAppointment> findByDoctorIdAndStatusInAndAppointmentDatetimeBetween(
+            UUID doctorId,
+            List<RequestAppointment.Status> statuses,
+            LocalDateTime appointmentDatetimeStart,
+            LocalDateTime appointmentDatetimeEnd);
+
     Page<RequestAppointment> findByDoctorIdAndPatientEmailContainingIgnoreCaseAndStatusInAndAppointmentDatetimeAfter(
             UUID doctorId,
             String patientEmail,
@@ -43,7 +65,6 @@ public interface RequestAppointmentRepository extends JpaRepository<RequestAppoi
             String doctorEmail,
             List<RequestAppointment.Status> statuses,
             LocalDateTime deadline,
-            Pageable pageable);
-    
-    
+            Pageable pageable);    
+
 }
