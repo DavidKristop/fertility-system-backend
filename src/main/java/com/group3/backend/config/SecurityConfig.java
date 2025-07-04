@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 @EnableMethodSecurity(prePostEnabled = true)  
 public class SecurityConfig {
 
+    @Lazy
     private final JwtAuthFilter jwtAuthFilter;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
@@ -49,7 +51,8 @@ public class SecurityConfig {
                             "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
                             "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**",
                             "/api/protocols/**","/api/auth/forgot-password", "/api/auth/reset-password",
-                            "/api/payments/patient/process/vnpay/return"
+                            "/api/payments/patient/process/vnpay/return",
+                            "/api/verify-email/**"
                     ).permitAll()
                     .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                     .requestMatchers("/api/auth/me").authenticated()
