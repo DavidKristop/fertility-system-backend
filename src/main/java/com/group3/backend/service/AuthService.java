@@ -1,17 +1,9 @@
 // AuthService.java
 package com.group3.backend.service;
 
-import com.group3.backend.dto.response.AuthResponse;
-import com.group3.backend.dto.request.LoginRequest;
-import com.group3.backend.dto.request.RegistrationRequest;
-import com.group3.backend.dto.Response;
-import com.group3.backend.model.User;
-import com.group3.backend.model.VerifyEmailToken;
-import com.group3.backend.repository.VerifyEmailTokenRepository;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,8 +13,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import com.group3.backend.dto.Response;
+import com.group3.backend.dto.request.LoginRequest;
+import com.group3.backend.dto.request.RegistrationRequest;
+import com.group3.backend.dto.response.AuthResponse;
+import com.group3.backend.model.User;
+import com.group3.backend.model.VerifyEmailToken;
+import com.group3.backend.repository.VerifyEmailTokenRepository;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -82,6 +84,7 @@ public class AuthService {
                     accessToken,
                     user.getEmail(),
                     user.getRole().getName().name(),
+                    user.getFullName(),
                     user.getId()
             );
 
@@ -136,6 +139,7 @@ public class AuthService {
                 newAccessToken,
                 user.getEmail(),
                 user.getRole().getName().name(),
+                user.getFullName(),
                 user.getId()
             );
 
