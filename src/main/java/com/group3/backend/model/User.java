@@ -48,6 +48,10 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Builder.Default
+    @Column(name = "is_verify", nullable = false)
+    private boolean isVerify = false;
+
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;

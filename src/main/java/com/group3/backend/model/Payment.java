@@ -49,7 +49,7 @@ public class Payment {
     private User user;
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
-    private List<Schedule> schedules;
+    private List<ScheduleService> scheduleServices;
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<AssignDrug> assignDrugs;

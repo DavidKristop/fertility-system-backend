@@ -208,7 +208,9 @@ public class ScheduleController {
             .description("Payment for additional schedule")
             .paymentDeadline(LocalDateTime.now().plusDays(2))
             .userId(currentUserUtils.getCurrentUser().getId())
-            .scheduleIds(List.of(schedule.getId()))
+            .scheduleServiceIds(schedule.getScheduleServices().stream()
+                .map(scheduleService -> scheduleService.getId())
+                .collect(Collectors.toList()))
             .build();
 
         paymentService.createPayment(paymentRequest);

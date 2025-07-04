@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -127,23 +128,7 @@ public class RequestAppointmentController {
     public ResponseEntity<Response<RequestAppointmentResponse>> acceptAppointment(@PathVariable UUID appointmentId) {
         RequestAppointment acceptedAppointment = service.acceptAppointment(appointmentId, currentUserUtils.getCurrentUser().getId());
         
-        // Create the schedule based on consultation protocol
-        Schedule schedule = scheduleService.createSchedule(
-            ScheduleCreateRequest.builder()
-                .patientId(acceptedAppointment.getPatient().getId())
-                .doctorId(acceptedAppointment.getDoctor().getId())
-                .appointmentDateTime(acceptedAppointment.getAppointmentDatetime())
-                .estimatedTime(acceptedAppointment.getAppointmentDatetime().plusMinutes(45))
-                .services(List.of(
-                    ScheduleServiceCreateRequest.builder()
-                    .serviceId(UUID.fromString(environmentConfig.getConsultationServiceId()))
-                    .build(),
-                    ScheduleServiceCreateRequest.builder()
-                    .serviceId(UUID.fromString(environmentConfig.getUltrasoundServiceId()))
-                    .build()
-                ))
-                .build()
-            );
+        Schedule schedule = scheduleService.createScheduleBasedOnRequest(acceptedAppointment);
 
         // Create payment request
         PaymentRequest paymentRequest = PaymentRequest.builder()
@@ -153,7 +138,9 @@ public class RequestAppointmentController {
             .description("Consultation payment")
             .paymentDeadline(LocalDateTime.now().plusDays(2))
             .userId(acceptedAppointment.getPatient().getId())
-            .scheduleIds(List.of(schedule.getId()))
+            .scheduleServiceIds(schedule.getScheduleServices().stream()
+                .map(com.group3.backend.model.ScheduleService::getId)
+                .collect(Collectors.toList()))
             .build();
 
         paymentService.createPayment(paymentRequest);
