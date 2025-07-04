@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.group3.backend.dto.request.PaymentRequest;
+import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
 
 @Service
@@ -103,12 +104,12 @@ public class PaymentService {
 
         // Check if payment is still pending
         if (!payment.getStatus().equals(Payment.Status.PENDING)) {
-            throw new IllegalStateException("Payment is already processed");
+            throw new ResourceConflictException("Payment is already processed");
         }
 
         // Check if payment deadline has passed
         if (payment.getPaymentDeadline().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Payment deadline has passed");
+            throw new ResourceConflictException("Payment deadline has passed");
         }
 
         // Check if payment belongs to the user

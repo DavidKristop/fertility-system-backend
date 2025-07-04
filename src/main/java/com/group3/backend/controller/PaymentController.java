@@ -48,6 +48,9 @@ public class PaymentController {
     @Autowired
     private VNPayService vnPayService;
 
+    @Autowired
+    private VNPayConfig vnPayConfig;
+
     @GetMapping("/patient/{paymentId}")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<PaymentResponse>> getPaymentByIdAndUserId(@PathVariable UUID paymentId) {
@@ -88,29 +91,26 @@ public class PaymentController {
 
     @PutMapping("/patient/process/vnpay/{paymentId}")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
-    public void processPayment(@PathVariable UUID paymentId, HttpServletResponse response) throws IOException {
+    public ResponseEntity<Response<String>> processPayment(@PathVariable UUID paymentId, HttpServletResponse response) throws IOException {
         Payment payment = paymentService.getPaymentByIdAndUserId(paymentId, currentUserUtils.getCurrentUserId());
         
         String redirectUrl = vnPayService.createOrder(payment.getAmount().toBigInteger().intValue(), payment.getDescription(), paymentId);
 
-        response.sendRedirect(redirectUrl);
+        return ResponseEntity.ok(new Response<>(redirectUrl,"Redirect url created successfully"));
     }
 
     @GetMapping("/patient/process/vnpay/return")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public void processReturnPayment(
         @RequestParam(value = "paymentId") UUID paymentId,
-        HttpServletRequest request,
+        @RequestParam(value = "vnp_ResponseCode") String vnp_responseCode,
         HttpServletResponse response
     ) throws IOException{
-        int paymentStatus = vnPayService.orderReturn(request);
-
-        if(paymentStatus==1){
-            paymentService.processPayment(paymentId, Payment.PaymentMethod.CREDIT_CARD, currentUserUtils.getCurrentUserId());
-            response.sendRedirect(VNPayConfig.payment_success_url);
+        if(vnp_responseCode.equals("00")){
+            Payment payment = paymentService.processPayment(paymentId, Payment.PaymentMethod.CREDIT_CARD);
+            response.sendRedirect(vnPayConfig.getPayment_success_url()+"?paymentId="+paymentId);
         }
         else{
-            response.sendRedirect(VNPayConfig.payment_failure_url);
+            response.sendRedirect(vnPayConfig.getPayment_failure_url()+"?paymentId="+paymentId);
         }
     }
 

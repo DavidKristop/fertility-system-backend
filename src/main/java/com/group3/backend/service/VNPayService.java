@@ -1,6 +1,8 @@
 package com.group3.backend.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.group3.backend.config.VNPayConfig;
@@ -14,13 +16,16 @@ import java.util.*;
 @Service
 public class VNPayService {
 
+    @Autowired
+    private VNPayConfig vnPayConfig;
+
     public String createOrder(int total, String orderInfor, UUID paymentId){
-        String vnp_Version = VNPayConfig.vnp_Version;
+        String vnp_Version = vnPayConfig.getVnp_Version();
         String vnp_Command = "pay";
-        String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
+        String vnp_TxnRef = vnPayConfig.getRandomNumber(8);
         String vnp_IpAddr = "127.0.0.1"; //Change this when deploy to reflect the site actual ip
-        String vnp_TmnCode = VNPayConfig.vnp_TmnCode;
-        String orderType = "order-type";
+        String vnp_TmnCode = vnPayConfig.getVnp_TmnCode();
+        String orderType = "other";
         
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
@@ -36,7 +41,7 @@ public class VNPayService {
         String locate = "vn";
         vnp_Params.put("vnp_Locale", locate);
 
-        vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_Returnurl +"?paymentId="+paymentId);
+        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getVnp_Returnurl() +"?paymentId="+paymentId);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -44,7 +49,7 @@ public class VNPayService {
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 
-        cld.add(Calendar.MINUTE, VNPayConfig.vnp_ExpireDate);
+        cld.add(Calendar.MINUTE, vnPayConfig.getVnp_ExpireDate());
         String vnp_ExpireDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
@@ -76,9 +81,9 @@ public class VNPayService {
             }
         }
         String queryUrl = query.toString();
-        String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.vnp_HashSecret, hashData.toString());
+        String vnp_SecureHash = vnPayConfig.hmacSHA512(vnPayConfig.getVnp_HashSecret(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        String paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
+        String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
         return paymentUrl;
     }
 
@@ -105,7 +110,7 @@ public class VNPayService {
         if (fields.containsKey("vnp_SecureHash")) {
             fields.remove("vnp_SecureHash");
         }
-        String signValue = VNPayConfig.hashAllFields(fields);
+        String signValue = vnPayConfig.hashAllFields(fields);
         if (signValue.equals(vnp_SecureHash)) {
             if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
                 return 1;

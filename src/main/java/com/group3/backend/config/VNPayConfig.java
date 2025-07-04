@@ -1,6 +1,8 @@
 package com.group3.backend.config;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -14,21 +16,23 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @Configuration
+@Getter
+@Setter
 public class VNPayConfig {
-    public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+    private String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     @Value("${VNPay.return_url}")
-    public static String vnp_Returnurl ;
+    private String vnp_Returnurl ;
     @Value("${VNPay.Tmncode}")
-    public static String vnp_TmnCode ;
-    @Value("VNPay.hash_secret")
-    public static String vnp_HashSecret ;
-    @Value("payment.frontend_success_url")
-    public static String payment_success_url;
-    @Value("payment.frontend_failure_url")
-    public static String payment_failure_url;
-    public static String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
-    public static String vnp_Version = "2.1.0";
-    public static int vnp_ExpireDate = 15;
+    private String vnp_TmnCode ;
+    @Value("${VNPay.hash_secret}")
+    private String vnp_HashSecret ;
+    @Value("${payment.frontend_success_url}")
+    private String payment_success_url;
+    @Value("${payment.frontend_failure_url}")
+    private String payment_failure_url;
+    private String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+    private String vnp_Version = "2.1.0";
+    private int vnp_ExpireDate = 15;
 
     public static String md5(String message) {
         String digest = null;
@@ -48,7 +52,7 @@ public class VNPayConfig {
         return digest;
     }
 
-    public static String Sha256(String message) {
+    public String Sha256(String message) {
         String digest = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -67,7 +71,7 @@ public class VNPayConfig {
     }
 
     //Util for VNPAY
-    public static String hashAllFields(Map fields) {
+    public String hashAllFields(Map fields) {
         List fieldNames = new ArrayList(fields.keySet());
         Collections.sort(fieldNames);
         StringBuilder sb = new StringBuilder();
@@ -87,7 +91,7 @@ public class VNPayConfig {
         return hmacSHA512(vnp_HashSecret,sb.toString());
     }
 
-    public static String hmacSHA512(final String key, final String data) {
+    public String hmacSHA512(final String key, final String data) {
         try {
 
             if (key == null || data == null) {
@@ -110,7 +114,7 @@ public class VNPayConfig {
         }
     }
 
-    public static String getIpAddress(HttpServletRequest request) {
+    public String getIpAddress(HttpServletRequest request) {
         String ipAdress;
         try {
             ipAdress = request.getHeader("X-FORWARDED-FOR");
@@ -123,7 +127,7 @@ public class VNPayConfig {
         return ipAdress;
     }
 
-    public static String getRandomNumber(int len) {
+    public String getRandomNumber(int len) {
         Random rnd = new Random();
         String chars = "0123456789";
         StringBuilder sb = new StringBuilder(len);
