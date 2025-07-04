@@ -84,7 +84,11 @@ public class JwtService {
     }
 
     public Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        try {
+            return extractAllClaims(token).getExpiration().before(new Date());
+        } catch (Exception e) {
+            return true; // Nếu có lỗi thì xem là hết hạn
+        }
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {

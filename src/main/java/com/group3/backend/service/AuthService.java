@@ -114,28 +114,36 @@ public class AuthService {
 
     public ResponseEntity<Response<AuthResponse>> refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(null, "Refresh token is missing", false));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new Response<>(null, "Refresh token is missing", false));
         }
 
         try {
+            // Check expiration BEFORE trying to extract email
+            if (jwtService.isTokenExpired(refreshToken)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "Refresh token expired", false));
+            }
+
             String email = jwtService.extractEmail(refreshToken);
             User user = userService.getUserByEmail(email);
 
-            if (!jwtService.isTokenExpired(refreshToken)) {
-                String newAccessToken = jwtService.generateAccessToken(user.getEmail(), user.getId(), user.getRole().getName().name());
+            String newAccessToken = jwtService.generateAccessToken(
+                user.getEmail(), user.getId(), user.getRole().getName().name()
+            );
 
-                AuthResponse authResponse = new AuthResponse(
-                        newAccessToken,
-                        email, user.getRole().getName().name(),
-                        user.getId()
-                );
+            AuthResponse authResponse = new AuthResponse(
+                newAccessToken,
+                user.getEmail(),
+                user.getRole().getName().name(),
+                user.getId()
+            );
 
-                return ResponseEntity.ok(new Response<>(authResponse, "Token refreshed successfully", true));
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(null, "Refresh token expired", false));
-            }
+            return ResponseEntity.ok(new Response<>(authResponse, "Token refreshed successfully", true));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Response<>(null, "Invalid refresh token", false));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new Response<>(null, "Invalid refresh token", false));
         }
     }
 }
