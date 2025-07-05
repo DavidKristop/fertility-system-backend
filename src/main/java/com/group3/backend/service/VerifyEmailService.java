@@ -80,6 +80,7 @@ public class VerifyEmailService {
 
         user.setVerify(true);
         userRepository.save(user);
+        userRepository.flush();
         tokenRepository.deleteByUser(user); // Clean up
 
         return new Response<>(null, "Email verified successfully");
