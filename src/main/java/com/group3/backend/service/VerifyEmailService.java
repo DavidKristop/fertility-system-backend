@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.group3.backend.dto.Response;
@@ -13,6 +11,7 @@ import com.group3.backend.model.User;
 import com.group3.backend.model.VerifyEmailToken;
 import com.group3.backend.repository.UserRepository;
 import com.group3.backend.repository.VerifyEmailTokenRepository;
+import com.group3.backend.service.EmailService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class VerifyEmailService {
     private final VerifyEmailTokenRepository tokenRepository;
     private final UserRepository userRepository;
-    private final JavaMailSender mailSender;
+    private final EmailService emailService;
 
     @Transactional
     public Response<String> sendVerificationToken(String email) {
@@ -35,6 +34,7 @@ public class VerifyEmailService {
 
         // Xoá token cũ nếu có
         tokenRepository.deleteByUser(user);
+        tokenRepository.flush();
 
         // Tạo token mới
         String token = UUID.randomUUID().toString();
@@ -45,22 +45,9 @@ public class VerifyEmailService {
         tokenRepository.save(verifyToken);
 
         // Gửi email xác thực
-        sendEmail(user.getEmail(), token);
+        emailService.sendVerificationEmail(user.getEmail(), token);
 
         return new Response<>(null, "Verification email sent successfully");
-    }
-
-    private void sendEmail(String toEmail, String token) {
-        String link = "http://localhost:5173/verify-email?token=" + token;
-        String subject = "Email Verification";
-        String text = "Please verify your email by clicking the link below:\n" + link;
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject(subject);
-        message.setText(text);
-
-        mailSender.send(message);
     }
 
     @Transactional
