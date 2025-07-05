@@ -10,8 +10,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -52,7 +50,7 @@ public class SecurityConfig {
                             "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**",
                             "/api/protocols/**","/api/auth/forgot-password", "/api/auth/reset-password",
                             "/api/payments/patient/process/vnpay/return",
-                            "/api/verify-email/**"
+                            "/api/verify-email/**", "/api/auth/refresh"
                     ).permitAll()
                     .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                     .requestMatchers("/api/auth/me").authenticated()
