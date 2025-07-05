@@ -1,5 +1,15 @@
 package com.group3.backend.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
@@ -7,15 +17,11 @@ import com.group3.backend.dto.response.AuthResponse;
 import com.group3.backend.model.User;
 import com.group3.backend.service.AuthService;
 import com.group3.backend.service.UserDetailsImpl;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -54,6 +60,7 @@ public class AuthController {
                 null,
                 user.getEmail(),
                 user.getRole().getName().name(),
+                user.getFullName(),
                 user.getId()
             );
         return ResponseEntity.ok(new Response<>(authResponse, "Authentication successful", true));
