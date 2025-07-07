@@ -36,45 +36,52 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String email = null;
-        try{
 
+        try {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 token = authHeader.substring(7);
                 email = jwtService.extractEmail(token);
             }
-    
+
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userService.loadUserByUsername(email);
                 if (jwtService.validateToken(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
-                            userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    final String finalToken = token;
-                    authToken.setDetails(new HashMap<String, Object>() {
-                        {
-                            put("userId", jwtService.extractUserId(finalToken));
-                            put("role", jwtService.extractRole(finalToken));
-                        }
-                    });
+                            userDetails.getAuthorities()
+                    );
+
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    // Token invalid
+                    sendUnauthorizedResponse(response, "Invalid token");
+                    return;
                 }
             }
+
+            // Tiếp tục filter nếu không có vấn đề
             filterChain.doFilter(request, response);
+        } catch (ExpiredJwtException e) {
+            sendUnauthorizedResponse(response, "Token has expired");
+        } catch (Exception e) {
+            // Nếu có bất kỳ lỗi nào khác về token -> cũng trả về 401
+            sendUnauthorizedResponse(response, "Token is invalid or malformed");
         }
-        catch(ExpiredJwtException e){
-            ObjectWriter ow = new ObjectMapper().writer();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write(ow.writeValueAsString(new Response<>(null, "Token has expired", false)));
-            return;
-        }
+    }
+
+    private void sendUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
+        Response<Object> responseBody = new Response<>(null, message, false);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+        response.setContentType("application/json");
+        ObjectWriter ow = new ObjectMapper().writer();
+        response.getWriter().write(ow.writeValueAsString(responseBody));
     }
 }
 
