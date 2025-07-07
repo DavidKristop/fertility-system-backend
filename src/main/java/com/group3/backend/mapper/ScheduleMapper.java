@@ -2,8 +2,10 @@ package com.group3.backend.mapper;
 
 import com.group3.backend.dto.response.Schedule.DoctorScheduleReponse;
 import com.group3.backend.dto.response.Schedule.PatientScheduleResponse;
+import com.group3.backend.dto.response.Schedule.ScheduleResultResponse;
 import com.group3.backend.dto.response.Schedule.ScheduleServiceRespone;
 import com.group3.backend.model.Schedule;
+import com.group3.backend.model.ScheduleResult;
 import com.group3.backend.model.ScheduleService;
 
 import org.mapstruct.Mapper;
@@ -19,6 +21,8 @@ public interface ScheduleMapper {
 
     @Mapping(source = "doctor", target = "doctor", qualifiedByName = "toUserDoctorResponse")
     PatientScheduleResponse toPatientScheduleResponse(Schedule schedule);
+
+    ScheduleResultResponse toScheduleResultResponse(ScheduleResult result);
 
     @Mapping(source = "service.name", target = "name")
     @Mapping(source = "service.description", target = "description")

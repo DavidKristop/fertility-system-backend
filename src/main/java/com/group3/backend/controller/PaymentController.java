@@ -62,10 +62,10 @@ public class PaymentController {
     public ResponseEntity<Response<Page<PaymentResponse>>> listPaymentsByUserId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "PENDING") List<Payment.Status> statuses
+        @RequestParam(defaultValue = "PENDING") List<Payment.Status> status
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(new Response<>(paymentService.getPatientPayment(currentUserUtils.getCurrentUserId(), statuses, pageable).map(paymentMapper::toResponse),
+        return ResponseEntity.ok(new Response<>(paymentService.getPatientPayment(currentUserUtils.getCurrentUserId(), status, pageable).map(paymentMapper::toResponse),
          "Payments retrieved successfully"));
     }
 
@@ -76,10 +76,10 @@ public class PaymentController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "") String email,
-        @RequestParam(defaultValue = "PENDING") List<Payment.Status> statuses
+        @RequestParam(defaultValue = "PENDING") List<Payment.Status> status
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(new Response<>(paymentService.getPaymentByPatientEmail(email, statuses, pageable).map(paymentMapper::toResponse),
+        return ResponseEntity.ok(new Response<>(paymentService.getPaymentByPatientEmail(email, status, pageable).map(paymentMapper::toResponse),
          "Payments retrieved successfully"));
     }
 

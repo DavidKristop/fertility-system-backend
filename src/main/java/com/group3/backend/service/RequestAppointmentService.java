@@ -51,7 +51,7 @@ public class RequestAppointmentService {
             throw new ResourceConflictException("Patient already has an in-progress or awaiting contract signed treatment");
         }
 
-        if(dto.getAppointmentDatetime().isBefore(LocalDateTime.now().plusDays(3))){
+        if(dto.getAppointmentDatetime().isBefore(LocalDateTime.now().plusDays(2))){
             throw new ResourceConflictException("Appointment must be at least 3 days in advance");
         }
 
@@ -63,7 +63,7 @@ public class RequestAppointmentService {
         
         List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndStatus(doctor.getId(), Schedule.Status.PENDING);
 
-        if (ScheduleService.checkOverlappingSchedule(doctor.getId(), dto.getAppointmentDatetime(), dto.getAppointmentDatetime().plusMinutes(45), overlappingSchedules)) {
+        if (ScheduleService.checkOverlappingSchedule(doctor.getId(), dto.getAppointmentDatetime(), dto.getAppointmentDatetime().plusMinutes(30), overlappingSchedules)) {
             throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
         }
      
@@ -111,7 +111,7 @@ public class RequestAppointmentService {
         }
         // Check for schedule overlap
         LocalDateTime appointmentStart = appointment.getAppointmentDatetime();
-        LocalDateTime appointmentEnd = appointmentStart.plusMinutes(45);
+        LocalDateTime appointmentEnd = appointmentStart.plusMinutes(30);
 
         // Find overlapping schedules for the same doctor
         List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndStatus(doctorId, Schedule.Status.PENDING);
@@ -171,7 +171,7 @@ public class RequestAppointmentService {
 
         for (RequestAppointment appointment : overlappingAppointments) {
             LocalDateTime appointmentStart = appointment.getAppointmentDatetime();
-            LocalDateTime appointmentEnd = appointmentStart.plusMinutes(45);
+            LocalDateTime appointmentEnd = appointmentStart.plusMinutes(30);
 
             // Check if the appointment overlaps with the new time
             if ((newStart.isBefore(appointmentEnd) && newEnd.isAfter(appointmentStart))||
