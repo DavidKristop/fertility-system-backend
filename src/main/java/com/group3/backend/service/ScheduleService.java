@@ -103,7 +103,7 @@ public class ScheduleService {
                 .patientId(requestAppointment.getPatient().getId())
                 .doctorId(requestAppointment.getDoctor().getId())
                 .appointmentDateTime(requestAppointment.getAppointmentDatetime())
-                .estimatedTime(requestAppointment.getAppointmentDatetime().plusMinutes(45))
+                .estimatedTime(requestAppointment.getAppointmentDatetime().plusMinutes(30))
                 .services(List.of(
                     ScheduleServiceCreateRequest.builder()
                     .serviceId(UUID.fromString(environmentConfig.getConsultationServiceId()))
@@ -135,7 +135,7 @@ public class ScheduleService {
         }
 
         
-        if(scheduleCreateRequest.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(3))) {
+        if(scheduleCreateRequest.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(2))) {
             throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
         }
 
@@ -339,7 +339,7 @@ public class ScheduleService {
             throw new ResourceConflictException("Only PENDING schedules can be changed");
         }
         
-        if(request.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(3))) {
+        if(request.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(2))) {
             throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
         }
         

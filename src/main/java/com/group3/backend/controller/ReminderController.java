@@ -36,7 +36,7 @@ public class ReminderController {
     @Autowired
     ReminderMapper reminderMapper;
 
-    @GetMapping("/")
+    @GetMapping("")
     @PreAuthorize("hasAnyAuthority('ROLE_PATIENT', 'ROLE_DOCTOR', 'ROLE_MANAGER')")
     public ResponseEntity<Response<Page<ReminderReponse>>> getReminders(
         @RequestParam(defaultValue = "0") int page,
@@ -50,7 +50,7 @@ public class ReminderController {
         return ResponseEntity.ok(new Response<>(response, "Reminders retrieved successfully"));
     }
 
-    @PutMapping("/{reminderId}/read")
+    @PutMapping("/read/{reminderId}")
     @PreAuthorize("hasAnyAuthority('ROLE_PATIENT', 'ROLE_DOCTOR', 'ROLE_MANAGER')")
     public ResponseEntity<Response<ReminderReponse>> updateIsReadReminder(
         @PathVariable UUID reminderId
