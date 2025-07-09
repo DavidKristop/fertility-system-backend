@@ -79,10 +79,10 @@ public class TreatmentController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "") String email,
-        @RequestParam(defaultValue = "IN_PROGRESS") Treatment.Status status
+        @RequestParam(defaultValue = "IN_PROGRESS") List<Treatment.Status> status
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Treatment> treatments = treatmentService.getDoctorTreatment(currentUserUtils.getCurrentUserId(), List.of(status), email, pageable);
+        Page<Treatment> treatments = treatmentService.getDoctorTreatment(currentUserUtils.getCurrentUserId(), status, email, pageable);
         Page<TreatmentResponse> response = treatments.map(treatmentMapper::toResponse);
         return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
     }
