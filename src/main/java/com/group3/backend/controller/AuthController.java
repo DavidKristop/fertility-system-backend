@@ -61,6 +61,9 @@ public class AuthController {
                 user.getEmail(),
                 user.getRole().getName().name(),
                 user.getFullName(),
+                user.getAddress(),
+                user.getPhone(),
+                user.getDateOfBirth(),
                 user.getId()
             );
         return ResponseEntity.ok(new Response<>(authResponse, "Authentication successful", true));
