@@ -45,28 +45,28 @@ public class TreatmentProtocolController {
     public ResponseEntity<Response<Page<TreatmentProtocolResponse>>> getAllProtocolsManager(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "") String title,
             @RequestParam(defaultValue = "true") boolean active) {
-        return getAllProtocols(page, size, search, active);
+        return getAllProtocols(page, size, title, active);
     }
 
     @GetMapping
     public ResponseEntity<Response<Page<TreatmentProtocolResponse>>> getAllProtocolsActive(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "") String search) {
-        return getAllProtocols(page, size, search, true);
+            @RequestParam(defaultValue = "") String title) {
+        return getAllProtocols(page, size, title, true);
     }
             
 
     private ResponseEntity<Response<Page<TreatmentProtocolResponse>>> getAllProtocols(
             int page,
             int size,
-            String search,
+            String title,
             boolean active) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<TreatmentProtocol> protocols = protocolService.getProtocols(search, active, pageable);
+        Page<TreatmentProtocol> protocols = protocolService.getProtocols(title, active, pageable);
 
         Page<TreatmentProtocolResponse> responses = protocols.map(protocolMapper::toResponse);
         return ResponseEntity.ok(new Response<>(responses, "Protocols retrieved successfully"));

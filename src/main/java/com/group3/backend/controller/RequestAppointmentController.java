@@ -84,7 +84,7 @@ public class RequestAppointmentController {
     ) {
         User user = currentUserUtils.getCurrentUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        LocalDateTime deadline = LocalDateTime.now().plusHours(24);
+        LocalDateTime deadline = LocalDateTime.now();
         Page<RequestAppointment> appointments = service.getDoctorsAppointments(
             user.getId(),
             patientEmail,

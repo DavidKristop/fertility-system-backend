@@ -1,18 +1,15 @@
 package com.group3.backend.service;
 
-import com.group3.backend.dto.request.Treatment.TreatmentDrugRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
 import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentPhaseRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentScheduleRequest;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.TreatmentProtocol;
 import com.group3.backend.model.TreatmentProtocolPhase;
 import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.PatientDrug;
+import com.group3.backend.model.PatientProfile;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Service;
 import com.group3.backend.model.AssignDrug;
@@ -29,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -55,11 +53,11 @@ public class TreatmentService {
     }
 
 public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> statuses, String email, Pageable pageable){
-        return treatmentRepository.findByDoctorIdAndStatusInAndPatientEmailContainingIgnoreCase(doctorId, statuses, email, pageable);
+        return treatmentRepository.findByDoctorIdAndStatusInAndPatientEmailIgnoreCaseContaining(doctorId, statuses, email, pageable);
     }
 
     public Page<Treatment> getPatientTreatment(UUID patientId, List<Treatment.Status> statuses, String email, Pageable pageable){
-        return treatmentRepository.findByPatientIdAndStatusInAndDoctorEmailContainingIgnoreCase(patientId, statuses, email, pageable);
+        return treatmentRepository.findByPatientIdAndStatusInAndDoctorEmailIgnoreCaseContaining(patientId, statuses, email, pageable);
     }
 
     public Page<Treatment> getManagerTreatment(String patientEmail, String doctorEmail, List<Treatment.Status> statuses, Pageable pageable){
@@ -152,9 +150,22 @@ public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> 
         if(treatmentRepository.existsByPatientIdAndStatusIn(patient.getId(), List.of(Treatment.Status.IN_PROGRESS, Treatment.Status.AWAITING_CONTRACT_SIGNED))){
             throw new ResourceConflictException("Patient already has an in progress treatment or they are waiting to sign contract for one of their treatment");
         }
-            
+        
+        if(patient.getPatientProfile() == null){
+            PatientProfile patientProfile = PatientProfile.builder()
+            .medicalHistory(request.getMedicalHistory())
+            .user(patient)
+            .build();
+            patient.setPatientProfile(patientProfile);
+        }
+        else{
+            patient.getPatientProfile().setMedicalHistory(request.getMedicalHistory());
+        }
+
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
+        treatment.setStartDate(LocalDate.now());
+        treatment.setEndDate(LocalDate.now().plusMonths(5));
         treatment.setStatus(Treatment.Status.AWAITING_CONTRACT_SIGNED);
         List<TreatmentPhase> phases = new ArrayList<>();
 
@@ -205,6 +216,8 @@ public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> 
         if (!phases.isEmpty()) {
             treatment.setCurrentPhase(phases.get(0));
         }
+
+        
 
         treatment.setPhases(phases);
         treatmentRepository.save(treatment);
