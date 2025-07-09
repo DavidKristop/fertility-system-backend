@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.security.Timestamp;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,10 +29,10 @@ public class Treatment {
     private UUID id;
 
     @Column(name = "start_date")
-    private Date startDate;
+    private LocalDate startDate;
 
     @Column(name = "end_date")
-    private Date endDate;
+    private LocalDate endDate;
 
     @Column(name = "description")
     private String description;

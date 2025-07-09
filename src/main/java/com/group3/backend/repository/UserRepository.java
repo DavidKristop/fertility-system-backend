@@ -16,5 +16,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByFullName(String fullName);
     List<User> findAllByRoleName(String roleName);
 
+    Page<User> findAllByRoleNameAndEmailIgnoreCaseContainingAndIsActive(Roles roleName, String email, boolean isActive, Pageable pageable);
+
     Page<User> findAllByRoleNameAndFullNameIgnoreCaseContainingAndIsActive(Roles roleName, String fullName, boolean isActive, Pageable pageable);
 }

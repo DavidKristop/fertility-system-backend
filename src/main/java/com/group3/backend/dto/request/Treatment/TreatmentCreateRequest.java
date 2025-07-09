@@ -1,7 +1,5 @@
 package com.group3.backend.dto.request.Treatment;
 
-import java.time.LocalDate;
-import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import java.util.UUID;
@@ -10,6 +8,7 @@ import com.group3.backend.model.Treatment;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 
 @Data
@@ -17,8 +16,10 @@ import jakarta.validation.constraints.NotNull;
 public class TreatmentCreateRequest {
     @NotEmpty
     private Treatment.PaymentMode paymentMode;
-    @NotEmpty
+    @Size(min = 1, max = 500, message = "Description must be between 1 and 500 characters")
     private String description;
+    @Size(min = 1, max = 500, message = "Medical history must be between 1 and 500 characters")
+    private String medicalHistory;
     @NotNull
     private UUID userId;
     @NotNull

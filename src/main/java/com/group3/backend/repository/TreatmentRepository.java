@@ -22,14 +22,14 @@ public interface TreatmentRepository extends JpaRepository<Treatment, UUID> {
         List<Treatment.Status> status
     );
 
-    Page<Treatment> findByDoctorIdAndStatusInAndPatientEmailContainingIgnoreCase(
+    Page<Treatment> findByDoctorIdAndStatusInAndPatientEmailIgnoreCaseContaining(
         UUID doctorId,
         List<Treatment.Status> statuses,
         String patientEmail,
         Pageable pageable
     );
 
-    Page<Treatment> findByPatientIdAndStatusInAndDoctorEmailContainingIgnoreCase(
+    Page<Treatment> findByPatientIdAndStatusInAndDoctorEmailIgnoreCaseContaining(
         UUID patientId,
         List<Treatment.Status> statuses,
         String doctorEmail,

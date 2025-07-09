@@ -5,23 +5,30 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.group3.backend.constants.Roles;
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.response.UserBusyResponse;
+import com.group3.backend.dto.response.UserPatientResponse;
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.mapper.TreatmentMapper;
+import com.group3.backend.mapper.UserMapper;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Treatment;
+import com.group3.backend.model.User;
 import com.group3.backend.repository.RequestAppointmentRepository;
 import com.group3.backend.repository.TreatmentRepository;
-import com.group3.backend.service.RequestAppointmentService;
-import com.group3.backend.service.TreatmentService;
+import com.group3.backend.repository.UserRepository;
 import com.group3.backend.utils.CurrentUserUtils;
 
 @RestController
@@ -42,6 +49,24 @@ public class PatientManagementController {
 
     @Autowired
     CurrentUserUtils currentUserUtils;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    UserMapper userMapper;
+
+    @GetMapping()
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_DOCTOR')")
+    public ResponseEntity<Response<Page<UserPatientResponse>>> getAllPatients(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String email
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> patients = userRepository.findAllByRoleNameAndEmailIgnoreCaseContainingAndIsActive(Roles.ROLE_PATIENT, email, true, pageable);
+        return ResponseEntity.ok(new Response<>(patients.map(userMapper::toUserPatientResponse), "Fetching patients successfully"));
+    }
     
     //Endpoint to check if the patient already in a treatment that is IN_PROGRESS
     // or if the patient has a PENDING request appointment or a PEDING scheduled attached to that request
