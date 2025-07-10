@@ -32,7 +32,7 @@ public class ContractService {
     public Contract createContract(ContractRequest contractRequest,Treatment treatment){
         Contract contract = Contract.builder()
                 .isSigned(contractRequest.isSigned())
-                .signDeadline(LocalDateTime.now().plusDays(2))
+                .signDeadline(LocalDateTime.now().plusHours(48))
                 .treatment(treatment)
                 .contractUrl(contractRequest.getContractUrl())
                 .build();
@@ -82,7 +82,7 @@ public class ContractService {
 
     private void createPaymentBasedOnPaymentMode(Treatment treatment){
         PaymentRequest paymentRequest = PaymentRequest.builder()
-            .paymentDeadline(LocalDateTime.now().plusDays(2))
+            .paymentDeadline(LocalDateTime.now().plusHours(48))
             .userId(treatment.getPatient().getId())
             .build();
         if(treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)){

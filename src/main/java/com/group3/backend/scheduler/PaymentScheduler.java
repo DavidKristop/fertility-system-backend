@@ -16,7 +16,7 @@ public class PaymentScheduler {
     @Autowired
     private PaymentService paymentService;
     @Autowired
-    @Scheduled(cron = "0 0 * * * ?") // Runs every hour
+    @Scheduled(cron = "0 */1 * * * ?")
     public void checkUnpaidPayments() {
         
         // Find all pending payments that have passed their deadline

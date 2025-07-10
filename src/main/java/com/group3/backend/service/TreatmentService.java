@@ -10,6 +10,7 @@ import com.group3.backend.model.TreatmentProtocolPhase;
 import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.PatientDrug;
 import com.group3.backend.model.PatientProfile;
+import com.group3.backend.model.Reminder;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Service;
 import com.group3.backend.model.AssignDrug;
@@ -17,6 +18,7 @@ import com.group3.backend.model.Drug;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.TreatmentRepository;
 import com.group3.backend.repository.TreatmentProtocolRepository;
+import com.group3.backend.repository.ReminderRepository;
 import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.UserRepository;
 
@@ -43,6 +45,12 @@ public class TreatmentService {
     private TreatmentProtocolRepository treatmentProtocolRepository;
     @Autowired
     private ScheduleRepository scheduleRepository;
+    @Autowired
+    private ReminderRepository reminderRepository;
+
+    public boolean existsByPatientIdAndStatusIn(UUID patientId, List<Treatment.Status> status){
+        return treatmentRepository.existsByPatientIdAndStatusIn(patientId, status);
+    }
 
     public List<Treatment> getAllTreatmentsByPatientId(UUID patientId){
         return treatmentRepository.findByPatientId(patientId);
@@ -52,7 +60,7 @@ public class TreatmentService {
         return treatmentRepository.findByDoctorId(doctorId);
     }
 
-public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> statuses, String email, Pageable pageable){
+    public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> statuses, String email, Pageable pageable){
         return treatmentRepository.findByDoctorIdAndStatusInAndPatientEmailIgnoreCaseContaining(doctorId, statuses, email, pageable);
     }
 
@@ -65,13 +73,18 @@ public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> 
     }
 
     public Treatment getTreatmentByIdAndPatientId(UUID id, UUID patientId){
-        return treatmentRepository.findByIdAndPatientId(id, patientId)
+        Treatment treatment = treatmentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
+        if (!treatment.getPatient().getId().equals(patientId)) {
+            throw new ResourceNotFoundException("The patient does not have this treatment");
+        }
+        return treatment;
     }
 
     public Treatment getTreatmentById(UUID id){
-        return treatmentRepository.findById(id)
+        Treatment treatment = treatmentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Treatment not found"));
+        return treatment;
     }
 
     @Transactional
@@ -217,11 +230,13 @@ public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> 
             treatment.setCurrentPhase(phases.get(0));
         }
 
-        
-
         treatment.setPhases(phases);
         treatmentRepository.save(treatment);
-
+        reminderRepository.save(Reminder.builder()
+            .sendTo(treatment.getPatient())
+            .title(treatment.getTreatmentProtocol().getTitle() + " started")
+            .content("The treatment " + treatment.getTreatmentProtocol().getTitle() + " has been started successfully, please sign the contract within 48h to officially start the treatment.")
+            .build());
         return treatment;
     }
 

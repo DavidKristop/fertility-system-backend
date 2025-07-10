@@ -136,7 +136,7 @@ public class RequestAppointmentController {
                 .map(scheduleService -> scheduleService.getService().getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add))
             .description("Consultation payment")
-            .paymentDeadline(LocalDateTime.now().plusDays(2))
+            .paymentDeadline(LocalDateTime.now().plusHours(48))
             .userId(acceptedAppointment.getPatient().getId())
             .scheduleServiceIds(schedule.getScheduleServices().stream()
                 .map(com.group3.backend.model.ScheduleService::getId)

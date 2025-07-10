@@ -1,5 +1,6 @@
 package com.group3.backend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +13,16 @@ public class EnvironmentConfig {
     private String consultationPhaseId;
     private String consultationProtocolServiceId;
     private String ultrasoundProtocolServiceId;
+    @Value("${uuid.new}")
+    private String newUUID;
+
+    public String getNewUUID() {
+        return newUUID;
+    }
+
+    public void setNewUUID(String newUUID) {
+        this.newUUID = newUUID;
+    }
 
     // Getters and Setters
     public String getConsultationServiceId() {

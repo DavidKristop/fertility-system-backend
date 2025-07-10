@@ -28,8 +28,8 @@ public class Contract {
     @Column(name = "sign_deadline")
     private LocalDateTime signDeadline;
 
-    @ManyToOne
-    @JoinColumn(name = "treatment_id")
+    @OneToOne
+    @JoinColumn(name = "treatment_id", referencedColumnName = "id")
     private Treatment treatment;
 
     @Column(name = "contract_url")

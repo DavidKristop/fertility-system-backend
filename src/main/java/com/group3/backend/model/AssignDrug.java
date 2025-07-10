@@ -32,9 +32,6 @@ public class AssignDrug {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(name = "complete_date", nullable = true)
-    private LocalDateTime completeDate;
-
     @ManyToOne
     @JoinColumn(name = "payment_id")
     private Payment payment;

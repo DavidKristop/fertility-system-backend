@@ -62,14 +62,14 @@ public class Treatment {
     @JoinColumn(name = "treatment_protocol_id")
     private TreatmentProtocol treatmentProtocol;
 
-    @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<TreatmentPhase> phases;
 
 
-    @OneToOne(mappedBy = "treatment")
+    @OneToOne(mappedBy = "treatment", cascade = CascadeType.ALL)
     private Contract contract;
 
-    @OneToMany(mappedBy = "treatment")
+    @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL)
     private List<Feedback> feedbacks;
 
     @CreatedDate

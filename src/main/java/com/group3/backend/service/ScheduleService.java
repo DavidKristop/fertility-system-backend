@@ -3,18 +3,14 @@ package com.group3.backend.service;
 import com.group3.backend.constants.Roles;
 import com.group3.backend.dto.request.ScheduleCreateRequest;
 import com.group3.backend.dto.request.ScheduleServiceCreateRequest;
-import com.group3.backend.dto.request.Schedule.AddScheduleToPhaseRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentServiceRequest;
 import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.exception.UnauthorizedAccessException;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.ScheduleResult;
 import com.group3.backend.model.Service;
-import com.group3.backend.model.Treatment;
-import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.User;
 import com.group3.backend.model.Payment;
 import com.group3.backend.model.RequestAppointment;
@@ -40,9 +36,6 @@ public class ScheduleService {
 
     @Autowired
     private ScheduleRepository scheduleRepository;
-
-    @Autowired
-    private TreatmentPhaseRepository treatmentPhaseRepository;
 
     @Autowired
     private ServiceRepository serviceRepository;
@@ -134,6 +127,9 @@ public class ScheduleService {
             throw new ResourceConflictException("The id for doctor does not have the role of doctor");
         }
 
+        if(scheduleCreateRequest.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(120))) {
+            throw new ResourceConflictException("Appointment time must be in the future by at most 120 days");
+        }
         
         if(scheduleCreateRequest.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(2))) {
             throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
@@ -191,60 +187,6 @@ public class ScheduleService {
             .build();
         schedule.setStatus(Schedule.Status.DONE);
         schedule.setScheduleResult(scheduleResult);
-        return scheduleRepository.save(schedule);
-    }
-
-    public Schedule addScheduleToPhase(AddScheduleToPhaseRequest scheduleCreateRequest, UUID doctorId) {
-        TreatmentPhase treatmentPhase = treatmentPhaseRepository.findById(scheduleCreateRequest.getPhaseId())
-            .orElseThrow(() -> new ResourceNotFoundException("Treatment phase not found"));
-        Treatment treatment = treatmentPhase.getTreatment();
-        User doctor = treatment.getDoctor();
-        User patient = treatment.getPatient();
-
-        if(!doctor.getId().equals(doctorId)) {
-            throw new UnauthorizedAccessException("Doctor is not authorized to add schedule to this treatment phase");
-        }
-
-        if(treatment.getStatus() != Treatment.Status.IN_PROGRESS){
-            throw new ResourceConflictException("Treatment is not in progress");
-        }
-
-
-
-        Schedule schedule = Schedule.builder()
-            .appointmentDateTime(scheduleCreateRequest.getAppointmentDateTime())
-            .estimatedTime(scheduleCreateRequest.getEstimatedTime())
-            .doctor(doctor)
-            .patient(patient)
-            .status(Schedule.Status.PENDING)
-            .build();
-        
-        for (TreatmentServiceRequest serviceRequest : scheduleCreateRequest.getServices()){
-            com.group3.backend.model.ScheduleService scheduleService = new com.group3.backend.model.ScheduleService();
-            Service service = serviceRepository.findById(serviceRequest.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
-            scheduleService.setService(service);
-            scheduleService.setSchedule(schedule);
-            scheduleService.setTreatmentPhase(treatmentPhase);
-            schedule.getScheduleServices().add(scheduleService);
-        }
-    
-        if(schedule.getEstimatedTime().isBefore(schedule.getAppointmentDateTime())){
-            throw new ResourceConflictException("Estimated time must be greater than appointment time");
-        }
-
-        if(schedule.getEstimatedTime().isAfter(schedule.getAppointmentDateTime().plusHours(8))){
-            throw new ResourceConflictException("Estimated time must be at most 8 hours after appointment time");
-        }
-
-        List<Schedule> existingSchedules = scheduleRepository.findByDoctorIdAndStatus(
-            doctor.getId(), Schedule.Status.PENDING
-        );
-        if(checkOverlappingSchedule(doctor.getId(),schedule.getAppointmentDateTime(),schedule.getEstimatedTime(), existingSchedules )){
-            throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
-        }
-        
-        treatmentPhaseRepository.save(treatmentPhase);
         return scheduleRepository.save(schedule);
     }
 
@@ -337,6 +279,10 @@ public class ScheduleService {
 
         if (schedule.getStatus() != Schedule.Status.PENDING) {
             throw new ResourceConflictException("Only PENDING schedules can be changed");
+        }
+
+        if(request.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(120))) {
+            throw new ResourceConflictException("Appointment time must be in the future by at most 120 days");
         }
         
         if(request.getAppointmentDateTime().isBefore(LocalDateTime.now(timeZoneConfig.defaultZoneId()).plusDays(2))) {

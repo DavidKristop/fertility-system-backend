@@ -87,6 +87,14 @@ public class TreatmentController {
         return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
     }
 
+    @GetMapping("/doctor/exist/{patientId}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<Boolean>> checkTreatmentExistByDoctorId(
+        @PathVariable UUID patientId,
+        @RequestParam(defaultValue = "IN_PROGRESS") List<Treatment.Status> status){
+        return ResponseEntity.ok(new Response<>(treatmentService.existsByPatientIdAndStatusIn(patientId, status), "Treatment exist"));
+    }
+
     @GetMapping("/manager")
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Response<Page<TreatmentResponse>>> getAllTreatmentsByManagerId(

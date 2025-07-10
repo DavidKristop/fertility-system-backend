@@ -2,8 +2,11 @@ package com.group3.backend.mapper;
 
 import com.group3.backend.dto.response.Treatment.*;
 import com.group3.backend.model.*;
+
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +19,20 @@ public interface TreatmentMapper {
     @Mapping(source = "treatmentProtocol", target = "protocol")
     @Mapping(source = "doctor", target = "doctor", qualifiedByName = "toUserDoctorResponse")
     @Mapping(source = "patient", target = "patient", qualifiedByName = "toUserPatientResponse")
+    @Mapping(source = "currentPhase.id", target = "currentPhaseId")
+    @Mapping(source = "contract.id", target = "contractId")
+    @Mapping(source = "contract.isSigned", target = "signedContract")
     @Named("toTreatmentReponse")
     TreatmentResponse toResponse(Treatment treatment);
+
+    @AfterMapping
+    default void sortPhases(@MappingTarget TreatmentResponse response) {
+        if (response.getPhases() != null) {
+            response.setPhases(response.getPhases().stream()
+                .sorted((p1, p2) -> Integer.compare(p1.getPosition(), p2.getPosition()))
+                .collect(Collectors.toList()));
+        }
+    }
 
     @Mapping(source = "assignDrugs", target = "assignDrugs")
     @Mapping(target = "unsetServices", expression = "java(getUnsetServices(phase))")

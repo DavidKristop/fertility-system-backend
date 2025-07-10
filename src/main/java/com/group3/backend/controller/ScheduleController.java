@@ -1,8 +1,6 @@
 package com.group3.backend.controller;
 
 import com.group3.backend.dto.Response;
-import com.group3.backend.dto.request.PaymentRequest;
-import com.group3.backend.dto.request.Schedule.AddScheduleToPhaseRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
 import com.group3.backend.dto.response.Schedule.DoctorScheduleReponse;
@@ -10,7 +8,6 @@ import com.group3.backend.dto.response.Schedule.PatientScheduleResponse;
 import com.group3.backend.dto.response.Schedule.ScheduleResponse;
 import com.group3.backend.exception.UnauthorizedAccessException;
 import com.group3.backend.mapper.ScheduleMapper;
-import com.group3.backend.model.Payment;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.ScheduleService;
@@ -21,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -126,32 +122,32 @@ public class ScheduleController {
         );
     }
 
-    @PostMapping("/new-schedule")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<ScheduleResponse>> addSchedule(@RequestBody AddScheduleToPhaseRequest request) {
-        Schedule schedule = scheduleService.addScheduleToPhase(request, currentUserUtils.getCurrentUser().getId());
+    // @PostMapping("/new-schedule")
+    // @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    // public ResponseEntity<Response<ScheduleResponse>> addSchedule(@RequestBody AddScheduleToPhaseRequest request) {
+    //     Schedule schedule = scheduleService.addScheduleToPhase(request, currentUserUtils.getCurrentUser().getId());
         
-        BigDecimal totalAmount = schedule.getScheduleServices().stream()
-                .map(scheduleService -> scheduleService.getService().getPrice())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    //     BigDecimal totalAmount = schedule.getScheduleServices().stream()
+    //             .map(scheduleService -> scheduleService.getService().getPrice())
+    //             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        PaymentRequest paymentRequest = PaymentRequest.builder()
-            .amount(totalAmount)
-            .description("Payment for additional schedule")
-            .paymentDeadline(LocalDateTime.now().plusDays(2))
-            .userId(currentUserUtils.getCurrentUser().getId())
-            .scheduleServiceIds(schedule.getScheduleServices().stream()
-                .map(scheduleService -> scheduleService.getId())
-                .collect(Collectors.toList()))
-            .build();
+    //     PaymentRequest paymentRequest = PaymentRequest.builder()
+    //         .amount(totalAmount)
+    //         .description("Payment for additional schedule")
+    //         .paymentDeadline(LocalDateTime.now().plusDays(2))
+    //         .userId(currentUserUtils.getCurrentUser().getId())
+    //         .scheduleServiceIds(schedule.getScheduleServices().stream()
+    //             .map(scheduleService -> scheduleService.getId())
+    //             .collect(Collectors.toList()))
+    //         .build();
 
-        paymentService.createPayment(paymentRequest);
+    //     paymentService.createPayment(paymentRequest);
 
-        return ResponseEntity.ok(new Response<>(
-            scheduleMapper.toDoctorScheduleRespone(schedule),
-            "Schedule created successfully")
-        );
-    }
+    //     return ResponseEntity.ok(new Response<>(
+    //         scheduleMapper.toDoctorScheduleRespone(schedule),
+    //         "Schedule created successfully")
+    //     );
+    // }
 
     @GetMapping("/patient/{id}")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")

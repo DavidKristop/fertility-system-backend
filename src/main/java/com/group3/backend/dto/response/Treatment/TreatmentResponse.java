@@ -19,6 +19,10 @@ public class TreatmentResponse {
     private String status;
     private UserPatientResponse patient;
     private UserDoctorResponse doctor;
+    private UUID currentPhaseId;
+    private UUID contractId;
+    private boolean isSignedContract;
     private TreatmentProtocolResponse protocol;
     private List<TreatmentPhaseResponse> phases;
+    private TreatmentPhaseResponse currentPhase;
 }

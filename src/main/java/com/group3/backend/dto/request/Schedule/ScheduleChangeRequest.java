@@ -2,6 +2,7 @@ package com.group3.backend.dto.request.Schedule;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import com.group3.backend.constraints.WorkingHours;
 
 @Data
+@Builder
 public class ScheduleChangeRequest {
 
     @NotNull(message = "Appointment datetime is required")

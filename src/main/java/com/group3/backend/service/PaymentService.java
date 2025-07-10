@@ -137,7 +137,7 @@ public class PaymentService {
         // Update payment status
         payment.setStatus(Payment.Status.CANCELED);
 
-        // Cancel associated treatment phases and their schedule services
+        // Cancel associated schedule services
         payment.getScheduleServices().forEach(scheduleService -> {
             if(scheduleService.getSchedule() != null) scheduleService.getSchedule().setStatus(Schedule.Status.CANCELLED);
             scheduleServiceRepository.save(scheduleService);

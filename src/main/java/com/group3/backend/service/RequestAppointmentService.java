@@ -55,6 +55,10 @@ public class RequestAppointmentService {
             throw new ResourceConflictException("Appointment must be at least 3 days in advance");
         }
 
+        if(dto.getAppointmentDatetime().isAfter(LocalDateTime.now().plusDays(120))) {
+            throw new ResourceConflictException("Appointment time must be in the future by at most 120 days");
+        }
+
         
         User doctor = userRepository.findById(dto.getDoctorId())
         .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));

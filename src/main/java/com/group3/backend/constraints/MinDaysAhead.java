@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MinDaysAhead {
-    int value() default 2;
-    String message() default "Appointment must be at least 2 days from now";
+    int value() default 3;
+    String message() default "Appointment must be at least 3 days from now";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

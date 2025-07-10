@@ -16,7 +16,7 @@ import com.group3.backend.repository.ReminderRepository;
 public class ReminderService {
     
     @Autowired
-    ReminderRepository reminderRepository;
+    private ReminderRepository reminderRepository;
 
     public Page<Reminder> getReminderToUser(UUID userId, Pageable pageable) {
         return reminderRepository.findBySendToId(userId, pageable);

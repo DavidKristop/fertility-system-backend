@@ -44,11 +44,11 @@ public class TreatmentPhase {
     @JoinColumn(name = "treatment_id", nullable = false)
     private Treatment treatment;
 
-    @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "treatmentPhase", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @Builder.Default
     private List<AssignDrug> assignDrugs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "treatmentPhase", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "treatmentPhase", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @Builder.Default
     private List<ScheduleService> scheduleServices = new ArrayList<>();
 }

@@ -24,7 +24,7 @@ public class ContractScheduler {
     private final TreatmentRepository treatmentRepository;
 
     // Runs every hour
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
     public void checkUnsignedContracts() {
         LocalDateTime now = LocalDateTime.now();
         
