@@ -1,8 +1,12 @@
 package com.group3.backend.controller;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,5 +34,11 @@ public class TreatmentPhaseController {
     public ResponseEntity<Response<TreatmentPhaseResponse>> setTreatmentPhase(@RequestBody TreatmentPhaseSetRequest request) {
         TreatmentPhase treatmentPhase = treatmentPhaseService.setTreatmentPhase(request);
         return ResponseEntity.ok(new Response<>(treatmentMapper.map(treatmentPhase), "Treatment phase set successfully"));
+    }
+
+    @DeleteMapping("delete-schedule-service/{id}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<Boolean>> deleteScheduleService(@PathVariable UUID id) {
+        return ResponseEntity.ok(new Response<>(treatmentPhaseService.deleteScheduleService(id),"Schedule service deleted successfully"));
     }
 }

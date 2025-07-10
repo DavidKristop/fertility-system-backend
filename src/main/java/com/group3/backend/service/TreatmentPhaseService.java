@@ -21,7 +21,11 @@ import com.group3.backend.dto.request.Treatment.TreatmentPatientDrugSetRequest;
 import com.group3.backend.model.Drug;
 import com.group3.backend.model.AssignDrug;
 import com.group3.backend.model.PatientDrug;
+import com.group3.backend.model.Payment;
+import com.group3.backend.model.Refund;
 import com.group3.backend.repository.DrugRepository;
+import com.group3.backend.repository.PaymentRepository;
+import com.group3.backend.repository.RefundRepository;
 import com.group3.backend.repository.AssignDrugRepository;
 import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
@@ -61,7 +65,13 @@ public class TreatmentPhaseService {
     private AssignDrugRepository assignDrugRepository;
 
     @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
     private com.group3.backend.service.ScheduleService scheduleService;
+
+    @Autowired
+    private RefundRepository refundRepository;
 
     //Set the scheduleServices and drug in treatment phase
     //If the scheduleService or patientDrug is new( has id with only 0) then create the scheduleService or patientDrug
@@ -260,5 +270,40 @@ public class TreatmentPhaseService {
         }
     
         return treatmentPhaseReturn;
+    }
+
+
+    public boolean deleteScheduleService(UUID scheduleServiceId){
+        ScheduleService scheduleService = scheduleServiceRepository.findById(scheduleServiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Schedule service not found"));
+        
+        if(scheduleService.getSchedule() != null){
+            throw new ResourceConflictException("Schedule service is associated with a schedule");
+        }
+        
+        Payment payment = scheduleService.getPayment();
+
+        if(payment != null){
+            if(payment.getStatus().equals(Payment.Status.PENDING)){
+                payment.setAmount(payment.getAmount().subtract(scheduleService.getService().getPrice()));
+                if(payment.getAmount().compareTo(new BigDecimal(0)) == 0){
+                    paymentRepository.delete(payment);
+                }
+                else paymentRepository.save(payment);
+            }
+            else if(payment.getStatus().equals(Payment.Status.COMPLETED)){
+                refundRepository.save(Refund.builder()
+                    .payment(payment)
+                    .amount(scheduleService.getService().getPrice())
+                    .refundDate(LocalDateTime.now())
+                    .refundMethod("Refund")
+                    .reason("Refund for canceling a schedule service")
+                    .user(scheduleService.getTreatmentPhase().getTreatment().getPatient())
+                    .build());
+            }
+        }
+
+        scheduleServiceRepository.delete(scheduleService);
+        return true;
     }
 }

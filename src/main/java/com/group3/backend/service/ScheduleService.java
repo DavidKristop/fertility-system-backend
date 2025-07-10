@@ -127,7 +127,7 @@ public class ScheduleService {
             throw new ResourceConflictException("The id for doctor does not have the role of doctor");
         }
 
-        if(scheduleCreateRequest.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(120))) {
+        if(scheduleCreateRequest.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(119))) {
             throw new ResourceConflictException("Appointment time must be in the future by at most 120 days");
         }
         
@@ -281,7 +281,7 @@ public class ScheduleService {
             throw new ResourceConflictException("Only PENDING schedules can be changed");
         }
 
-        if(request.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(120))) {
+        if(request.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(119))) {
             throw new ResourceConflictException("Appointment time must be in the future by at most 120 days");
         }
         

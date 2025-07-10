@@ -55,7 +55,7 @@ public class RequestAppointmentService {
             throw new ResourceConflictException("Appointment must be at least 3 days in advance");
         }
 
-        if(dto.getAppointmentDatetime().isAfter(LocalDateTime.now().plusDays(120))) {
+        if(dto.getAppointmentDatetime().isAfter(LocalDateTime.now().plusDays(119))) {
             throw new ResourceConflictException("Appointment time must be in the future by at most 120 days");
         }
 
