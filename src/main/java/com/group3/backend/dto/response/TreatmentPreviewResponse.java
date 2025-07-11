@@ -12,4 +12,5 @@ import lombok.Data;
 public class TreatmentPreviewResponse {
     private UUID id;
     private Treatment.Status status;
+    private UUID contractId;
 }

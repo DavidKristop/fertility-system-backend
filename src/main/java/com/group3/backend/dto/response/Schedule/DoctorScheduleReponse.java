@@ -24,8 +24,8 @@ public class DoctorScheduleReponse extends ScheduleResponse {
     private ScheduleResultResponse scheduleResult;
     private List<ScheduleServiceRespone> services;
     private List<PaymentPreviewResponse> payment;
-    private Optional<TreatmentPreviewResponse> treatment;
-    private Optional<TreatmentPhasePreviewResponse> treatmentPhase;
+    private TreatmentPreviewResponse treatment;
+    private TreatmentPhasePreviewResponse treatmentPhase;
     private boolean canMoveToNextPhase;
 
 }

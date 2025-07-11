@@ -2,7 +2,7 @@ package com.group3.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -25,10 +25,10 @@ public class PatientDrug {
     private String usageInstructions;
 
     @Column(name = "start_date")
-    private Date startDate;
+    private LocalDate startDate;
 
     @Column(name = "end_date")
-    private Date endDate;
+    private LocalDate endDate;
 
     @Column(name = "dosage")
     private String dosage;

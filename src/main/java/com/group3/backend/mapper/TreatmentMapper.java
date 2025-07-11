@@ -23,7 +23,7 @@ public interface TreatmentMapper {
     @Mapping(source = "currentPhase.id", target = "currentPhaseId")
     @Mapping(source = "contract.id", target = "contractId")
     @Mapping(source = "contract.isSigned", target = "signedContract")
-    @Mapping(target = "canMoveToNextPhase", expression = "java(getCanMoveToNextPhase(treatment))")
+    @Mapping(target = "canMoveToNextPhase", expression = "java(getCanMoveToNextPhase(treatment.getCurrentPhase()))")
     @Named("toTreatmentReponse")
     TreatmentResponse toResponse(Treatment treatment);
 
@@ -107,7 +107,6 @@ public interface TreatmentMapper {
 
     
     @Mapping(source = "drug", target = "drug")
-    @Mapping(source = "drug.id", target = "drugId")
     TreatmentPatientDrugResponse map(PatientDrug patientDrug);
     
 

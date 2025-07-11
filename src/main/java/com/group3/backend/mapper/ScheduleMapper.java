@@ -77,6 +77,7 @@ public interface ScheduleMapper {
                 return TreatmentPreviewResponse.builder()
                     .id(scheduleService.getTreatmentPhase().getTreatment().getId())
                     .status(scheduleService.getTreatmentPhase().getTreatment().getStatus())
+                    .contractId(scheduleService.getTreatmentPhase().getTreatment().getContract().getId())
                     .build();
             }
         }
