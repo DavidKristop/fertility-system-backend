@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,15 +23,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.validation.annotation.Validated;
-import jakarta.validation.Valid;
 
 import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
-import com.group3.backend.dto.request.ScheduleCreateRequest;
-import com.group3.backend.dto.request.ScheduleServiceCreateRequest;
 import com.group3.backend.dto.response.RequestAppointment.RequestAppointmentResponse;
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.model.RequestAppointment;
@@ -40,6 +37,8 @@ import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.RequestAppointmentService;
 import com.group3.backend.service.ScheduleService;
 import com.group3.backend.utils.CurrentUserUtils;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/request-appointments")
