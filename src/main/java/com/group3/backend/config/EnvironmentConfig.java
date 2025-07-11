@@ -13,16 +13,6 @@ public class EnvironmentConfig {
     private String consultationPhaseId;
     private String consultationProtocolServiceId;
     private String ultrasoundProtocolServiceId;
-    @Value("${uuid.new}")
-    private String newUUID;
-
-    public String getNewUUID() {
-        return newUUID;
-    }
-
-    public void setNewUUID(String newUUID) {
-        this.newUUID = newUUID;
-    }
 
     // Getters and Setters
     public String getConsultationServiceId() {

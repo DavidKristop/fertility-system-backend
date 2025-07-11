@@ -61,16 +61,16 @@ public class ScheduleService {
         return filterDate(schedules, year, month);
     }
 
-    public List<Schedule> getSchedulesByDoctorId(UUID doctorId, Integer year, Integer month) {
-        List<Schedule> schedules = scheduleRepository.findByDoctorId(doctorId);
+    public List<Schedule> getSchedulesByDoctorId(UUID doctorId, List<Schedule.Status> status, Integer year, Integer month) {
+        List<Schedule> schedules = scheduleRepository.findByDoctorIdAndStatusIn(doctorId, status);
         if(year == null) year = LocalDate.now().getYear();
         if(month == null) month = LocalDate.now().getMonthValue();
         
         return filterDate(schedules, year, month);
     }
 
-    public List<Schedule> getSchedulesByPatientId(UUID patientId, Integer year, Integer month) {
-        List<Schedule> schedules = scheduleRepository.findByPatientId(patientId);
+    public List<Schedule> getSchedulesByPatientId(UUID patientId, List<Schedule.Status> status, Integer year, Integer month) {
+        List<Schedule> schedules = scheduleRepository.findByPatientIdAndStatusIn(patientId, status);
         if(year == null) year = LocalDate.now().getYear();
         if(month == null) month = LocalDate.now().getMonthValue();
        
@@ -181,12 +181,14 @@ public class ScheduleService {
             throw new ResourceConflictException("Schedule is not done");
         }
 
-        ScheduleResult scheduleResult = ScheduleResult.builder()
-            .doctorsNote(scheduleResultRequest.getDoctorsNote())
-            .schedule(schedule)
-            .build();
-        schedule.setStatus(Schedule.Status.DONE);
-        schedule.setScheduleResult(scheduleResult);
+        if(schedule.getScheduleResult() == null){
+            ScheduleResult scheduleResult = ScheduleResult.builder()
+                .doctorsNote(scheduleResultRequest.getDoctorsNote())
+                .schedule(schedule)
+                .build();
+            schedule.setScheduleResult(scheduleResult);
+        }
+        else schedule.getScheduleResult().setDoctorsNote(scheduleResultRequest.getDoctorsNote());
         return scheduleRepository.save(schedule);
     }
 
@@ -260,6 +262,9 @@ public class ScheduleService {
         }
 
         schedule.getScheduleServices().forEach(scheduleService ->{
+            if(scheduleService.getPayment() == null){
+                throw new ResourceConflictException("The payment for this schedule is not completed.");
+            }
             if(scheduleService.getPayment().getStatus() != Payment.Status.COMPLETED) {
                 throw new ResourceConflictException("The payment for this schedule is not completed.");
             }

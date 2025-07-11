@@ -25,4 +25,5 @@ public class TreatmentResponse {
     private TreatmentProtocolResponse protocol;
     private List<TreatmentPhaseResponse> phases;
     private TreatmentPhaseResponse currentPhase;
+    private boolean canMoveToNextPhase;
 }

@@ -7,12 +7,10 @@ import com.group3.backend.dto.Response;
 import com.group3.backend.dto.response.PaymentResponse;
 import com.group3.backend.mapper.PaymentMapper;
 import com.group3.backend.model.Payment;
-import com.group3.backend.model.Payment.PaymentMethod;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.VNPayService;
 import com.group3.backend.utils.CurrentUserUtils;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;

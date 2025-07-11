@@ -1,6 +1,7 @@
 package com.group3.backend.dto.request;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,5 +24,6 @@ public class ScheduleCreateRequest {
     @WorkingHours
     private LocalDateTime estimatedTime;
 
-    private List<ScheduleServiceCreateRequest> services;
+    @Builder.Default
+    private List<ScheduleServiceCreateRequest> services = new ArrayList<>();
 }

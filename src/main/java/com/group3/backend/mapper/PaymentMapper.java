@@ -3,6 +3,7 @@ package com.group3.backend.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import com.group3.backend.dto.response.PaymentPreviewResponse;
 import com.group3.backend.dto.response.PaymentResponse;
 import com.group3.backend.dto.response.RefundResponse;
 import com.group3.backend.model.Payment;
@@ -16,4 +17,6 @@ public interface PaymentMapper {
     @Mapping(source = "payment.id", target = "paymentId")
     @Mapping(source = "user.id", target = "userId")
     RefundResponse toRefundResponse(Refund refund);
+
+    PaymentPreviewResponse toPaymentPreviewResponse(Payment payment);
 }

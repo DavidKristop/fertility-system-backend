@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class TreatmentPatientDrugResponse{
     private UUID id;
+    private UUID drugId;
     private TreatmentDrugResponse drug;
     private String dosage;
     private String usageInstructions;

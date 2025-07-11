@@ -9,7 +9,6 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.ScheduleCreateRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
@@ -55,9 +54,6 @@ public class TreatmentPhaseService {
     @Autowired
     private PaymentService paymentService;
 
-    @Autowired 
-    private EnvironmentConfig environmentConfig;
-
     @Autowired
     private DrugRepository drugRepository;
     
@@ -78,18 +74,15 @@ public class TreatmentPhaseService {
     //Same goes for schedule and patientdrug
     public TreatmentPhase setTreatmentPhase(TreatmentPhaseSetRequest request){
         TreatmentPhase treatmentPhase = treatmentPhaseRepository.findById(request.getPhaseId())
-            .orElseThrow(() -> new ResourceNotFoundException("Treatment phase not found"));
-    
-        if(treatmentPhase.getTreatment().getStatus() != Treatment.Status.IN_PROGRESS){
-            throw new ResourceConflictException("Treatment is not in progress");
+        .orElseThrow(() -> new ResourceNotFoundException("Treatment phase not found"));
+        
+        if(!(treatmentPhase.getTreatment().getStatus().equals(Treatment.Status.IN_PROGRESS)
+        || treatmentPhase.getTreatment().getStatus().equals(Treatment.Status.AWAITING_CONTRACT_SIGNED))){
+            throw new ResourceConflictException("Treatment is not in progress or awaiting contract signed");
         }
 
         if(!treatmentPhase.getId().equals(treatmentPhase.getTreatment().getCurrentPhase().getId())){
             throw new ResourceConflictException("Treatment phase is not the current phase");
-        }
-
-        if(!treatmentPhase.getTreatment().getContract().getIsSigned()){
-            throw new ResourceConflictException("Treatment contract is not signed");
         }
 
         // Get existing schedule services for this treatment phase
@@ -122,7 +115,7 @@ public class TreatmentPhaseService {
             Schedule schedule;
 
             //Create schedule if its new
-            if(scheduleRequest.getScheduleId().equals(UUID.fromString(environmentConfig.getNewUUID()))){
+            if(scheduleRequest.getScheduleId().isEmpty()){
                 schedule = scheduleService.createSchedule(ScheduleCreateRequest.builder()
                 .patientId(treatmentPhase.getTreatment().getPatient().getId())
                 .doctorId(treatmentPhase.getTreatment().getDoctor().getId())
@@ -131,7 +124,7 @@ public class TreatmentPhaseService {
                 .build());
             }else{
                 schedule = scheduleService.changeScheduleTime(
-                    scheduleRequest.getScheduleId(), 
+                    scheduleRequest.getScheduleId().get(), 
                     treatmentPhase.getTreatment().getDoctor().getId(), 
                     ScheduleChangeRequest.builder()
                         .appointmentDateTime(scheduleRequest.getAppointmentDateTime())
@@ -141,7 +134,7 @@ public class TreatmentPhaseService {
             
             List<ScheduleService> scheduleServices = new ArrayList<>();
             for(TreatmentScheduleServiceSetRequest scheduleServiceRequest : scheduleRequest.getScheduleServices()) {
-                if(scheduleServiceRequest.getId().equals(UUID.fromString(environmentConfig.getNewUUID()))) {
+                if(scheduleServiceRequest.getId().isEmpty()) {
                     // New schedule service - create it
                     ScheduleService newScheduleService = new ScheduleService();
                     newScheduleService.setTreatmentPhase(treatmentPhase);
@@ -162,7 +155,7 @@ public class TreatmentPhaseService {
                 } else {
                     // Existing schedule service - update it
                     ScheduleService existingScheduleService = existingScheduleServices.stream()
-                        .filter(s -> s.getId().equals(scheduleServiceRequest.getId()))
+                        .filter(s -> s.getId().equals(scheduleServiceRequest.getId().get()))
                         .findFirst()
                         .orElseThrow(() -> new ResourceNotFoundException("Schedule service not found"));
 
@@ -176,7 +169,7 @@ public class TreatmentPhaseService {
 
         // Process drug assignments
         for(TreatmentAssignDrugSetRequest drugRequest : request.getAssignDrugs()) {
-            if(drugRequest.getAssignDrugId().equals(UUID.fromString(environmentConfig.getNewUUID()))) {
+            if(drugRequest.getAssignDrugId().isEmpty()) {
                 // New drug assignment - create it
                 AssignDrug newAssignDrug = new AssignDrug();
                 newAssignDrug.setTreatmentPhase(treatmentPhase);
@@ -208,13 +201,13 @@ public class TreatmentPhaseService {
             } else {
                 // Existing drug assignment - update it
                 AssignDrug existingAssignDrug = existingAssignDrugs.stream()
-                    .filter(d -> d.getId().equals(drugRequest.getAssignDrugId()))
+                    .filter(d -> d.getId().equals(drugRequest.getAssignDrugId().get()))
                     .findFirst()
                     .orElseThrow(() -> new ResourceNotFoundException("Assign drug not found"));
 
                 // Process each patient drug
                 for(TreatmentPatientDrugSetRequest patientDrugRequest : drugRequest.getPatientDrugs()) {
-                    if(patientDrugRequest.getPatientDrugId().equals(UUID.fromString(environmentConfig.getNewUUID()))) {
+                    if(patientDrugRequest.getPatientDrugId().isEmpty()) {
                         // New patient drug - create it
                         PatientDrug newPatientDrug = new PatientDrug();
                         newPatientDrug.setAssignDrug(existingAssignDrug);
@@ -237,7 +230,7 @@ public class TreatmentPhaseService {
                     } else {
                         // Existing patient drug - update it
                         PatientDrug existingPatientDrug = existingAssignDrug.getPatientDrugs().stream()
-                            .filter(pd -> pd.getId().equals(patientDrugRequest.getPatientDrugId()))
+                            .filter(pd -> pd.getId().equals(patientDrugRequest.getPatientDrugId().get()))
                             .findFirst()
                             .orElseThrow(() -> new ResourceNotFoundException("Patient drug not found"));
                         
@@ -279,6 +272,11 @@ public class TreatmentPhaseService {
         
         if(scheduleService.getSchedule() != null){
             throw new ResourceConflictException("Schedule service is associated with a schedule");
+        }
+
+        if(!(scheduleService.getTreatmentPhase().getTreatment().getStatus().equals(Treatment.Status.AWAITING_CONTRACT_SIGNED)
+        || scheduleService.getTreatmentPhase().getTreatment().getStatus().equals(Treatment.Status.IN_PROGRESS))){
+            throw new ResourceConflictException("Treatment must be in progress or are awaiting contract signed.");
         }
         
         Payment payment = scheduleService.getPayment();
