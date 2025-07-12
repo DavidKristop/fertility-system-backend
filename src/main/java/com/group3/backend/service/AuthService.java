@@ -85,6 +85,9 @@ public class AuthService {
                     user.getEmail(),
                     user.getRole().getName().name(),
                     user.getFullName(),
+                    user.getAddress(),
+                    user.getPhone(),
+                    user.getDateOfBirth(),
                     user.getId()
             );
 
@@ -140,6 +143,9 @@ public class AuthService {
                 user.getEmail(),
                 user.getRole().getName().name(),
                 user.getFullName(),
+                user.getAddress(),
+                user.getPhone(),
+                user.getDateOfBirth(),
                 user.getId()
             );
 

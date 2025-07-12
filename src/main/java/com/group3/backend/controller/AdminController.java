@@ -33,6 +33,9 @@ public class AdminController {
             newUser.getEmail(),
             newUser.getRole().getName().name(),
             newUser.getFullName(),
+            newUser.getAddress(),
+            newUser.getPhone(),
+            newUser.getDateOfBirth(),
             newUser.getId()
         );
 
