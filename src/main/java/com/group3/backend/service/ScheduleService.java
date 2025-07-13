@@ -17,7 +17,6 @@ import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.repository.RequestAppointmentRepository;
 import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.ServiceRepository;
-import com.group3.backend.repository.TreatmentPhaseRepository;
 import com.group3.backend.repository.UserRepository;
 import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.config.TimeZoneConfig;
@@ -61,20 +60,18 @@ public class ScheduleService {
         return filterDate(schedules, year, month);
     }
 
-    public List<Schedule> getSchedulesByDoctorId(UUID doctorId, List<Schedule.Status> status, Integer year, Integer month) {
-        List<Schedule> schedules = scheduleRepository.findByDoctorIdAndStatusIn(doctorId, status);
-        if(year == null) year = LocalDate.now().getYear();
-        if(month == null) month = LocalDate.now().getMonthValue();
-        
-        return filterDate(schedules, year, month);
+    public List<Schedule> getSchedulesByDoctorId(UUID doctorId, List<Schedule.Status> status, LocalDate from, LocalDate to) {
+        LocalDateTime fromDateTime = from.atStartOfDay();
+        LocalDateTime toDateTime = to.atTime(23, 59, 59);
+        List<Schedule> schedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetweenAndStatusIn(doctorId, fromDateTime, toDateTime, status);
+        return schedules;
     }
 
-    public List<Schedule> getSchedulesByPatientId(UUID patientId, List<Schedule.Status> status, Integer year, Integer month) {
-        List<Schedule> schedules = scheduleRepository.findByPatientIdAndStatusIn(patientId, status);
-        if(year == null) year = LocalDate.now().getYear();
-        if(month == null) month = LocalDate.now().getMonthValue();
-       
-        return filterDate(schedules, year, month);
+    public List<Schedule> getSchedulesByPatientId(UUID patientId, List<Schedule.Status> status, LocalDate from, LocalDate to) {
+        LocalDateTime fromDateTime = from.atStartOfDay();
+        LocalDateTime toDateTime = to.atTime(23, 59, 59);
+        List<Schedule> schedules = scheduleRepository.findByPatientIdAndAppointmentDateTimeBetweenAndStatusIn(patientId, fromDateTime, toDateTime, status);
+        return schedules;
     }
 
     public Schedule getScheduleById(UUID id) {
@@ -95,6 +92,7 @@ public class ScheduleService {
             ScheduleCreateRequest.builder()
                 .patientId(requestAppointment.getPatient().getId())
                 .doctorId(requestAppointment.getDoctor().getId())
+                .title("Khám tư vấn và siêu âm")
                 .appointmentDateTime(requestAppointment.getAppointmentDatetime())
                 .estimatedTime(requestAppointment.getAppointmentDatetime().plusMinutes(30))
                 .services(List.of(
@@ -152,6 +150,7 @@ public class ScheduleService {
 
 
         Schedule schedule = Schedule.builder()
+        .title(scheduleCreateRequest.getTitle())
         .appointmentDateTime(scheduleCreateRequest.getAppointmentDateTime())
         .estimatedTime(scheduleCreateRequest.getEstimatedTime())
         .doctor(doctor)

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.validator.constraints.Length;
+
 import com.group3.backend.constraints.WorkingHours;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -18,6 +20,9 @@ public class ScheduleCreateRequest {
     @NotNull
     private UUID doctorId;
     
+    @Length(min = 1, max = 50)
+    private String title;
+
     @WorkingHours
     private LocalDateTime appointmentDateTime;
     

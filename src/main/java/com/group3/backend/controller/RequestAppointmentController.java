@@ -29,8 +29,6 @@ import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
-import com.group3.backend.dto.request.ScheduleCreateRequest;
-import com.group3.backend.dto.request.ScheduleServiceCreateRequest;
 import com.group3.backend.dto.response.RequestAppointment.RequestAppointmentResponse;
 import com.group3.backend.mapper.AppointmentRequestMapper;
 import com.group3.backend.model.RequestAppointment;
@@ -48,9 +46,6 @@ public class RequestAppointmentController {
 
     @Autowired
     private RequestAppointmentService service;
-    
-    @Autowired
-    private EnvironmentConfig environmentConfig;
     
     @Autowired
     private PaymentService paymentService;

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hibernate.validator.constraints.Length;
+
 import com.group3.backend.constraints.MinDaysAhead;
 import com.group3.backend.constraints.WorkingHours;
 
@@ -13,6 +15,10 @@ import lombok.Data;
 @Data
 public class TreatmentScheduleSetRequest {
     private Optional<UUID> scheduleId;
+
+    @Length(min = 1, max = 50)
+    private String title;
+
     @WorkingHours
     @MinDaysAhead
     private LocalDateTime appointmentDateTime;

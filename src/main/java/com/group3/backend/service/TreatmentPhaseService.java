@@ -117,6 +117,7 @@ public class TreatmentPhaseService {
             //Create schedule if its new
             if(scheduleRequest.getScheduleId().isEmpty()){
                 schedule = scheduleService.createSchedule(ScheduleCreateRequest.builder()
+                .title(scheduleRequest.getTitle())
                 .patientId(treatmentPhase.getTreatment().getPatient().getId())
                 .doctorId(treatmentPhase.getTreatment().getDoctor().getId())
                 .appointmentDateTime(scheduleRequest.getAppointmentDateTime())

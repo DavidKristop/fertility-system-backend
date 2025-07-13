@@ -11,6 +11,7 @@ import com.group3.backend.model.Schedule;
 @Data
 public class TreatmentScheduleResponse {
     private UUID id;
+    private String title;
     private LocalDateTime appointmentDateTime;
     private LocalDateTime estimatedTime;
     private Schedule.Status status;

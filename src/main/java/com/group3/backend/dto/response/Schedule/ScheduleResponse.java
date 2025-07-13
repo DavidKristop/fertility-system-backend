@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 public class ScheduleResponse {
     private UUID id;
+    private String title;
     private LocalDateTime appointmentDateTime;
     private LocalDateTime estimatedTime;
     private Schedule.Status status;
