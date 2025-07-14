@@ -6,6 +6,7 @@ import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.TreatmentProtocol;
+import com.group3.backend.model.TreatmentProtocolDrug;
 import com.group3.backend.model.TreatmentProtocolPhase;
 import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.PatientDrug;
@@ -178,7 +179,7 @@ public class TreatmentService {
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
         treatment.setStartDate(LocalDate.now());
-        treatment.setEndDate(LocalDate.now().plusMonths(5));
+        treatment.setEndDate(LocalDate.now().plusDays(70));
         treatment.setStatus(Treatment.Status.AWAITING_CONTRACT_SIGNED);
         List<TreatmentPhase> phases = new ArrayList<>();
 
@@ -208,20 +209,22 @@ public class TreatmentService {
             }
 
             // Add drugs from protocol phase
+            AssignDrug assignDrug = new AssignDrug();
+
             List<PatientDrug> patientDrugs = new ArrayList<>();
-            for (Drug drug : protocolPhase.getDrugs().stream()
-            .map(protocolDrug->protocolDrug.getDrug()).toList()) {
+            for (TreatmentProtocolDrug protocolDrug : protocolPhase.getDrugs()) {
                 PatientDrug patientDrug = new PatientDrug();
-                patientDrug.setDrug(drug);
+                patientDrug.setDrug(protocolDrug.getDrug());
+                patientDrug.setAmount(protocolDrug.getAmount());
+                patientDrug.setAssignDrug(assignDrug);
                 patientDrugs.add(patientDrug);
             }
-            AssignDrug assignDrug = new AssignDrug();
             assignDrug.setPatientDrugs(patientDrugs);
             assignDrug.setTreatmentPhase(phase);
             assignDrug.setStatus(AssignDrug.Status.PENDING);
             
-            phase.setAssignDrugs(List.of(assignDrug));
-            phase.setScheduleServices(scheduleServices);
+            if(assignDrug.getPatientDrugs().size() > 0)phase.setAssignDrugs(List.of(assignDrug));
+            if(scheduleServices.size() > 0)phase.setScheduleServices(scheduleServices);
             phases.add(phase);
         }
 

@@ -39,6 +39,7 @@ public interface TreatmentMapper {
     @Mapping(source = "assignDrugs", target = "assignDrugs")
     @Mapping(target = "unsetServices", expression = "java(getUnsetServices(phase))")
     @Mapping(target = "schedules", expression = "java(getScheduledServices(phase))")
+    @Mapping(source = "complete", target = "complete")
     TreatmentPhaseResponse map(TreatmentPhase phase);
 
     @Mapping(target = "services", expression = "java(getServices(schedule.getScheduleServices()))")

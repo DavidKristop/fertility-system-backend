@@ -11,6 +11,7 @@ public class TreatmentPhaseResponse {
     private UUID id;
     private String title;
     private String description;
+    private boolean isComplete;
     private int position;
     private BigDecimal refundPercentage;
     private BigDecimal phaseModifierPercentage;
