@@ -1,6 +1,7 @@
 package com.group3.backend.dto.response;
 
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -15,5 +16,9 @@ public class AuthResponse {
     private String email;
     private String role;
     private String fullName;
+    private String address;
+    private String phone;
+    private LocalDate dateOfBirth;
+
     private UUID userId;
 }

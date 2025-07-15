@@ -1,5 +1,11 @@
 package com.group3.backend.scheduler;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
 import com.group3.backend.model.Contract;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Treatment;
@@ -9,12 +15,6 @@ import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.TreatmentRepository;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
