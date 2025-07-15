@@ -1,20 +1,5 @@
 package com.group3.backend.controller;
 
-import org.springframework.web.bind.annotation.RestController;
-
-import com.group3.backend.config.VNPayConfig;
-import com.group3.backend.dto.Response;
-import com.group3.backend.dto.response.PaymentResponse;
-import com.group3.backend.mapper.PaymentMapper;
-import com.group3.backend.model.Payment;
-import com.group3.backend.model.Payment.PaymentMethod;
-import com.group3.backend.service.PaymentService;
-import com.group3.backend.service.VNPayService;
-import com.group3.backend.utils.CurrentUserUtils;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +16,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.group3.backend.config.VNPayConfig;
+import com.group3.backend.dto.Response;
+import com.group3.backend.dto.response.PaymentResponse;
+import com.group3.backend.mapper.PaymentMapper;
+import com.group3.backend.model.Payment;
+import com.group3.backend.service.PaymentService;
+import com.group3.backend.service.VNPayService;
+import com.group3.backend.utils.CurrentUserUtils;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -86,7 +83,7 @@ public class PaymentController {
     @GetMapping("/manager/{paymentId}")
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Response<PaymentResponse>> getPaymentById(@PathVariable UUID paymentId) {
-        return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.getPaymentByIdAndUserId(paymentId, currentUserUtils.getCurrentUserId())), "Payment retrieved successfully"));
+        return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.getPaymentById(paymentId)), "Payment retrieved successfully"));
     }
 
     @PutMapping("/patient/process/vnpay/{paymentId}")
