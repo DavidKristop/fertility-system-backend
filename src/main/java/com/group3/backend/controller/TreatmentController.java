@@ -134,7 +134,7 @@ public class TreatmentController {
         return ResponseEntity.ok(new Response<>(response, "Treatment retrieved successfully"));
     }
 
-    @PostMapping("/{treatmentId}/next-phase")
+    @PostMapping("/next-phase/{treatmentId}")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<TreatmentResponse>> moveToNextPhase(@PathVariable UUID treatmentId) {
         Treatment treatment = treatmentService.moveToNextPhase(treatmentId);

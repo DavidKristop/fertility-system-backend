@@ -106,6 +106,8 @@ public interface TreatmentMapper {
         return schedules;
     }
 
+    TreatmentAssignDrugReponse toTreatmentAssignDrugResponse(AssignDrug assignDrug);
+
     
     @Mapping(source = "drug", target = "drug")
     TreatmentPatientDrugResponse map(PatientDrug patientDrug);

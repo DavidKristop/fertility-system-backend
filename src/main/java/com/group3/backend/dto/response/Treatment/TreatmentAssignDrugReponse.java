@@ -1,7 +1,6 @@
 
 package com.group3.backend.dto.response.Treatment;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 

@@ -15,7 +15,6 @@ import com.group3.backend.model.Reminder;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Service;
 import com.group3.backend.model.AssignDrug;
-import com.group3.backend.model.Drug;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.TreatmentRepository;
 import com.group3.backend.repository.TreatmentProtocolRepository;
@@ -112,6 +111,17 @@ public class TreatmentService {
             throw new ResourceConflictException("Not all schedules in current phase are complete");
         }
 
+        List<PatientDrug> patientDrugs = new ArrayList<>();
+        for(AssignDrug assignDrug : currentPhase.getAssignDrugs()){
+            if(assignDrug.getStatus() == AssignDrug.Status.PENDING){
+                throw new ResourceConflictException("Not all assign drugs in current phase are complete");
+            }
+            patientDrugs.addAll(assignDrug.getPatientDrugs());
+        }
+        if(patientDrugs.stream().anyMatch(pd->pd.getEndDate().isBefore(LocalDate.now()))){
+            throw new ResourceConflictException("Not all drugs in current phase are complete");
+        }
+
         // Mark current phase as complete
         currentPhase.setComplete(true);
 
@@ -127,6 +137,7 @@ public class TreatmentService {
 
         TreatmentPhase nextPhase = sortedPhases.get(currentIndex + 1);
         treatment.setCurrentPhase(nextPhase);
+
 
         // Update treatment status if all phases are complete
         boolean allPhasesComplete = sortedPhases.stream()
