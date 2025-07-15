@@ -4,6 +4,7 @@ import com.group3.backend.model.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,30 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     List<Schedule> findByDoctorIdAndStatus(
         UUID id,
         Schedule.Status status
+    );
+
+    List<Schedule> findByDoctorIdAndStatusIn(
+        UUID doctorId,
+        List<Schedule.Status> status
+    );
+
+    List<Schedule> findByDoctorIdAndAppointmentDateTimeBetweenAndStatusIn(
+        UUID doctorId,
+        LocalDateTime start,
+        LocalDateTime end,
+        List<Schedule.Status> status
+    );
+
+    List<Schedule> findByPatientIdAndAppointmentDateTimeBetweenAndStatusIn(
+        UUID patientId,
+        LocalDateTime start,
+        LocalDateTime end,
+        List<Schedule.Status> status
+    );
+
+    List<Schedule> findByPatientIdAndStatusIn(
+        UUID patientId,
+        List<Schedule.Status> status
     );
 
     List<Schedule> findByDoctorIdAndStatusAndIdNot(

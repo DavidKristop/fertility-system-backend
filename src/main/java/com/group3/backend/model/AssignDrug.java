@@ -42,7 +42,7 @@ public class AssignDrug {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "assignDrug")
+    @OneToMany(mappedBy = "assignDrug", cascade = CascadeType.ALL)
     private List<PatientDrug> patientDrugs;
 
     public enum Status {

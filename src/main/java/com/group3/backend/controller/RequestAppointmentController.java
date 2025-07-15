@@ -49,9 +49,6 @@ public class RequestAppointmentController {
     private RequestAppointmentService service;
     
     @Autowired
-    private EnvironmentConfig environmentConfig;
-    
-    @Autowired
     private PaymentService paymentService;
 
     @Autowired

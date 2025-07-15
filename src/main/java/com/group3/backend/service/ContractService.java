@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,9 @@ import com.group3.backend.dto.request.ContractRequest;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.exception.UnauthorizedAccessException;
+import com.group3.backend.model.AssignDrug;
 import com.group3.backend.model.Contract;
+import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.repository.ContractRepository;
@@ -83,17 +86,24 @@ public class ContractService {
             .paymentDeadline(LocalDateTime.now().plusHours(48))
             .userId(treatment.getPatient().getId())
             .build();
+        List<UUID> scheduleServiceIds = new ArrayList<>();
+        List<UUID> assignDrugIds = new ArrayList<>();
         if(treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)){
-            List<UUID> treatmentPhaseIds = new ArrayList<>();
             TreatmentPhase firstPhase = treatment.getPhases().get(0);
-            treatmentPhaseIds.add(firstPhase.getId());
+            scheduleServiceIds.addAll(firstPhase.getScheduleServices().stream().map(ScheduleService::getId).collect(Collectors.toList()));
+            assignDrugIds.addAll(firstPhase.getAssignDrugs().stream().map(AssignDrug::getId).collect(Collectors.toList()));
             paymentRequest.setAmount(TreatmentService.calculatePhaseEstimatePrice(firstPhase, true));
             paymentRequest.setDescription("Payment for phase: "+firstPhase.getTitle());
         }
         else{
+            scheduleServiceIds.addAll(treatment.getPhases().stream().flatMap(phase -> phase.getScheduleServices().stream()).map(ScheduleService::getId).collect(Collectors.toList()));
+            assignDrugIds.addAll(treatment.getPhases().stream().flatMap(phase -> phase.getAssignDrugs().stream()).map(AssignDrug::getId).collect(Collectors.toList()));
+
             paymentRequest.setAmount(TreatmentService.calculateEstimatedPrice(treatment));
             paymentRequest.setDescription("Payment for your full treatment");
         }
+        paymentRequest.setScheduleServiceIds(scheduleServiceIds);
+        paymentRequest.setAssignDrugIds(assignDrugIds);
         paymentService.createPayment(paymentRequest);
     }
 

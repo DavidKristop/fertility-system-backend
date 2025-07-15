@@ -6,6 +6,7 @@ import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.TreatmentProtocol;
+import com.group3.backend.model.TreatmentProtocolDrug;
 import com.group3.backend.model.TreatmentProtocolPhase;
 import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.PatientDrug;
@@ -14,7 +15,6 @@ import com.group3.backend.model.Reminder;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.Service;
 import com.group3.backend.model.AssignDrug;
-import com.group3.backend.model.Drug;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.TreatmentRepository;
 import com.group3.backend.repository.TreatmentProtocolRepository;
@@ -111,6 +111,17 @@ public class TreatmentService {
             throw new ResourceConflictException("Not all schedules in current phase are complete");
         }
 
+        List<PatientDrug> patientDrugs = new ArrayList<>();
+        for(AssignDrug assignDrug : currentPhase.getAssignDrugs()){
+            if(assignDrug.getStatus() == AssignDrug.Status.PENDING){
+                throw new ResourceConflictException("Not all assign drugs in current phase are complete");
+            }
+            patientDrugs.addAll(assignDrug.getPatientDrugs());
+        }
+        if(patientDrugs.stream().anyMatch(pd->pd.getEndDate().isBefore(LocalDate.now()))){
+            throw new ResourceConflictException("Not all drugs in current phase are complete");
+        }
+
         // Mark current phase as complete
         currentPhase.setComplete(true);
 
@@ -126,6 +137,7 @@ public class TreatmentService {
 
         TreatmentPhase nextPhase = sortedPhases.get(currentIndex + 1);
         treatment.setCurrentPhase(nextPhase);
+
 
         // Update treatment status if all phases are complete
         boolean allPhasesComplete = sortedPhases.stream()
@@ -178,7 +190,7 @@ public class TreatmentService {
         treatment.setPatient(patient);
         treatment.setDoctor(doctor);
         treatment.setStartDate(LocalDate.now());
-        treatment.setEndDate(LocalDate.now().plusMonths(5));
+        treatment.setEndDate(LocalDate.now().plusDays(70));
         treatment.setStatus(Treatment.Status.AWAITING_CONTRACT_SIGNED);
         List<TreatmentPhase> phases = new ArrayList<>();
 
@@ -208,20 +220,22 @@ public class TreatmentService {
             }
 
             // Add drugs from protocol phase
+            AssignDrug assignDrug = new AssignDrug();
+
             List<PatientDrug> patientDrugs = new ArrayList<>();
-            for (Drug drug : protocolPhase.getDrugs().stream()
-            .map(protocolDrug->protocolDrug.getDrug()).toList()) {
+            for (TreatmentProtocolDrug protocolDrug : protocolPhase.getDrugs()) {
                 PatientDrug patientDrug = new PatientDrug();
-                patientDrug.setDrug(drug);
+                patientDrug.setDrug(protocolDrug.getDrug());
+                patientDrug.setAmount(protocolDrug.getAmount());
+                patientDrug.setAssignDrug(assignDrug);
                 patientDrugs.add(patientDrug);
             }
-            AssignDrug assignDrug = new AssignDrug();
             assignDrug.setPatientDrugs(patientDrugs);
             assignDrug.setTreatmentPhase(phase);
             assignDrug.setStatus(AssignDrug.Status.PENDING);
             
-            phase.setAssignDrugs(List.of(assignDrug));
-            phase.setScheduleServices(scheduleServices);
+            if(assignDrug.getPatientDrugs().size() > 0)phase.setAssignDrugs(List.of(assignDrug));
+            if(scheduleServices.size() > 0)phase.setScheduleServices(scheduleServices);
             phases.add(phase);
         }
 

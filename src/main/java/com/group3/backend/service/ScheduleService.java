@@ -17,7 +17,6 @@ import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.repository.RequestAppointmentRepository;
 import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.ServiceRepository;
-import com.group3.backend.repository.TreatmentPhaseRepository;
 import com.group3.backend.repository.UserRepository;
 import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.config.TimeZoneConfig;
@@ -61,20 +60,18 @@ public class ScheduleService {
         return filterDate(schedules, year, month);
     }
 
-    public List<Schedule> getSchedulesByDoctorId(UUID doctorId, Integer year, Integer month) {
-        List<Schedule> schedules = scheduleRepository.findByDoctorId(doctorId);
-        if(year == null) year = LocalDate.now().getYear();
-        if(month == null) month = LocalDate.now().getMonthValue();
-        
-        return filterDate(schedules, year, month);
+    public List<Schedule> getSchedulesByDoctorId(UUID doctorId, List<Schedule.Status> status, LocalDate from, LocalDate to) {
+        LocalDateTime fromDateTime = from.atStartOfDay();
+        LocalDateTime toDateTime = to.atTime(23, 59, 59);
+        List<Schedule> schedules = scheduleRepository.findByDoctorIdAndAppointmentDateTimeBetweenAndStatusIn(doctorId, fromDateTime, toDateTime, status);
+        return schedules;
     }
 
-    public List<Schedule> getSchedulesByPatientId(UUID patientId, Integer year, Integer month) {
-        List<Schedule> schedules = scheduleRepository.findByPatientId(patientId);
-        if(year == null) year = LocalDate.now().getYear();
-        if(month == null) month = LocalDate.now().getMonthValue();
-       
-        return filterDate(schedules, year, month);
+    public List<Schedule> getSchedulesByPatientId(UUID patientId, List<Schedule.Status> status, LocalDate from, LocalDate to) {
+        LocalDateTime fromDateTime = from.atStartOfDay();
+        LocalDateTime toDateTime = to.atTime(23, 59, 59);
+        List<Schedule> schedules = scheduleRepository.findByPatientIdAndAppointmentDateTimeBetweenAndStatusIn(patientId, fromDateTime, toDateTime, status);
+        return schedules;
     }
 
     public Schedule getScheduleById(UUID id) {
@@ -95,6 +92,7 @@ public class ScheduleService {
             ScheduleCreateRequest.builder()
                 .patientId(requestAppointment.getPatient().getId())
                 .doctorId(requestAppointment.getDoctor().getId())
+                .title("Khám tư vấn và siêu âm")
                 .appointmentDateTime(requestAppointment.getAppointmentDatetime())
                 .estimatedTime(requestAppointment.getAppointmentDatetime().plusMinutes(30))
                 .services(List.of(
@@ -127,7 +125,7 @@ public class ScheduleService {
             throw new ResourceConflictException("The id for doctor does not have the role of doctor");
         }
 
-        if(scheduleCreateRequest.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(120))) {
+        if(scheduleCreateRequest.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(119))) {
             throw new ResourceConflictException("Appointment time must be in the future by at most 120 days");
         }
         
@@ -152,6 +150,7 @@ public class ScheduleService {
 
 
         Schedule schedule = Schedule.builder()
+        .title(scheduleCreateRequest.getTitle())
         .appointmentDateTime(scheduleCreateRequest.getAppointmentDateTime())
         .estimatedTime(scheduleCreateRequest.getEstimatedTime())
         .doctor(doctor)
@@ -181,12 +180,14 @@ public class ScheduleService {
             throw new ResourceConflictException("Schedule is not done");
         }
 
-        ScheduleResult scheduleResult = ScheduleResult.builder()
-            .doctorsNote(scheduleResultRequest.getDoctorsNote())
-            .schedule(schedule)
-            .build();
-        schedule.setStatus(Schedule.Status.DONE);
-        schedule.setScheduleResult(scheduleResult);
+        if(schedule.getScheduleResult() == null){
+            ScheduleResult scheduleResult = ScheduleResult.builder()
+                .doctorsNote(scheduleResultRequest.getDoctorsNote())
+                .schedule(schedule)
+                .build();
+            schedule.setScheduleResult(scheduleResult);
+        }
+        else schedule.getScheduleResult().setDoctorsNote(scheduleResultRequest.getDoctorsNote());
         return scheduleRepository.save(schedule);
     }
 
@@ -260,6 +261,9 @@ public class ScheduleService {
         }
 
         schedule.getScheduleServices().forEach(scheduleService ->{
+            if(scheduleService.getPayment() == null){
+                throw new ResourceConflictException("The payment for this schedule is not completed.");
+            }
             if(scheduleService.getPayment().getStatus() != Payment.Status.COMPLETED) {
                 throw new ResourceConflictException("The payment for this schedule is not completed.");
             }
@@ -281,7 +285,7 @@ public class ScheduleService {
             throw new ResourceConflictException("Only PENDING schedules can be changed");
         }
 
-        if(request.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(120))) {
+        if(request.getAppointmentDateTime().isAfter(LocalDateTime.now().plusDays(119))) {
             throw new ResourceConflictException("Appointment time must be in the future by at most 120 days");
         }
         

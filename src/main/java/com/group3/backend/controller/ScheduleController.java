@@ -12,13 +12,17 @@ import com.group3.backend.model.Schedule;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.ScheduleService;
 import com.group3.backend.utils.CurrentUserUtils;
+import com.group3.backend.utils.Constants;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Date;
 import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -37,25 +41,6 @@ public class ScheduleController {
     @Autowired
     private ScheduleMapper scheduleMapper;
 
-    @Autowired
-    private PaymentService paymentService;
-
-    
-    @GetMapping("/doctor")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<List<DoctorScheduleReponse>>> getSchedulesByDoctor(
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month) {
-        List<Schedule> schedules = scheduleService.getSchedulesByDoctorId(currentUserUtils.getCurrentUser().getId(),year,month);
-        
-        List<DoctorScheduleReponse> responses = schedules.stream()
-                .map(scheduleMapper::toDoctorScheduleRespone)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(new Response<>(
-            responses,
-            "Schedules retrieved successfully"
-        ));
-    }
 
     @GetMapping("/doctor-schedule/{doctorId}")
     @PreAuthorize("hasAnyAuthority('ROLE_DOCTOR', 'ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_PATIENT')")
@@ -83,12 +68,30 @@ public class ScheduleController {
         }
     }
 
+    @GetMapping("/doctor")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<Response<List<DoctorScheduleReponse>>> getSchedulesByDoctor(
+            @RequestParam(value="from", required = true) @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDate from,
+            @RequestParam(value="to", required = true) @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDate to,
+            @RequestParam(defaultValue = "PENDING") List<Schedule.Status> status) {
+        List<Schedule> schedules = scheduleService.getSchedulesByDoctorId(currentUserUtils.getCurrentUser().getId(),status,from,to);
+        
+        List<DoctorScheduleReponse> responses = schedules.stream()
+                .map(scheduleMapper::toDoctorScheduleRespone)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new Response<>(
+            responses,
+            "Schedules retrieved successfully"
+        ));
+    }
+
     @GetMapping("/patient")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<List<DoctorScheduleReponse>>> getSchedulesByPatient(
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month) {
-        List<Schedule> schedules = scheduleService.getSchedulesByPatientId(currentUserUtils.getCurrentUser().getId(),year,month);
+            @RequestParam(value="from", required = true) @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDate from,
+            @RequestParam(value="to", required = true) @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDate to,
+            @RequestParam(defaultValue = "PENDING") List<Schedule.Status> status) {
+        List<Schedule> schedules = scheduleService.getSchedulesByPatientId(currentUserUtils.getCurrentUser().getId(),status,from,to);
         
         List<DoctorScheduleReponse> responses = schedules.stream()
                 .map(scheduleMapper::toDoctorScheduleRespone)
@@ -149,7 +152,7 @@ public class ScheduleController {
     //     );
     // }
 
-    @GetMapping("/patient/{id}")
+    @GetMapping("/patient/{scheduleId}")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Response<DoctorScheduleReponse>> getSpecitficScheduleForPatient(
         @PathVariable UUID scheduleId
@@ -160,8 +163,8 @@ public class ScheduleController {
         return ResponseEntity.ok(new Response<>(scheduleMapper.toDoctorScheduleRespone(schedule),"Schedule retreive successfully."));
     }
 
-    @GetMapping("/doctor/{id}")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    @GetMapping("/doctor/{scheduleId}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<DoctorScheduleReponse>> getSpecitficScheduleForDoctor(
         @PathVariable UUID scheduleId
     ){
@@ -171,8 +174,8 @@ public class ScheduleController {
         return ResponseEntity.ok(new Response<>(scheduleMapper.toDoctorScheduleRespone(schedule),"Schedule retreive successfully."));
     }
 
-    @GetMapping("/manager/{id}")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    @GetMapping("/manager/{scheduleId}")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Response<DoctorScheduleReponse>> getSpecitficScheduleForManager(
         @PathVariable UUID scheduleId
     ){

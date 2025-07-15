@@ -1,82 +1,49 @@
 package com.group3.backend.service;
 
-import com.group3.backend.dto.response.AssignDrugResponse;
-import com.group3.backend.mapper.AssignDrugMapper;
-import com.group3.backend.model.AssignDrug;
-import com.group3.backend.model.AssignDrug.Status;
-import com.group3.backend.repository.AssignDrugRepository;
-import com.group3.backend.utils.CurrentUserUtils;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import com.group3.backend.exception.ResourceConflictException;
+import com.group3.backend.exception.ResourceNotFoundException;
+import com.group3.backend.model.AssignDrug;
+import com.group3.backend.repository.AssignDrugRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AssignDrugService {
-
+public class AssignDrugService{
     private final AssignDrugRepository assignDrugRepository;
-    private final AssignDrugMapper assignDrugMapper;
-    private final CurrentUserUtils currentUserUtils;
 
-    public Page<AssignDrugResponse> getMyAssignedDrugs(Status status, int page, int size) {
-    UUID patientId = currentUserUtils.getCurrentUserId();
-    Pageable pageable = PageRequest.of(page, size);
-
-    Page<AssignDrug> pageResult;
-    if (status != null) {
-        pageResult = assignDrugRepository
-            .findByTreatmentPhase_Treatment_Patient_IdAndStatus(patientId, status, pageable);
-    } else {
-        pageResult = assignDrugRepository
-            .findByTreatmentPhase_Treatment_Patient_Id(patientId, pageable);
+    public Page<AssignDrug> getAssignDrugByPatientId(UUID patientId, List<AssignDrug.Status> statuses, Pageable pageable){
+        return assignDrugRepository.findByTreatmentPhaseTreatmentPatientIdAndStatusIn(patientId, statuses, pageable);
     }
 
-    return pageResult.map(assignDrugMapper::toAssignDrugResponse);
+    public Page<AssignDrug> getAssignDrugByStatus(List<AssignDrug.Status> statuses, Pageable pageable){
+        return assignDrugRepository.findByStatusIn(statuses, pageable);
+    }
+
+    public AssignDrug getAssignDrugByIdAndPatientId(UUID patientId, UUID id){
+        AssignDrug assignDrug = assignDrugRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Assign drug not found"));
+        if(!assignDrug.getTreatmentPhase().getTreatment().getPatient().getId().equals(patientId)){
+            throw new ResourceConflictException("Assign drug is not for this patient");
+        }
+        return assignDrug;
+    }
+
+    public AssignDrug getAssignDrugById(UUID id){
+        return assignDrugRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Assign drug not found"));
+    }
+
+    public AssignDrug completeAssignDrug(UUID id){
+        AssignDrug assignDrug = getAssignDrugById(id);
+        assignDrug.setStatus(AssignDrug.Status.COMPLETED);
+        return assignDrugRepository.save(assignDrug);
+    }
 }
-
-    public Page<AssignDrugResponse> getAllAssignedDrugs(Status status, String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<AssignDrug> pageResult;
-
-        if (status != null && keyword != null && !keyword.isBlank()) {
-            pageResult = assignDrugRepository
-                .findByStatusAndTreatmentPhase_Treatment_Patient_FullNameContainingIgnoreCase(status, keyword, pageable);
-        } else if (status != null) {
-            pageResult = assignDrugRepository.findByStatus(status, pageable);
-        } else if (keyword != null && !keyword.isBlank()) {
-            pageResult = assignDrugRepository
-                .findByTreatmentPhase_Treatment_Patient_FullNameContainingIgnoreCase(keyword, pageable);
-        } else {
-            pageResult = assignDrugRepository.findAll(pageable);
-        }
-
-        return pageResult.map(assignDrugMapper::toAssignDrugResponse);
-    }
-
-    @Transactional
-    public void markAsTaken(UUID assignDrugId) {
-        AssignDrug assignDrug = assignDrugRepository.findById(assignDrugId)
-                .orElseThrow(() -> new RuntimeException("AssignDrug not found"));
-
-        if (assignDrug.getPayment() == null || assignDrug.getPayment().getStatus() != com.group3.backend.model.Payment.Status.COMPLETED) {
-            throw new RuntimeException("Payment not completed");
-        }
-
-        assignDrug.setStatus(Status.COMPLETED);
-        assignDrugRepository.save(assignDrug);
-    }
-
-    @Transactional
-    public void cancelAssignDrug(UUID assignDrugId) {
-        AssignDrug assignDrug = assignDrugRepository.findById(assignDrugId)
-                .orElseThrow(() -> new RuntimeException("AssignDrug not found"));
-
-        assignDrug.setStatus(Status.CANCELLED);
-        assignDrugRepository.save(assignDrug);
-    }
-} 

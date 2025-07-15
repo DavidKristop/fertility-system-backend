@@ -1,7 +1,6 @@
 package com.group3.backend.service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import com.group3.backend.model.User;
 import com.group3.backend.model.VerifyEmailToken;
 import com.group3.backend.repository.UserRepository;
 import com.group3.backend.repository.VerifyEmailTokenRepository;
-import com.group3.backend.service.EmailService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

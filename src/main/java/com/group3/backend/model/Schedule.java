@@ -25,6 +25,8 @@ public class Schedule {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private String title;
+
     @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
     private User doctor;
