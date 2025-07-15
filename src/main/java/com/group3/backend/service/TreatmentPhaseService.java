@@ -99,12 +99,14 @@ public class TreatmentPhaseService {
 
         // Initialize payment requests
         PaymentRequest servicePaymentRequest = PaymentRequest.builder()
+            .userId(treatmentPhase.getTreatment().getPatient().getId())
             .amount(new BigDecimal(0))
             .description("Payment for new services")
             .paymentDeadline(LocalDateTime.now().plusHours(48))
             .build();
 
         PaymentRequest drugPaymentRequest = PaymentRequest.builder()
+            .userId(treatmentPhase.getTreatment().getPatient().getId())
             .amount(new BigDecimal(0))
             .description("Payment for new drugs")
             .paymentDeadline(LocalDateTime.now().plusHours(48))
@@ -112,6 +114,10 @@ public class TreatmentPhaseService {
 
         for(TreatmentScheduleSetRequest scheduleRequest : request.getSchedules()) {
             // Process each schedule service in the schedule
+            if(scheduleRequest.getEstimatedTime().isAfter(treatmentPhase.getTreatment().getEndDate().atTime(23, 59, 59))){
+                throw new ResourceConflictException("Estimated time must be before treatment end date");
+            }
+
             Schedule schedule;
 
             //Create schedule if its new
@@ -131,6 +137,7 @@ public class TreatmentPhaseService {
                         .appointmentDateTime(scheduleRequest.getAppointmentDateTime())
                         .estimatedTime(scheduleRequest.getEstimatedTime())
                     .build());
+                schedule.setTitle(scheduleRequest.getTitle());
             }
             
             List<ScheduleService> scheduleServices = new ArrayList<>();
@@ -145,14 +152,12 @@ public class TreatmentPhaseService {
                     com.group3.backend.model.Service service = serviceRepository.findById(scheduleServiceRequest.getServiceId())
                         .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
                     newScheduleService.setService(service);
-                    
-                    // Add to phase
-                    treatmentPhase.getScheduleServices().add(newScheduleService);
-                    
+                    ScheduleService savedScheduleService = scheduleServiceRepository.save(newScheduleService);
+
                     // Add to service payment amount
                     servicePaymentRequest.setAmount(servicePaymentRequest.getAmount().add(service.getPrice()));
-                    scheduleServiceIds.add(newScheduleService.getId());
-                    scheduleServices.add(newScheduleService);
+                    scheduleServiceIds.add(savedScheduleService.getId());
+                    scheduleServices.add(savedScheduleService);
                 } else {
                     // Existing schedule service - update it
                     ScheduleService existingScheduleService = existingScheduleServices.stream()
