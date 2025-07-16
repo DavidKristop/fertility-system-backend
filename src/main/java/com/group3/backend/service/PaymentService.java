@@ -135,7 +135,7 @@ public class PaymentService {
         }
 
         // Update payment status
-        payment.setStatus(Payment.Status.CANCELED);
+        payment.setStatus(Payment.Status.CANCELLED);
 
         // Cancel associated schedule services
         payment.getScheduleServices().forEach(scheduleService -> {

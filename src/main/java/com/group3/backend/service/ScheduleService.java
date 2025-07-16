@@ -13,11 +13,14 @@ import com.group3.backend.model.ScheduleResult;
 import com.group3.backend.model.Service;
 import com.group3.backend.model.User;
 import com.group3.backend.model.Payment;
+import com.group3.backend.model.Reminder;
 import com.group3.backend.model.RequestAppointment;
+import com.group3.backend.repository.ReminderRepository;
 import com.group3.backend.repository.RequestAppointmentRepository;
 import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.ServiceRepository;
 import com.group3.backend.repository.UserRepository;
+import com.group3.backend.utils.Constants;
 import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.config.TimeZoneConfig;
 
@@ -42,6 +45,9 @@ public class ScheduleService {
     @Autowired
     private RequestAppointmentRepository requestAppointmentRepository;
     
+    @Autowired
+    private ReminderRepository reminderRepository;
+
     @Autowired
     private EnvironmentConfig environmentConfig;
     
@@ -94,7 +100,7 @@ public class ScheduleService {
                 .doctorId(requestAppointment.getDoctor().getId())
                 .title("Khám tư vấn và siêu âm")
                 .appointmentDateTime(requestAppointment.getAppointmentDatetime())
-                .estimatedTime(requestAppointment.getAppointmentDatetime().plusMinutes(30))
+                .estimatedTime(requestAppointment.getAppointmentDatetime().plusMinutes(Constants.REQUEST_APPOINTMENT_ESTIMATED_TIME))
                 .services(List.of(
                     ScheduleServiceCreateRequest.builder()
                     .serviceId(UUID.fromString(environmentConfig.getConsultationServiceId()))
@@ -148,7 +154,7 @@ public class ScheduleService {
             throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
         }
 
-
+        
         Schedule schedule = Schedule.builder()
         .title(scheduleCreateRequest.getTitle())
         .appointmentDateTime(scheduleCreateRequest.getAppointmentDateTime())
@@ -160,15 +166,34 @@ public class ScheduleService {
         
         List<com.group3.backend.model.ScheduleService> scheduleServices = scheduleCreateRequest.getServices().stream().map(scheduleServiceCreateRequest -> {
             Service service = serviceRepository.findById(scheduleServiceCreateRequest.getServiceId())
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
             return com.group3.backend.model.ScheduleService.builder()
-                .service(service)
-                .schedule(schedule)
-                .build();
+            .service(service)
+            .schedule(schedule)
+            .build();
         }).collect(Collectors.toList());
-
+        
         schedule.setScheduleServices(scheduleServices);
         scheduleRepository.save(schedule);
+
+        List<RequestAppointment> existingRequests = requestAppointmentRepository.findByDoctorIdAndStatusInAndAppointmentDatetimeBetween(
+            doctor.getId(),
+            List.of(RequestAppointment.Status.PENDING),
+            scheduleCreateRequest.getAppointmentDateTime().minusMinutes(Constants.REQUEST_APPOINTMENT_ESTIMATED_TIME),
+            scheduleCreateRequest.getEstimatedTime()
+        );
+
+        for(int i=0;i<existingRequests.size();i++){
+            existingRequests.get(i).setStatus(RequestAppointment.Status.DENIED);
+            existingRequests.get(i).setRejectedReason("Doctor is already scheduled for another appointment during this time");
+            Reminder reminder = Reminder.builder()
+            .sendTo(existingRequests.get(i).getPatient())
+            .content("Doctor is already scheduled for another appointment during this time")
+            .build();
+            reminderRepository.save(reminder);
+        }
+        requestAppointmentRepository.saveAll(existingRequests);
+
         return schedule;
     }
 

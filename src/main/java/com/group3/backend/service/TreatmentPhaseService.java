@@ -23,6 +23,7 @@ import com.group3.backend.model.PatientDrug;
 import com.group3.backend.model.Payment;
 import com.group3.backend.model.Refund;
 import com.group3.backend.repository.DrugRepository;
+import com.group3.backend.repository.PatientDrugRepository;
 import com.group3.backend.repository.PaymentRepository;
 import com.group3.backend.repository.RefundRepository;
 import com.group3.backend.repository.AssignDrugRepository;
@@ -68,6 +69,9 @@ public class TreatmentPhaseService {
 
     @Autowired
     private RefundRepository refundRepository;
+
+    @Autowired
+    private PatientDrugRepository patientDrugRepository;
 
     //Set the scheduleServices and drug in treatment phase
     //If the scheduleService or patientDrug is new( has id with only 0) then create the scheduleService or patientDrug
@@ -180,6 +184,7 @@ public class TreatmentPhaseService {
                 AssignDrug newAssignDrug = new AssignDrug();
                 newAssignDrug.setTreatmentPhase(treatmentPhase);
                 newAssignDrug.setStatus(AssignDrug.Status.PENDING);
+                newAssignDrug.setPatientDrugs(new ArrayList<>());
 
                 // Process each patient drug
                 for(TreatmentPatientDrugSetRequest patientDrugRequest : drugRequest.getPatientDrugs()) {
@@ -195,15 +200,17 @@ public class TreatmentPhaseService {
                     newPatientDrug.setEndDate(patientDrugRequest.getEndDate());
                     newPatientDrug.setDosage(patientDrugRequest.getDosage());
                     newPatientDrug.setAmount(patientDrugRequest.getAmount());
+                    newPatientDrug.setAssignDrug(newAssignDrug);
+
                     
                     newAssignDrug.getPatientDrugs().add(newPatientDrug);
                     
                     // Add to drug payment amount
                     drugPaymentRequest.setAmount(drugPaymentRequest.getAmount().add(drug.getPrice().multiply(BigDecimal.valueOf(patientDrugRequest.getAmount()))));
-                    assignDrugIds.add(newAssignDrug.getId());
                 }
                 
                 treatmentPhase.getAssignDrugs().add(newAssignDrug);
+                assignDrugIds.add(assignDrugRepository.save(newAssignDrug).getId());
             } else {
                 // Existing drug assignment - update it
                 AssignDrug existingAssignDrug = existingAssignDrugs.stream()
@@ -239,7 +246,11 @@ public class TreatmentPhaseService {
                             .filter(pd -> pd.getId().equals(patientDrugRequest.getPatientDrugId().get()))
                             .findFirst()
                             .orElseThrow(() -> new ResourceNotFoundException("Patient drug not found"));
-                        
+
+                        if(!existingAssignDrug.getStatus().equals(AssignDrug.Status.PENDING)){
+                            throw new ResourceConflictException("Cannot update assign drug that is pending");
+                        }
+                            
                         Drug drug = drugRepository.findById(patientDrugRequest.getDrugId())
                             .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));
                         existingPatientDrug.setDrug(drug);
@@ -248,7 +259,6 @@ public class TreatmentPhaseService {
                         existingPatientDrug.setStartDate(patientDrugRequest.getStartDate());
                         existingPatientDrug.setEndDate(patientDrugRequest.getEndDate());
                         existingPatientDrug.setDosage(patientDrugRequest.getDosage());
-                        existingPatientDrug.setAmount(patientDrugRequest.getAmount());
                     }
                 }
             }
