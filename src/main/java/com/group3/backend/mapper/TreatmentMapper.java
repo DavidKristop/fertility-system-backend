@@ -24,6 +24,7 @@ public interface TreatmentMapper {
     @Mapping(source = "contract.id", target = "contractId")
     @Mapping(source = "contract.isSigned", target = "signedContract")
     @Mapping(target = "canMoveToNextPhase", expression = "java(getCanMoveToNextPhase(treatment.getCurrentPhase()))")
+    @Mapping(target = "payment", expression = "java(getPaymentOfPhases(treatment))")
     @Named("toTreatmentReponse")
     TreatmentResponse toResponse(Treatment treatment);
 
@@ -68,6 +69,38 @@ public interface TreatmentMapper {
                 }
             }
         }   
+        return payments;
+    }
+
+
+    default List<PaymentPreviewResponse> getPaymentOfPhases(Treatment treatment){
+        List<PaymentPreviewResponse> payments = new ArrayList<>();
+        for(TreatmentPhase treatmentPhase : treatment.getPhases()){
+            for(ScheduleService scheduleService : treatmentPhase.getScheduleServices()){
+                if(scheduleService.getPayment() != null){
+                    if(payments.stream().noneMatch(p -> p.getId().equals(scheduleService.getPayment().getId()))){
+                        payments.add(PaymentPreviewResponse.builder()
+                        .id(scheduleService.getPayment().getId())
+                            .amount(scheduleService.getPayment().getAmount())
+                            .paymentDeadline(scheduleService.getPayment().getPaymentDeadline())
+                            .status(scheduleService.getPayment().getStatus())
+                            .build());
+                    }
+                }
+            }
+            for(AssignDrug assignDrug : treatmentPhase.getAssignDrugs()){
+                if(assignDrug.getPayment() != null){
+                    if(payments.stream().noneMatch(p -> p.getId().equals(assignDrug.getPayment().getId()))){
+                        payments.add(PaymentPreviewResponse.builder()
+                            .id(assignDrug.getPayment().getId())
+                            .amount(assignDrug.getPayment().getAmount())
+                            .paymentDeadline(assignDrug.getPayment().getPaymentDeadline())
+                            .status(assignDrug.getPayment().getStatus())
+                            .build());
+                    }
+                }
+            }
+        }
         return payments;
     }
     

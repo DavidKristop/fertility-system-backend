@@ -19,12 +19,12 @@ import lombok.RequiredArgsConstructor;
 public class AssignDrugService{
     private final AssignDrugRepository assignDrugRepository;
 
-    public Page<AssignDrug> getAssignDrugByPatientId(UUID patientId, List<AssignDrug.Status> statuses, Pageable pageable){
-        return assignDrugRepository.findByTreatmentPhaseTreatmentPatientIdAndStatusIn(patientId, statuses, pageable);
+    public Page<AssignDrug> getAssignDrugByPatientId(UUID patientId, List<AssignDrug.Status> statuses, String title, Pageable pageable){
+        return assignDrugRepository.findByTreatmentPhaseTreatmentPatientIdAndStatusInAndTitleIgnoreCaseContaining(patientId, statuses, title, pageable);
     }
 
-    public Page<AssignDrug> getAssignDrugByStatus(List<AssignDrug.Status> statuses, Pageable pageable){
-        return assignDrugRepository.findByStatusIn(statuses, pageable);
+    public Page<AssignDrug> getAssignDrugByStatus(List<AssignDrug.Status> statuses, String title, Pageable pageable){
+        return assignDrugRepository.findByStatusInAndTitleIgnoreCaseContaining(statuses, title, pageable);
     }
 
     public AssignDrug getAssignDrugByIdAndPatientId(UUID patientId, UUID id){
@@ -44,6 +44,12 @@ public class AssignDrugService{
     public AssignDrug completeAssignDrug(UUID id){
         AssignDrug assignDrug = getAssignDrugById(id);
         assignDrug.setStatus(AssignDrug.Status.COMPLETED);
+        return assignDrugRepository.save(assignDrug);
+    }
+
+    public AssignDrug cancelAssignDrug(UUID id){
+        AssignDrug assignDrug = getAssignDrugById(id);
+        assignDrug.setStatus(AssignDrug.Status.CANCELLED);
         return assignDrugRepository.save(assignDrug);
     }
 }

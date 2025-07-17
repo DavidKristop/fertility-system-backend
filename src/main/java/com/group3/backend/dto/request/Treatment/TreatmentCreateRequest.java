@@ -20,6 +20,9 @@ public class TreatmentCreateRequest {
     private String description;
     @Size(min = 1, max = 500, message = "Medical history must be between 1 and 500 characters")
     private String medicalHistory;
+
+    @Size(min = 1, max=50, message = "Title must be between 1 and 50 characters")
+    private String title;
     @NotNull
     private UUID userId;
     @NotNull

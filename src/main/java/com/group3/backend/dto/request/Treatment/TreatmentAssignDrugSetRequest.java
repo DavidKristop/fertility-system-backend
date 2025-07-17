@@ -9,5 +9,6 @@ import lombok.Data;
 @Data
 public class TreatmentAssignDrugSetRequest {
     private Optional<UUID> assignDrugId;
+    private String title;
     private List<TreatmentPatientDrugSetRequest> patientDrugs;
 }

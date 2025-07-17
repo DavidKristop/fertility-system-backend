@@ -12,6 +12,7 @@ import lombok.Data;
 @Data
 public class TreatmentAssignDrugReponse {
     private UUID id;
+    private String title;
     private AssignDrug.Status status;
     private List<TreatmentPatientDrugResponse> patientDrugs;
     private PaymentPreviewResponse payment;

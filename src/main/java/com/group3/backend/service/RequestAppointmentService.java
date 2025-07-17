@@ -20,6 +20,7 @@ import com.group3.backend.model.Reminder;
 import com.group3.backend.model.RequestAppointment;
 import com.group3.backend.model.User;
 import com.group3.backend.repository.UserRepository;
+import com.group3.backend.utils.Constants;
 import com.group3.backend.dto.request.RequestAppointmentRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.exception.UnauthorizedAccessException;
@@ -67,7 +68,7 @@ public class RequestAppointmentService {
         
         List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndStatus(doctor.getId(), Schedule.Status.PENDING);
 
-        if (ScheduleService.checkOverlappingSchedule(doctor.getId(), dto.getAppointmentDatetime(), dto.getAppointmentDatetime().plusMinutes(30), overlappingSchedules)) {
+        if (ScheduleService.checkOverlappingSchedule(doctor.getId(), dto.getAppointmentDatetime(), dto.getAppointmentDatetime().plusMinutes(Constants.REQUEST_APPOINTMENT_ESTIMATED_TIME), overlappingSchedules)) {
             throw new ResourceConflictException("Doctor is already scheduled for another appointment during this time");
         }
      
@@ -115,7 +116,7 @@ public class RequestAppointmentService {
         }
         // Check for schedule overlap
         LocalDateTime appointmentStart = appointment.getAppointmentDatetime();
-        LocalDateTime appointmentEnd = appointmentStart.plusMinutes(30);
+        LocalDateTime appointmentEnd = appointmentStart.plusMinutes(Constants.REQUEST_APPOINTMENT_ESTIMATED_TIME);
 
         // Find overlapping schedules for the same doctor
         List<Schedule> overlappingSchedules = scheduleRepository.findByDoctorIdAndStatus(doctorId, Schedule.Status.PENDING);
@@ -175,7 +176,7 @@ public class RequestAppointmentService {
 
         for (RequestAppointment appointment : overlappingAppointments) {
             LocalDateTime appointmentStart = appointment.getAppointmentDatetime();
-            LocalDateTime appointmentEnd = appointmentStart.plusMinutes(30);
+            LocalDateTime appointmentEnd = appointmentStart.plusMinutes(Constants.REQUEST_APPOINTMENT_ESTIMATED_TIME);
 
             // Check if the appointment overlaps with the new time
             if ((newStart.isBefore(appointmentEnd) && newEnd.isAfter(appointmentStart))||

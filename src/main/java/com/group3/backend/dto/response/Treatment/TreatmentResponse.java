@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import com.group3.backend.dto.response.PaymentPreviewResponse;
 import com.group3.backend.dto.response.UserDoctorResponse;
 import com.group3.backend.dto.response.UserPatientResponse;
 import com.group3.backend.dto.response.TreatmentProtocolReponse.TreatmentProtocolResponse;
@@ -13,6 +14,7 @@ import com.group3.backend.dto.response.TreatmentProtocolReponse.TreatmentProtoco
 @Data
 public class TreatmentResponse {
     private UUID id;
+    private String title;
     private LocalDate startDate;
     private LocalDate endDate;
     private String description;
@@ -21,6 +23,7 @@ public class TreatmentResponse {
     private UserDoctorResponse doctor;
     private UUID currentPhaseId;
     private UUID contractId;
+    private List<PaymentPreviewResponse> payment;
     private boolean isSignedContract;
     private TreatmentProtocolResponse protocol;
     private List<TreatmentPhaseResponse> phases;
