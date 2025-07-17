@@ -1,5 +1,6 @@
 package com.group3.backend.mapper;
 
+import com.group3.backend.dto.response.ContractPreviewResponse;
 import com.group3.backend.dto.response.PaymentPreviewResponse;
 import com.group3.backend.dto.response.TreatmentPhasePreviewResponse;
 import com.group3.backend.dto.response.TreatmentPreviewResponse;
@@ -28,6 +29,7 @@ public interface ScheduleMapper {
     @Mapping(target = "treatment", expression = "java(getTreatmentPreview(schedule))")
     @Mapping(target = "treatmentPhase", expression = "java(getTreatmentPhasePreview(schedule))")
     @Mapping(target = "canMoveToNextPhase", expression = "java(getCanMoveToNextPhase(schedule))")
+    @Mapping(target = "contract", expression = "java(getContractPreview(schedule))")
     DoctorScheduleReponse toDoctorScheduleRespone(Schedule schedule);
 
     @Mapping(source = "doctor", target = "doctor", qualifiedByName = "toUserDoctorResponse")
@@ -41,6 +43,19 @@ public interface ScheduleMapper {
     @Mapping(source = "service.active", target = "active")
     @Mapping(source = "service.id", target="id")
     ScheduleServiceRespone toScheduleServiceRespone(ScheduleService scheduleService);
+
+    default ContractPreviewResponse getContractPreview(Schedule schedule) {
+        if(schedule.getScheduleServices().size() > 0){
+            ScheduleService scheduleService = schedule.getScheduleServices().get(0);
+            if(scheduleService.getTreatmentPhase() != null){
+                return ContractPreviewResponse.builder()
+                    .id(scheduleService.getTreatmentPhase().getTreatment().getContract().getId())
+                    .isSigned(scheduleService.getTreatmentPhase().getTreatment().getContract().getIsSigned())
+                    .build();
+            }
+        }
+        return null;
+    }
 
     //Need to check the if the schedule has a treatment phase,
     //then check all of the schedule in treatment phase, if all of them are DONE then set the canMoveToNextPhase to true

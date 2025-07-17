@@ -16,5 +16,7 @@ public interface AssignDrugRepository extends JpaRepository<AssignDrug, UUID> {
 
     Page<AssignDrug> findByTreatmentPhaseTreatmentPatientIdAndStatusInAndTitleIgnoreCaseContaining(UUID patientId, List<AssignDrug.Status> statuses, String title, Pageable pageable);
 
+    Page<AssignDrug> findByTreatmentPhaseTreatmentDoctorIdAndStatusInAndTitleIgnoreCaseContaining(UUID doctorId, List<AssignDrug.Status> statuses, String title, Pageable pageable);
+
     Page<AssignDrug> findByStatusInAndTitleIgnoreCaseContaining(List<AssignDrug.Status> statuses, String title, Pageable pageable);
 }

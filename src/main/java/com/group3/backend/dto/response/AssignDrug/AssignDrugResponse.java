@@ -4,6 +4,7 @@ import lombok.Data;
 import java.util.List;
 import java.util.UUID;
 
+import com.group3.backend.dto.response.ContractPreviewResponse;
 import com.group3.backend.dto.response.PaymentPreviewResponse;
 import com.group3.backend.dto.response.TreatmentPhasePreviewResponse;
 import com.group3.backend.dto.response.TreatmentPreviewResponse;
@@ -21,4 +22,5 @@ public class AssignDrugResponse {
     private TreatmentPreviewResponse treatment;
     private TreatmentPhasePreviewResponse treatmentPhase;
     private List<PatientDrugResponse> patientDrugs;
+    private ContractPreviewResponse contract;
 }

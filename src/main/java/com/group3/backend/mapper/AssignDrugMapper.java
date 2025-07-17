@@ -1,5 +1,6 @@
 package com.group3.backend.mapper;
 
+import com.group3.backend.dto.response.ContractPreviewResponse;
 import com.group3.backend.dto.response.DrugResponse;
 import com.group3.backend.dto.response.PaymentPreviewResponse;
 import com.group3.backend.dto.response.TreatmentPhasePreviewResponse;
@@ -21,12 +22,23 @@ public interface AssignDrugMapper {
     @Mapping(target = "payment", expression = "java(getPaymentOfSchdule(assignDrug))")
     @Mapping(target = "treatment", expression = "java(getTreatmentPreview(assignDrug))")
     @Mapping(target = "treatmentPhase", expression = "java(getTreatmentPhasePreview(assignDrug))")
+    @Mapping(target = "contract", expression = "java(getContractPreview(assignDrug))")
     AssignDrugResponse toAssignDrugResponse(AssignDrug assignDrug);
 
     PatientDrugResponse toPatientDrugResponse(PatientDrug patientDrug);
 
     @Mapping(source = "active", target = "isActive")
     DrugResponse toDrugResponse(Drug drug);
+
+    default ContractPreviewResponse getContractPreview(AssignDrug assignDrug) {
+        if(assignDrug.getTreatmentPhase() != null){
+            return ContractPreviewResponse.builder()
+                .id(assignDrug.getTreatmentPhase().getTreatment().getContract().getId())
+                .isSigned(assignDrug.getTreatmentPhase().getTreatment().getContract().getIsSigned())
+                .build();
+        }
+        return null;
+    }
 
     default TreatmentPreviewResponse getTreatmentPreview(AssignDrug assignDrug) {
         if(assignDrug.getTreatmentPhase() != null){

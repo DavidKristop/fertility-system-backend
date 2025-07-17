@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.model.AssignDrug;
+import com.group3.backend.model.Payment;
 import com.group3.backend.repository.AssignDrugRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,21 @@ public class AssignDrugService{
         return assignDrugRepository.findByTreatmentPhaseTreatmentPatientIdAndStatusInAndTitleIgnoreCaseContaining(patientId, statuses, title, pageable);
     }
 
+    public Page<AssignDrug> getAssignDrugByDoctorId(UUID doctorId, List<AssignDrug.Status> statuses, String title, Pageable pageable){
+        return assignDrugRepository.findByTreatmentPhaseTreatmentDoctorIdAndStatusInAndTitleIgnoreCaseContaining(doctorId, statuses, title, pageable);
+    }
+
     public Page<AssignDrug> getAssignDrugByStatus(List<AssignDrug.Status> statuses, String title, Pageable pageable){
         return assignDrugRepository.findByStatusInAndTitleIgnoreCaseContaining(statuses, title, pageable);
+    }
+
+    public AssignDrug getAssignDrugByIdAndDoctorId(UUID doctorId, UUID id){
+        AssignDrug assignDrug = assignDrugRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Assign drug not found"));
+        if(!assignDrug.getTreatmentPhase().getTreatment().getDoctor().getId().equals(doctorId)){
+            throw new ResourceConflictException("Assign drug is not for this doctor");
+        }
+        return assignDrug;
     }
 
     public AssignDrug getAssignDrugByIdAndPatientId(UUID patientId, UUID id){
@@ -43,6 +57,9 @@ public class AssignDrugService{
 
     public AssignDrug completeAssignDrug(UUID id){
         AssignDrug assignDrug = getAssignDrugById(id);
+        if(assignDrug.getPayment().getStatus() != Payment.Status.COMPLETED){
+            throw new ResourceConflictException("Payment is not completed");
+        }
         assignDrug.setStatus(AssignDrug.Status.COMPLETED);
         return assignDrugRepository.save(assignDrug);
     }
