@@ -10,5 +10,5 @@ import lombok.Data;
 @Data
 public class PatientEventResponse {
     private List<TreatmentPatientDrugResponse> treatmentPatientDrugResponse;
-    private List<DoctorScheduleReponse> doctorScheduleResponse;
+    private List<DoctorScheduleReponse> scheduleResponse;
 }

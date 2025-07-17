@@ -72,6 +72,6 @@ public class Payment {
     public enum Status {
         PENDING,
         COMPLETED,
-        CANCELLED
+        CANCELED
     }
 }

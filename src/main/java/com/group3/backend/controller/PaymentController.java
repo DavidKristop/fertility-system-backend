@@ -121,6 +121,6 @@ public class PaymentController {
     @PutMapping("/manager/cancel/{paymentId}")
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Response<PaymentResponse>> cancelPayment(@PathVariable UUID paymentId) {
-        return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.cancelPayment(paymentId)), "Payment canceled successfully"));
+        return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.cancelPayment(paymentId)), "Payment cancelled successfully"));
     }
 }

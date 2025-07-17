@@ -16,7 +16,7 @@ public class PatientDrugService {
     PatientDrugRepository patientDrugRepository;
 
     public List<PatientDrug> getPatientDrugsByPatientIdAndDateBetween(UUID patientId, LocalDate start, LocalDate end){
-        return patientDrugRepository.findByAssignDrugTreatmentPhaseTreatmentPatientIdAndStartDateBetween(patientId, start, end);
+        return patientDrugRepository.findOverlappingPatientDrugs(patientId, start, end);
     }
         
 }

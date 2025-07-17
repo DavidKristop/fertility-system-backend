@@ -109,7 +109,7 @@ public class PatientManagementController {
         
         PatientEventResponse patientEventResponse = new PatientEventResponse();
         patientEventResponse.setTreatmentPatientDrugResponse(treatmentPatientDrugResponses);
-        patientEventResponse.setDoctorScheduleResponse(doctorScheduleResponses);
+        patientEventResponse.setScheduleResponse(doctorScheduleResponses);
 
         return ResponseEntity.ok(new Response<>(patientEventResponse, "Fetching patient events successfully"));
     }
@@ -134,7 +134,7 @@ public class PatientManagementController {
         
         PatientEventResponse patientEventResponse = new PatientEventResponse();
         patientEventResponse.setTreatmentPatientDrugResponse(treatmentPatientDrugResponses);
-        patientEventResponse.setDoctorScheduleResponse(doctorScheduleResponses);
+        patientEventResponse.setScheduleResponse(doctorScheduleResponses);
 
         return ResponseEntity.ok(new Response<>(patientEventResponse, "Fetching patient events successfully"));
     }
