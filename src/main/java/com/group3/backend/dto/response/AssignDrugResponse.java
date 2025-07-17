@@ -8,13 +8,12 @@ import java.util.UUID;
 @Data
 public class AssignDrugResponse {
     private UUID id;
+    private String title;
     private String status;
     private LocalDateTime completeDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String patientName;
     private String treatmentPhaseName;
-    // Add more fields as needed
-
     private List<PatientDrugBriefResponse> patientDrugs;
 }

@@ -185,6 +185,7 @@ public class TreatmentPhaseService {
                 newAssignDrug.setTreatmentPhase(treatmentPhase);
                 newAssignDrug.setStatus(AssignDrug.Status.PENDING);
                 newAssignDrug.setPatientDrugs(new ArrayList<>());
+                newAssignDrug.setTitle(drugRequest.getTitle());
 
                 // Process each patient drug
                 for(TreatmentPatientDrugSetRequest patientDrugRequest : drugRequest.getPatientDrugs()) {
@@ -217,6 +218,7 @@ public class TreatmentPhaseService {
                     .filter(d -> d.getId().equals(drugRequest.getAssignDrugId().get()))
                     .findFirst()
                     .orElseThrow(() -> new ResourceNotFoundException("Assign drug not found"));
+                existingAssignDrug.setTitle(drugRequest.getTitle());
 
                 // Process each patient drug
                 for(TreatmentPatientDrugSetRequest patientDrugRequest : drugRequest.getPatientDrugs()) {

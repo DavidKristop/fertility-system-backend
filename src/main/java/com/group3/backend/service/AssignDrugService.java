@@ -46,4 +46,10 @@ public class AssignDrugService{
         assignDrug.setStatus(AssignDrug.Status.COMPLETED);
         return assignDrugRepository.save(assignDrug);
     }
+
+    public AssignDrug cancelAssignDrug(UUID id){
+        AssignDrug assignDrug = getAssignDrugById(id);
+        assignDrug.setStatus(AssignDrug.Status.CANCELLED);
+        return assignDrugRepository.save(assignDrug);
+    }
 }

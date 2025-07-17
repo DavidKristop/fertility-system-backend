@@ -162,6 +162,7 @@ public class TreatmentService {
         TreatmentProtocol protocol = treatmentProtocolRepository.findById(request.getProtocolId())
             .orElseThrow(() -> new ResourceNotFoundException("Treatment protocol not found"));
 
+        treatment.setTitle(request.getTitle());
         treatment.setDescription(request.getDescription());
         treatment.setTreatmentProtocol(protocol);
         treatment.setPaymentMode(request.getPaymentMode());

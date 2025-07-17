@@ -28,6 +28,8 @@ public class Treatment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private String title;
+
     @Column(name = "start_date")
     private LocalDate startDate;
 

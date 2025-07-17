@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,7 +43,7 @@ public class AssignDrugController {
         @RequestParam(defaultValue = "PENDING") List<AssignDrug.Status> status
 
     ){
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByPatientId(currentUserUtils.getCurrentUserId(), status, pageable).map(treatmentMapper::toTreatmentAssignDrugResponse), "Assign drug retrieved successfully"));
     }
 
@@ -59,7 +60,7 @@ public class AssignDrugController {
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "PENDING") List<AssignDrug.Status> status
     ){
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByStatus(status, pageable).map(treatmentMapper::toTreatmentAssignDrugResponse), "Assign drug retrieved successfully"));
     }
 
@@ -69,9 +70,15 @@ public class AssignDrugController {
         return ResponseEntity.ok(new Response<>(treatmentMapper.toTreatmentAssignDrugResponse(assignDrugService.getAssignDrugById(assignDrugId)), "Assign drug retrieved successfully"));
     }
 
-    @PutMapping("/manager/{assignDrugId}")
+    @PutMapping("/manager/complete/{assignDrugId}")
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Response<TreatmentAssignDrugReponse>> completeAssignDrug(@PathVariable UUID assignDrugId){
         return ResponseEntity.ok(new Response<>(treatmentMapper.toTreatmentAssignDrugResponse(assignDrugService.completeAssignDrug(assignDrugId)), "Assign drug completed successfully"));
+    }
+
+    @PutMapping("/manager/cancel/{assignDrugId}")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<Response<TreatmentAssignDrugReponse>> cancelAssignDrug(@PathVariable UUID assignDrugId){
+        return ResponseEntity.ok(new Response<>(treatmentMapper.toTreatmentAssignDrugResponse(assignDrugService.cancelAssignDrug(assignDrugId)), "Assign drug cancelled successfully"));
     }
 }
