@@ -1,22 +1,63 @@
 package com.group3.backend.mapper;
 
-import com.group3.backend.dto.response.AssignDrugResponse;
+import com.group3.backend.dto.response.DrugResponse;
+import com.group3.backend.dto.response.PaymentPreviewResponse;
+import com.group3.backend.dto.response.TreatmentPhasePreviewResponse;
+import com.group3.backend.dto.response.TreatmentPreviewResponse;
+import com.group3.backend.dto.response.AssignDrug.AssignDrugResponse;
+import com.group3.backend.dto.response.AssignDrug.PatientDrugResponse;
 import com.group3.backend.model.AssignDrug;
+import com.group3.backend.model.Drug;
+import com.group3.backend.model.PatientDrug;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
 
-@Mapper(
-    componentModel = "spring",
-    uses = {PatientDrugMapper.class}, // dùng để map nested
-    unmappedTargetPolicy = ReportingPolicy.IGNORE
-)
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface AssignDrugMapper {
 
-    @Mapping(source = "status", target = "status")
-    @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "treatmentPhase.title", target = "treatmentPhaseName")
-    @Mapping(source = "treatmentPhase.treatment.patient.fullName", target = "patientName")
-    @Mapping(source = "patientDrugs", target = "patientDrugs")
+    @Mapping(source = "treatmentPhase.treatment.patient", target = "patient", qualifiedByName = "toUserPatientResponse")
+    @Mapping(source = "treatmentPhase.treatment.doctor", target = "doctor", qualifiedByName = "toUserDoctorResponse")
+    @Mapping(target = "payment", expression = "java(getPaymentOfSchdule(assignDrug))")
+    @Mapping(target = "treatment", expression = "java(getTreatmentPreview(assignDrug))")
+    @Mapping(target = "treatmentPhase", expression = "java(getTreatmentPhasePreview(assignDrug))")
     AssignDrugResponse toAssignDrugResponse(AssignDrug assignDrug);
+
+    PatientDrugResponse toPatientDrugResponse(PatientDrug patientDrug);
+
+    @Mapping(source = "active", target = "isActive")
+    DrugResponse toDrugResponse(Drug drug);
+
+    default TreatmentPreviewResponse getTreatmentPreview(AssignDrug assignDrug) {
+        if(assignDrug.getTreatmentPhase() != null){
+            return TreatmentPreviewResponse.builder()
+                .id(assignDrug.getTreatmentPhase().getTreatment().getId())
+                .status(assignDrug.getTreatmentPhase().getTreatment().getStatus())
+                .contractId(assignDrug.getTreatmentPhase().getTreatment().getContract().getId())
+                .build();
+            }
+        return null;
+    }
+
+    default TreatmentPhasePreviewResponse getTreatmentPhasePreview(AssignDrug assignDrug) {
+        if(assignDrug.getTreatmentPhase() != null){
+            return TreatmentPhasePreviewResponse.builder()
+                .id(assignDrug.getTreatmentPhase().getId())
+                .title(assignDrug.getTreatmentPhase().getTitle())
+                .build();
+        }
+        return null;
+    }
+
+    default PaymentPreviewResponse getPaymentOfSchdule(AssignDrug assignDrug) {
+        if(assignDrug.getPayment() != null){
+            return PaymentPreviewResponse.builder()
+                .id(assignDrug.getPayment().getId())
+                .amount(assignDrug.getPayment().getAmount())
+                .paymentDeadline(assignDrug.getPayment().getPaymentDeadline())
+                .status(assignDrug.getPayment().getStatus())
+                .build();
+        }
+        return null;
+    }
 }

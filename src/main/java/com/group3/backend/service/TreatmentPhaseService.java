@@ -220,6 +220,11 @@ public class TreatmentPhaseService {
                     .orElseThrow(() -> new ResourceNotFoundException("Assign drug not found"));
                 existingAssignDrug.setTitle(drugRequest.getTitle());
 
+                if(!(existingAssignDrug.getStatus() == AssignDrug.Status.PENDING
+                || existingAssignDrug.getStatus() == AssignDrug.Status.COMPLETED)){
+                    throw new ResourceConflictException("Only PENDING or COMPLETED assign drug can be updated");
+                }
+
                 // Process each patient drug
                 for(TreatmentPatientDrugSetRequest patientDrugRequest : drugRequest.getPatientDrugs()) {
                     if(patientDrugRequest.getPatientDrugId().isEmpty()) {
@@ -248,10 +253,6 @@ public class TreatmentPhaseService {
                             .filter(pd -> pd.getId().equals(patientDrugRequest.getPatientDrugId().get()))
                             .findFirst()
                             .orElseThrow(() -> new ResourceNotFoundException("Patient drug not found"));
-
-                        if(!existingAssignDrug.getStatus().equals(AssignDrug.Status.PENDING)){
-                            throw new ResourceConflictException("Cannot update assign drug that is pending");
-                        }
                             
                         Drug drug = drugRepository.findById(patientDrugRequest.getDrugId())
                             .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));

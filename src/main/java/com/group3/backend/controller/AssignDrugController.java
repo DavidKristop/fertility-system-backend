@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.group3.backend.dto.Response;
+import com.group3.backend.dto.response.AssignDrug.AssignDrugResponse;
 import com.group3.backend.dto.response.Treatment.TreatmentAssignDrugReponse;
+import com.group3.backend.mapper.AssignDrugMapper;
 import com.group3.backend.mapper.TreatmentMapper;
 import com.group3.backend.model.AssignDrug;
 import com.group3.backend.service.AssignDrugService;
@@ -33,53 +35,53 @@ public class AssignDrugController {
 
     private final CurrentUserUtils currentUserUtils;
 
-    private final TreatmentMapper treatmentMapper;
+    private final AssignDrugMapper assignDrugMapper;
 
     @GetMapping("/patient")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
-    public ResponseEntity<Response<Page<TreatmentAssignDrugReponse>>> getAssignDrugByPatientId(
+    public ResponseEntity<Response<Page<AssignDrugResponse>>> getAssignDrugByPatientId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "PENDING") List<AssignDrug.Status> status,
         @RequestParam(defaultValue = "") String title
     ){
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByPatientId(currentUserUtils.getCurrentUserId(), status, title, pageable).map(treatmentMapper::toTreatmentAssignDrugResponse), "Assign drug retrieved successfully"));
+        return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByPatientId(currentUserUtils.getCurrentUserId(), status, title, pageable).map(assignDrugMapper::toAssignDrugResponse), "Assign drug retrieved successfully"));
     }
 
     @GetMapping("/patient/{assignDrugId}")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
-    public ResponseEntity<Response<TreatmentAssignDrugReponse>> getAssignDrugByIdAndPatientId(@PathVariable UUID assignDrugId){
-        return ResponseEntity.ok(new Response<>(treatmentMapper.toTreatmentAssignDrugResponse(assignDrugService.getAssignDrugByIdAndPatientId(currentUserUtils.getCurrentUserId(), assignDrugId)), "Assign drug retrieved successfully"));
+    public ResponseEntity<Response<AssignDrugResponse>> getAssignDrugByIdAndPatientId(@PathVariable UUID assignDrugId){
+        return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.getAssignDrugByIdAndPatientId(currentUserUtils.getCurrentUserId(), assignDrugId)), "Assign drug retrieved successfully"));
     }
 
     @GetMapping("/manager")
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
-    public ResponseEntity<Response<Page<TreatmentAssignDrugReponse>>> getAssignDrugByManagerId(
+    public ResponseEntity<Response<Page<AssignDrugResponse>>> getAssignDrugByManagerId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "PENDING") List<AssignDrug.Status> status,
         @RequestParam(defaultValue = "") String title
     ){
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByStatus(status, title, pageable).map(treatmentMapper::toTreatmentAssignDrugResponse), "Assign drug retrieved successfully"));
+        return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByStatus(status, title, pageable).map(assignDrugMapper::toAssignDrugResponse), "Assign drug retrieved successfully"));
     }
 
     @GetMapping("/manager/{assignDrugId}")
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
-    public ResponseEntity<Response<TreatmentAssignDrugReponse>> getAssignDrugById(@PathVariable UUID assignDrugId){
-        return ResponseEntity.ok(new Response<>(treatmentMapper.toTreatmentAssignDrugResponse(assignDrugService.getAssignDrugById(assignDrugId)), "Assign drug retrieved successfully"));
+    public ResponseEntity<Response<AssignDrugResponse>> getAssignDrugById(@PathVariable UUID assignDrugId){
+        return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.getAssignDrugById(assignDrugId)), "Assign drug retrieved successfully"));
     }
 
     @PutMapping("/manager/complete/{assignDrugId}")
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
-    public ResponseEntity<Response<TreatmentAssignDrugReponse>> completeAssignDrug(@PathVariable UUID assignDrugId){
-        return ResponseEntity.ok(new Response<>(treatmentMapper.toTreatmentAssignDrugResponse(assignDrugService.completeAssignDrug(assignDrugId)), "Assign drug completed successfully"));
+    public ResponseEntity<Response<AssignDrugResponse>> completeAssignDrug(@PathVariable UUID assignDrugId){
+        return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.completeAssignDrug(assignDrugId)), "Assign drug completed successfully"));
     }
 
     @PutMapping("/manager/cancel/{assignDrugId}")
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
-    public ResponseEntity<Response<TreatmentAssignDrugReponse>> cancelAssignDrug(@PathVariable UUID assignDrugId){
-        return ResponseEntity.ok(new Response<>(treatmentMapper.toTreatmentAssignDrugResponse(assignDrugService.cancelAssignDrug(assignDrugId)), "Assign drug cancelled successfully"));
+    public ResponseEntity<Response<AssignDrugResponse>> cancelAssignDrug(@PathVariable UUID assignDrugId){
+        return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.cancelAssignDrug(assignDrugId)), "Assign drug cancelled successfully"));
     }
 }

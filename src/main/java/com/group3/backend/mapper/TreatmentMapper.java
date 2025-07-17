@@ -44,7 +44,6 @@ public interface TreatmentMapper {
     TreatmentPhaseResponse map(TreatmentPhase phase);
 
     @Mapping(target = "services", expression = "java(getServices(schedule.getScheduleServices()))")
-    @Mapping(target = "payment", expression = "java(getPaymentOfSchdule(schedule))")
     TreatmentScheduleResponse map(Schedule schedule);
 
     @Mapping(source = "service.name", target = "name")
@@ -54,24 +53,6 @@ public interface TreatmentMapper {
     @Mapping(source = "service.active", target = "active")
     @Mapping(source = "service.id", target = "serviceId")
     TreatmentServiceResponse map(ScheduleService scheduleService);
-
-    default List<PaymentPreviewResponse> getPaymentOfSchdule(Schedule schedule) {
-        List<PaymentPreviewResponse> payments = new ArrayList<>();
-        for(ScheduleService scheduleService : schedule.getScheduleServices()){
-            if(scheduleService.getPayment() != null){
-                if(payments.stream().noneMatch(p -> p.getId().equals(scheduleService.getPayment().getId()))){
-                    payments.add(PaymentPreviewResponse.builder()
-                        .id(scheduleService.getPayment().getId())
-                        .amount(scheduleService.getPayment().getAmount())
-                        .paymentDeadline(scheduleService.getPayment().getPaymentDeadline())
-                        .status(scheduleService.getPayment().getStatus())
-                        .build());
-                }
-            }
-        }   
-        return payments;
-    }
-
 
     default List<PaymentPreviewResponse> getPaymentOfPhases(Treatment treatment){
         List<PaymentPreviewResponse> payments = new ArrayList<>();
