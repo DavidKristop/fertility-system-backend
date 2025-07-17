@@ -8,15 +8,15 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Initialize a sample patient
-INSERT INTO users (id, email, full_name, date_of_birth, password_hashed, password_secret, role_id) 
+INSERT INTO users (id, email, full_name, date_of_birth, password_hashed, password_secret, role_id, is_verify) 
 VALUES 
-    ('123e4567-e89b-12d3-a456-426614174004', 'patient@example.com', 'John Doe', '1990-01-01', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'patient123secret', '123e4567-e89b-12d3-a456-426614174002')
+    ('123e4567-e89b-12d3-a456-426614174004', 'patient@example.com', 'John Doe', '1990-01-01', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'patient123secret', '123e4567-e89b-12d3-a456-426614174002', true)
 ON CONFLICT DO NOTHING;
 
 -- Initialize a sample doctor
-INSERT INTO users (id, email, full_name, date_of_birth, password_hashed, password_secret, role_id) 
+INSERT INTO users (id, email, full_name, date_of_birth, password_hashed, password_secret, role_id, is_verify) 
 VALUES 
-    ('123e4567-e89b-12d3-a456-426614174005', 'doctor@example.com', 'Dr. Smith', '1980-01-01', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'doctor123secret', '123e4567-e89b-12d3-a456-426614174001')
+    ('123e4567-e89b-12d3-a456-426614174005', 'doctor@example.com', 'Dr. Smith', '1980-01-01', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'doctor123secret', '123e4567-e89b-12d3-a456-426614174001', true)
 ON CONFLICT DO NOTHING;
 
 -- Initialize sample drugs

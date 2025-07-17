@@ -6,6 +6,8 @@ import com.group3.backend.model.User;
 import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.dto.request.CreateDoctorRequest;
 import com.group3.backend.dto.response.DoctorResponse;
+import com.group3.backend.dto.response.ManagedUserResponse;
+import com.group3.backend.mapper.ManagedUserMapper;
 import com.group3.backend.constants.Roles;
 import com.group3.backend.repository.DoctorProfileRepository;
 import com.group3.backend.repository.RoleRepository;
@@ -13,11 +15,14 @@ import com.group3.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -32,6 +37,7 @@ public class UserService implements UserDetailsService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final DoctorProfileRepository doctorProfileRepository;
+    private final ManagedUserMapper managedUserMapper;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -156,5 +162,47 @@ public class UserService implements UserDetailsService {
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+
+    public Page<ManagedUserResponse> getUsers(String role, String email, Pageable pageable) {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Page<User> users;
+
+        if (role == null || role.isBlank()) {
+            users = userRepository.findByEmailExcludingCurrent(email, currentEmail, pageable);
+        } else {
+            Roles enumRole;
+            try {
+                enumRole = Roles.valueOf(role.toUpperCase()); // phải là: ROLE_DOCTOR, ROLE_ADMIN, ...
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid role: " + role);
+            }
+
+            users = userRepository.findByRoleNameAndEmailExcludingCurrent(enumRole, email, currentEmail, pageable);
+        }
+
+        return users.map(managedUserMapper::toManagedUserResponse);
+    }
+
+    public void deactivateUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
+    public void reactivateUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
+    public ManagedUserResponse getUserById(UUID id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return managedUserMapper.toManagedUserResponse(user);
     }
 }
