@@ -6,7 +6,6 @@ import com.group3.backend.model.ScheduleService;
 import com.group3.backend.model.AssignDrug;
 import com.group3.backend.repository.AssignDrugRepository;
 import com.group3.backend.repository.PaymentRepository;
-import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.ScheduleServiceRepository;
 import com.group3.backend.repository.UserRepository;
 

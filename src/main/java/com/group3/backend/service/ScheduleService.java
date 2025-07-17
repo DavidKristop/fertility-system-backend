@@ -338,6 +338,24 @@ public class ScheduleService {
         schedule.setAppointmentDateTime(request.getAppointmentDateTime());
         schedule.setEstimatedTime(request.getEstimatedTime());
 
+        List<RequestAppointment> existingRequests = requestAppointmentRepository.findByDoctorIdAndStatusInAndAppointmentDatetimeBetween(
+            doctorId,
+            List.of(RequestAppointment.Status.PENDING),
+            request.getAppointmentDateTime().minusMinutes(Constants.REQUEST_APPOINTMENT_ESTIMATED_TIME),
+            request.getEstimatedTime()
+        );
+
+        for(int i=0;i<existingRequests.size();i++){
+            existingRequests.get(i).setStatus(RequestAppointment.Status.DENIED);
+            existingRequests.get(i).setRejectedReason("Doctor is already scheduled for another appointment during this time");
+            Reminder reminder = Reminder.builder()
+            .sendTo(existingRequests.get(i).getPatient())
+            .content("Doctor is already scheduled for another appointment during this time")
+            .build();
+            reminderRepository.save(reminder);
+        }
+        requestAppointmentRepository.saveAll(existingRequests);
+
         return scheduleRepository.save(schedule);
     }
 

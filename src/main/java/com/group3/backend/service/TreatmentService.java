@@ -111,15 +111,27 @@ public class TreatmentService {
             throw new ResourceConflictException("Not all schedules in current phase are complete");
         }
 
-        List<PatientDrug> patientDrugs = new ArrayList<>();
+        // Check if all assignDrugs are completed
         for(AssignDrug assignDrug : currentPhase.getAssignDrugs()){
-            if(assignDrug.getStatus() == AssignDrug.Status.PENDING){
+            if(assignDrug.getStatus() != AssignDrug.Status.COMPLETED){
                 throw new ResourceConflictException("Not all assign drugs in current phase are complete");
             }
+        }
+
+        // Get all patient drugs and find the latest endDate
+        List<PatientDrug> patientDrugs = new ArrayList<>();
+        for(AssignDrug assignDrug : currentPhase.getAssignDrugs()){
             patientDrugs.addAll(assignDrug.getPatientDrugs());
         }
-        if(patientDrugs.stream().anyMatch(pd->pd.getEndDate().isBefore(LocalDate.now()))){
-            throw new ResourceConflictException("Not all drugs in current phase are complete");
+
+        // Check if today is past the endDate of the latest PatientDrug
+        LocalDate latestEndDate = patientDrugs.stream()
+            .map(PatientDrug::getEndDate)
+            .max(LocalDate::compareTo)
+            .orElseThrow(() -> new ResourceConflictException("No patient drugs found"));
+
+        if (latestEndDate.isAfter(LocalDate.now())) {
+            throw new ResourceConflictException("Today is not past the endDate of the latest drug");
         }
 
         // Mark current phase as complete

@@ -9,6 +9,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -102,7 +104,31 @@ public interface TreatmentMapper {
     default boolean getCanMoveToNextPhase(TreatmentPhase phase) {
         List<TreatmentScheduleResponse> schedules = getScheduledServices(phase);
         List<TreatmentServiceResponse> unsetServices = getUnsetServices(phase);
-        return schedules.stream().allMatch(s -> s.getStatus() == Schedule.Status.DONE) && unsetServices.isEmpty();
+        List<AssignDrug> assignDrugs = phase.getAssignDrugs();
+        
+        // Check if all assignDrugs are completed
+        boolean allDrugsCompleted = assignDrugs.stream()
+            .allMatch(a -> a.getStatus() == AssignDrug.Status.COMPLETED);
+        
+        // Get all patient drugs and find the latest endDate
+        List<PatientDrug> patientDrugs = assignDrugs.stream()
+            .flatMap(a -> a.getPatientDrugs().stream())
+            .collect(Collectors.toList());
+        
+        // Check if today is past the endDate of the latest PatientDrug
+        boolean isPastLatestEndDate = true;
+        if (!patientDrugs.isEmpty()) {
+            LocalDate latestEndDate = patientDrugs.stream()
+                .map(PatientDrug::getEndDate)
+                .max(LocalDate::compareTo)
+                .orElse(LocalDate.now());
+            isPastLatestEndDate = latestEndDate.isBefore(LocalDate.now());
+        }
+        
+        return schedules.stream().allMatch(s -> s.getStatus() == Schedule.Status.DONE) 
+            && unsetServices.isEmpty() 
+            && allDrugsCompleted 
+            && isPastLatestEndDate;
     }
 
     default List<TreatmentScheduleResponse> getScheduledServices(TreatmentPhase phase) {
