@@ -14,7 +14,7 @@ import com.group3.backend.model.AssignDrug;
 public interface AssignDrugRepository extends JpaRepository<AssignDrug, UUID> {
     List<AssignDrug> findByIdIn(List<UUID> ids);
 
-    Page<AssignDrug> findByTreatmentPhaseTreatmentPatientIdAndStatusIn(UUID patientId, List<AssignDrug.Status> statuses, Pageable pageable);
+    Page<AssignDrug> findByTreatmentPhaseTreatmentPatientIdAndStatusInAndTitleIgnoreCaseContaining(UUID patientId, List<AssignDrug.Status> statuses, String title, Pageable pageable);
 
-    Page<AssignDrug> findByStatusIn(List<AssignDrug.Status> statuses, Pageable pageable);
+    Page<AssignDrug> findByStatusInAndTitleIgnoreCaseContaining(List<AssignDrug.Status> statuses, String title, Pageable pageable);
 }

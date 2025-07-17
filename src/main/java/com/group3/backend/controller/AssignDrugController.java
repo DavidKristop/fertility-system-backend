@@ -40,11 +40,11 @@ public class AssignDrugController {
     public ResponseEntity<Response<Page<TreatmentAssignDrugReponse>>> getAssignDrugByPatientId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "PENDING") List<AssignDrug.Status> status
-
+        @RequestParam(defaultValue = "PENDING") List<AssignDrug.Status> status,
+        @RequestParam(defaultValue = "") String title
     ){
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByPatientId(currentUserUtils.getCurrentUserId(), status, pageable).map(treatmentMapper::toTreatmentAssignDrugResponse), "Assign drug retrieved successfully"));
+        return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByPatientId(currentUserUtils.getCurrentUserId(), status, title, pageable).map(treatmentMapper::toTreatmentAssignDrugResponse), "Assign drug retrieved successfully"));
     }
 
     @GetMapping("/patient/{assignDrugId}")
@@ -58,10 +58,11 @@ public class AssignDrugController {
     public ResponseEntity<Response<Page<TreatmentAssignDrugReponse>>> getAssignDrugByManagerId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "PENDING") List<AssignDrug.Status> status
+        @RequestParam(defaultValue = "PENDING") List<AssignDrug.Status> status,
+        @RequestParam(defaultValue = "") String title
     ){
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByStatus(status, pageable).map(treatmentMapper::toTreatmentAssignDrugResponse), "Assign drug retrieved successfully"));
+        return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByStatus(status, title, pageable).map(treatmentMapper::toTreatmentAssignDrugResponse), "Assign drug retrieved successfully"));
     }
 
     @GetMapping("/manager/{assignDrugId}")
