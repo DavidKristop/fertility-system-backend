@@ -29,6 +29,13 @@ public interface TreatmentRepository extends JpaRepository<Treatment, UUID> {
         Pageable pageable
     );
 
+    Page<Treatment> findByDoctorIdAndStatusInAndTitleIgnoreCaseContaining(
+        UUID doctorId,
+        List<Treatment.Status> statuses,
+        String title,
+        Pageable pageable
+    );
+
     Page<Treatment> findByPatientIdAndStatusInAndDoctorEmailIgnoreCaseContaining(
         UUID patientId,
         List<Treatment.Status> statuses,
@@ -36,9 +43,22 @@ public interface TreatmentRepository extends JpaRepository<Treatment, UUID> {
         Pageable pageable
     );
 
+    Page<Treatment> findByPatientIdAndStatusInAndTitleIgnoreCaseContaining(
+        UUID patientId,
+        List<Treatment.Status> statuses,
+        String title,
+        Pageable pageable
+    );
+
     Page<Treatment> findByPatientEmailContainingIgnoreCaseAndDoctorEmailContainingIgnoreCaseAndStatusIn(
         String patientEmail,
         String doctorEmail,
+        List<Treatment.Status> statuses,
+        Pageable pageable
+    );
+
+    Page<Treatment> findByTitleIgnoreCaseContainingAndStatusIn(
+        String title,
         List<Treatment.Status> statuses,
         Pageable pageable
     );

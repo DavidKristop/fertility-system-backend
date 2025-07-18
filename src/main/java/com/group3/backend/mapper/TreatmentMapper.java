@@ -25,7 +25,7 @@ public interface TreatmentMapper {
     @Mapping(source = "currentPhase.id", target = "currentPhaseId")
     @Mapping(source = "contract.id", target = "contractId")
     @Mapping(source = "contract.isSigned", target = "signedContract")
-    @Mapping(target = "canMoveToNextPhase", expression = "java(getCanMoveToNextPhase(treatment.getCurrentPhase()))")
+    @Mapping(target = "canMoveToNextPhase", expression = "java(getCanMoveToNextPhase(treatment))")
     @Mapping(target = "payment", expression = "java(getPaymentOfPhases(treatment))")
     @Named("toTreatmentReponse")
     TreatmentResponse toResponse(Treatment treatment);
@@ -101,7 +101,12 @@ public interface TreatmentMapper {
         return scheduleServices.stream().map(this::map).collect(Collectors.toList());
     }
 
-    default boolean getCanMoveToNextPhase(TreatmentPhase phase) {
+    default boolean getCanMoveToNextPhase(Treatment treatment) {
+        if(treatment.getStatus() != Treatment.Status.IN_PROGRESS){
+            return false;
+        }
+
+        TreatmentPhase phase = treatment.getCurrentPhase();
         List<TreatmentScheduleResponse> schedules = getScheduledServices(phase);
         List<TreatmentServiceResponse> unsetServices = getUnsetServices(phase);
         List<AssignDrug> assignDrugs = phase.getAssignDrugs();

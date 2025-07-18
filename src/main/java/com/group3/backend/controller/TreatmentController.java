@@ -64,11 +64,11 @@ public class TreatmentController {
     public ResponseEntity<Response<Page<TreatmentResponse>>> getAllTreatmentsByPatientId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "") String email,
-        @RequestParam(defaultValue = "IN_PROGRESS") Treatment.Status status
+        @RequestParam(defaultValue = "") String title,
+        @RequestParam(defaultValue = "IN_PROGRESS") List<Treatment.Status> status
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Treatment> treatments = treatmentService.getPatientTreatment(currentUserUtils.getCurrentUserId(), List.of(status), email, pageable);
+        Page<Treatment> treatments = treatmentService.getPatientTreatment(currentUserUtils.getCurrentUserId(), status, title, pageable);
         Page<TreatmentResponse> response = treatments.map(treatmentMapper::toResponse);
         return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
     }
@@ -78,11 +78,11 @@ public class TreatmentController {
     public ResponseEntity<Response<Page<TreatmentResponse>>> getAllTreatmentsByDoctorId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "") String email,
+        @RequestParam(defaultValue = "") String title,
         @RequestParam(defaultValue = "IN_PROGRESS") List<Treatment.Status> status
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Treatment> treatments = treatmentService.getDoctorTreatment(currentUserUtils.getCurrentUserId(), status, email, pageable);
+        Page<Treatment> treatments = treatmentService.getDoctorTreatment(currentUserUtils.getCurrentUserId(), status, title, pageable);
         Page<TreatmentResponse> response = treatments.map(treatmentMapper::toResponse);
         return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
     }
@@ -100,12 +100,11 @@ public class TreatmentController {
     public ResponseEntity<Response<Page<TreatmentResponse>>> getAllTreatmentsByManagerId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "") String patientEmail,
-        @RequestParam(defaultValue = "") String doctorEmail,
-        @RequestParam(defaultValue = "IN_PROGRESS") Treatment.Status status
+        @RequestParam(defaultValue = "") String title,
+        @RequestParam(defaultValue = "IN_PROGRESS") List<Treatment.Status> status
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Treatment> treatments = treatmentService.getManagerTreatment(patientEmail, doctorEmail, List.of(status), pageable);
+        Page<Treatment> treatments = treatmentService.getManagerTreatment(title, status, pageable);
         Page<TreatmentResponse> response = treatments.map(treatmentMapper::toResponse);
         return ResponseEntity.ok(new Response<>(response, "Treatments retrieved successfully"));
     }
@@ -134,7 +133,7 @@ public class TreatmentController {
         return ResponseEntity.ok(new Response<>(response, "Treatment retrieved successfully"));
     }
 
-    @PostMapping("/next-phase/{treatmentId}")
+    @PutMapping("/next-phase/{treatmentId}")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Response<TreatmentResponse>> moveToNextPhase(@PathVariable UUID treatmentId) {
         Treatment treatment = treatmentService.moveToNextPhase(treatmentId);

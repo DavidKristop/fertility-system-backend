@@ -60,16 +60,16 @@ public class TreatmentService {
         return treatmentRepository.findByDoctorId(doctorId);
     }
 
-    public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> statuses, String email, Pageable pageable){
-        return treatmentRepository.findByDoctorIdAndStatusInAndPatientEmailIgnoreCaseContaining(doctorId, statuses, email, pageable);
+    public Page<Treatment> getDoctorTreatment(UUID doctorId, List<Treatment.Status> statuses, String title, Pageable pageable){
+        return treatmentRepository.findByDoctorIdAndStatusInAndTitleIgnoreCaseContaining(doctorId, statuses, title, pageable);
     }
 
-    public Page<Treatment> getPatientTreatment(UUID patientId, List<Treatment.Status> statuses, String email, Pageable pageable){
-        return treatmentRepository.findByPatientIdAndStatusInAndDoctorEmailIgnoreCaseContaining(patientId, statuses, email, pageable);
+    public Page<Treatment> getPatientTreatment(UUID patientId, List<Treatment.Status> statuses, String title, Pageable pageable){
+        return treatmentRepository.findByPatientIdAndStatusInAndTitleIgnoreCaseContaining(patientId, statuses, title, pageable);
     }
 
-    public Page<Treatment> getManagerTreatment(String patientEmail, String doctorEmail, List<Treatment.Status> statuses, Pageable pageable){
-        return treatmentRepository.findByPatientEmailContainingIgnoreCaseAndDoctorEmailContainingIgnoreCaseAndStatusIn(patientEmail, doctorEmail, statuses, pageable);
+    public Page<Treatment> getManagerTreatment(String title, List<Treatment.Status> statuses, Pageable pageable){
+        return treatmentRepository.findByTitleIgnoreCaseContainingAndStatusIn(title, statuses, pageable);
     }
 
     public Treatment getTreatmentByIdAndPatientId(UUID id, UUID patientId){
@@ -124,14 +124,16 @@ public class TreatmentService {
             patientDrugs.addAll(assignDrug.getPatientDrugs());
         }
 
-        // Check if today is past the endDate of the latest PatientDrug
-        LocalDate latestEndDate = patientDrugs.stream()
-            .map(PatientDrug::getEndDate)
-            .max(LocalDate::compareTo)
-            .orElseThrow(() -> new ResourceConflictException("No patient drugs found"));
-
-        if (latestEndDate.isAfter(LocalDate.now())) {
-            throw new ResourceConflictException("Today is not past the endDate of the latest drug");
+        if(patientDrugs.size()>0){
+            // Check if today is past the endDate of the latest PatientDrug
+            LocalDate latestEndDate = patientDrugs.stream()
+                .map(PatientDrug::getEndDate)
+                .max(LocalDate::compareTo)
+                .orElseThrow(() -> new ResourceConflictException("No patient drugs found"));
+    
+            if (latestEndDate.isAfter(LocalDate.now())) {
+                throw new ResourceConflictException("Today is not past the endDate of the latest drug");
+            }
         }
 
         // Mark current phase as complete
@@ -143,13 +145,10 @@ public class TreatmentService {
             .collect(Collectors.toList());
 
         int currentIndex = sortedPhases.indexOf(currentPhase);
-        if (currentIndex == sortedPhases.size() - 1) {
-            throw new ResourceConflictException("Already at last phase");
+        if (currentIndex < sortedPhases.size() - 1) {
+            TreatmentPhase nextPhase = sortedPhases.get(currentIndex + 1);
+            treatment.setCurrentPhase(nextPhase);
         }
-
-        TreatmentPhase nextPhase = sortedPhases.get(currentIndex + 1);
-        treatment.setCurrentPhase(nextPhase);
-
 
         // Update treatment status if all phases are complete
         boolean allPhasesComplete = sortedPhases.stream()
@@ -184,6 +183,14 @@ public class TreatmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
         User doctor = userRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
+        
+        if(!patient.isActive() || !patient.isVerify()){
+            throw new ResourceConflictException("Patient is not active or not verified");
+        }
+
+        if(!doctor.isActive() || !doctor.isVerify()){
+            throw new ResourceConflictException("Doctor is not active or not verified");
+        }
 
         if(treatmentRepository.existsByPatientIdAndStatusIn(patient.getId(), List.of(Treatment.Status.IN_PROGRESS, Treatment.Status.AWAITING_CONTRACT_SIGNED))){
             throw new ResourceConflictException("Patient already has an in progress treatment or they are waiting to sign contract for one of their treatment");

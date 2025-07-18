@@ -3,7 +3,6 @@ package com.group3.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -35,6 +34,10 @@ public class Refund {
 
     @Column(name = "reason", nullable = false)
     private String reason;
+
+    @Column(name="is_taken")
+    @Builder.Default
+    private boolean isTaken = false;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
