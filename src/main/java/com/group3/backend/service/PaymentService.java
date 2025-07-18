@@ -3,6 +3,8 @@ package com.group3.backend.service;
 import com.group3.backend.model.Payment;
 import com.group3.backend.model.Schedule;
 import com.group3.backend.model.ScheduleService;
+import com.group3.backend.model.Treatment;
+import com.group3.backend.model.TreatmentPhase;
 import com.group3.backend.model.AssignDrug;
 import com.group3.backend.repository.AssignDrugRepository;
 import com.group3.backend.repository.PaymentRepository;
@@ -16,8 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.exception.ResourceConflictException;
@@ -148,6 +152,48 @@ public class PaymentService {
         });
 
         return paymentRepository.save(payment);
+    }
+
+    public static PaymentRequest createPaymentBasedOnTreatment(Treatment treatment){
+        PaymentRequest paymentRequest = PaymentRequest.builder()
+            .paymentDeadline(LocalDateTime.now().plusHours(48))
+            .userId(treatment.getPatient().getId())
+            .build();
+        List<UUID> scheduleServiceIds = new ArrayList<>();
+        List<UUID> assignDrugIds = new ArrayList<>();
+        if(treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)){
+            TreatmentPhase firstPhase = treatment.getPhases().get(0);
+            scheduleServiceIds.addAll(firstPhase.getScheduleServices().stream().map(ScheduleService::getId).collect(Collectors.toList()));
+            assignDrugIds.addAll(firstPhase.getAssignDrugs().stream().map(AssignDrug::getId).collect(Collectors.toList()));
+            paymentRequest.setAmount(TreatmentService.calculatePhaseEstimatePrice(firstPhase, true));
+            paymentRequest.setDescription("Payment for phase: "+firstPhase.getTitle());
+        }
+        else{
+            scheduleServiceIds.addAll(treatment.getPhases().stream().flatMap(phase -> phase.getScheduleServices().stream()).map(ScheduleService::getId).collect(Collectors.toList()));
+            assignDrugIds.addAll(treatment.getPhases().stream().flatMap(phase -> phase.getAssignDrugs().stream()).map(AssignDrug::getId).collect(Collectors.toList()));
+
+            paymentRequest.setAmount(TreatmentService.calculateEstimatedPrice(treatment));
+            paymentRequest.setDescription("Payment for your full treatment");
+        }
+        paymentRequest.setScheduleServiceIds(scheduleServiceIds);
+        paymentRequest.setAssignDrugIds(assignDrugIds);
+        return paymentRequest;
+    }
+
+    public static PaymentRequest createPaymentBasedOnPhase(TreatmentPhase phase){
+        PaymentRequest paymentRequest = PaymentRequest.builder()
+            .paymentDeadline(LocalDateTime.now().plusHours(48))
+            .userId(phase.getTreatment().getPatient().getId())
+            .build();
+        List<UUID> scheduleServiceIds = new ArrayList<>();
+        List<UUID> assignDrugIds = new ArrayList<>();
+        scheduleServiceIds.addAll(phase.getScheduleServices().stream().map(ScheduleService::getId).collect(Collectors.toList()));
+        assignDrugIds.addAll(phase.getAssignDrugs().stream().map(AssignDrug::getId).collect(Collectors.toList()));
+        paymentRequest.setAmount(TreatmentService.calculatePhaseEstimatePrice(phase, true));
+        paymentRequest.setDescription("Payment for phase: "+phase.getTitle());
+        paymentRequest.setScheduleServiceIds(scheduleServiceIds);
+        paymentRequest.setAssignDrugIds(assignDrugIds);
+        return paymentRequest;
     }
 
 }

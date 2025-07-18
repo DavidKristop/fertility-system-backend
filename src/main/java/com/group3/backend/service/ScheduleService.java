@@ -5,6 +5,7 @@ import com.group3.backend.dto.request.ScheduleCreateRequest;
 import com.group3.backend.dto.request.ScheduleServiceCreateRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleChangeRequest;
 import com.group3.backend.dto.request.Schedule.ScheduleResultRequest;
+import com.group3.backend.dto.response.PaymentPreviewResponse;
 import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.exception.UnauthorizedAccessException;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -219,6 +221,29 @@ public class ScheduleService {
     public Schedule cancelSchedule(UUID scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
             .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+
+        if(schedule.getStatus() != Schedule.Status.PENDING){
+            throw new ResourceConflictException("Schedule is not pending");
+        }
+
+        List<PaymentPreviewResponse> payments = new ArrayList<>();
+        for(com.group3.backend.model.ScheduleService scheduleService : schedule.getScheduleServices()){
+            if(scheduleService.getPayment() != null){
+                if(payments.stream().noneMatch(p -> p.getId().equals(scheduleService.getPayment().getId()))){
+                    payments.add(PaymentPreviewResponse.builder()
+                        .id(scheduleService.getPayment().getId())
+                        .amount(scheduleService.getPayment().getAmount())
+                        .paymentDeadline(scheduleService.getPayment().getPaymentDeadline())
+                        .status(scheduleService.getPayment().getStatus())
+                        .build());
+                }
+            }
+        }
+
+        //Goes through each payment, if they are are not complete then reduce them by the services ammount and delete the payment if it hit 0
+        //If the payment is complete then make refund
+        
+
         schedule.setStatus(Schedule.Status.CANCELLED);
         return scheduleRepository.save(schedule);
     }

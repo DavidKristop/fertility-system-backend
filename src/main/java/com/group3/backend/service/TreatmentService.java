@@ -2,6 +2,7 @@ package com.group3.backend.service;
 
 import com.group3.backend.exception.ResourceConflictException;
 import com.group3.backend.exception.ResourceNotFoundException;
+import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.model.TreatmentPhase;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -47,6 +49,8 @@ public class TreatmentService {
     private ScheduleRepository scheduleRepository;
     @Autowired
     private ReminderRepository reminderRepository;
+    @Autowired
+    private PaymentService paymentService;
 
     public boolean existsByPatientIdAndStatusIn(UUID patientId, List<Treatment.Status> status){
         return treatmentRepository.existsByPatientIdAndStatusIn(patientId, status);
@@ -127,7 +131,10 @@ public class TreatmentService {
         if(patientDrugs.size()>0){
             // Check if today is past the endDate of the latest PatientDrug
             LocalDate latestEndDate = patientDrugs.stream()
-                .map(PatientDrug::getEndDate)
+                .map(patientDrug-> {
+                    if(patientDrug.getEndDate() == null) return LocalDate.now();
+                    return patientDrug.getEndDate();
+                })
                 .max(LocalDate::compareTo)
                 .orElseThrow(() -> new ResourceConflictException("No patient drugs found"));
     
@@ -148,7 +155,14 @@ public class TreatmentService {
         if (currentIndex < sortedPhases.size() - 1) {
             TreatmentPhase nextPhase = sortedPhases.get(currentIndex + 1);
             treatment.setCurrentPhase(nextPhase);
+
+            if(treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)){
+                PaymentRequest paymentRequest = PaymentService.createPaymentBasedOnPhase(nextPhase);
+                paymentService.createPayment(paymentRequest);
+            }
         }
+
+
 
         // Update treatment status if all phases are complete
         boolean allPhasesComplete = sortedPhases.stream()

@@ -124,7 +124,10 @@ public interface TreatmentMapper {
         boolean isPastLatestEndDate = true;
         if (!patientDrugs.isEmpty()) {
             LocalDate latestEndDate = patientDrugs.stream()
-                .map(PatientDrug::getEndDate)
+                .map(patientDrug-> {
+                    if(patientDrug.getEndDate() == null) return LocalDate.now();
+                    return patientDrug.getEndDate();
+                })
                 .max(LocalDate::compareTo)
                 .orElse(LocalDate.now());
             isPastLatestEndDate = latestEndDate.isBefore(LocalDate.now());

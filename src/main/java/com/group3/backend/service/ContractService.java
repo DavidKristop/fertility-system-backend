@@ -49,7 +49,8 @@ public class ContractService {
             throw new UnauthorizedAccessException("You are not authorized to sign this contract");
         }
         contract.setIsSigned(true);
-        createPaymentBasedOnPaymentMode(contract.getTreatment());
+        PaymentRequest paymentRequest = PaymentService.createPaymentBasedOnTreatment(contract.getTreatment());
+        paymentService.createPayment(paymentRequest);
         treatment.setStatus(Treatment.Status.IN_PROGRESS);
         contract.setTreatment(treatment);
         return contractRepository.save(contract);
@@ -79,32 +80,6 @@ public class ContractService {
 
     public Page<Contract> getAllContract(boolean isSigned, Pageable pageable){
         return contractRepository.findByIsSigned(isSigned, pageable);
-    }
-
-    private void createPaymentBasedOnPaymentMode(Treatment treatment){
-        PaymentRequest paymentRequest = PaymentRequest.builder()
-            .paymentDeadline(LocalDateTime.now().plusHours(48))
-            .userId(treatment.getPatient().getId())
-            .build();
-        List<UUID> scheduleServiceIds = new ArrayList<>();
-        List<UUID> assignDrugIds = new ArrayList<>();
-        if(treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)){
-            TreatmentPhase firstPhase = treatment.getPhases().get(0);
-            scheduleServiceIds.addAll(firstPhase.getScheduleServices().stream().map(ScheduleService::getId).collect(Collectors.toList()));
-            assignDrugIds.addAll(firstPhase.getAssignDrugs().stream().map(AssignDrug::getId).collect(Collectors.toList()));
-            paymentRequest.setAmount(TreatmentService.calculatePhaseEstimatePrice(firstPhase, true));
-            paymentRequest.setDescription("Payment for phase: "+firstPhase.getTitle());
-        }
-        else{
-            scheduleServiceIds.addAll(treatment.getPhases().stream().flatMap(phase -> phase.getScheduleServices().stream()).map(ScheduleService::getId).collect(Collectors.toList()));
-            assignDrugIds.addAll(treatment.getPhases().stream().flatMap(phase -> phase.getAssignDrugs().stream()).map(AssignDrug::getId).collect(Collectors.toList()));
-
-            paymentRequest.setAmount(TreatmentService.calculateEstimatedPrice(treatment));
-            paymentRequest.setDescription("Payment for your full treatment");
-        }
-        paymentRequest.setScheduleServiceIds(scheduleServiceIds);
-        paymentRequest.setAssignDrugIds(assignDrugIds);
-        paymentService.createPayment(paymentRequest);
     }
 
 }
