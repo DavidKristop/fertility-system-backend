@@ -36,7 +36,7 @@ public class DoctorManagementController {
     private final UserMapper userMapper;
 
     @PostMapping("/new-doctor")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STAFF')")
     public ResponseEntity<Response<DoctorResponse>> createDoctor(@Valid @RequestBody CreateDoctorRequest request) {
         try {
             DoctorResponse createdDoctor = userService.createDoctorAccount(request);
