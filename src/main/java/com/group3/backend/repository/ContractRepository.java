@@ -17,4 +17,6 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
     Page<Contract> findByIsSignedAndTreatmentPatientId(Boolean isSigned, UUID patientId, Pageable pageable);
 
     Page<Contract> findByIsSigned(Boolean isSigned, Pageable pageable);
+
+    List<Contract> findByIsSignedFalseAndSignDeadlineBetween(LocalDateTime from, LocalDateTime to);
 }
