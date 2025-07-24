@@ -50,7 +50,9 @@ public class SecurityConfig {
                             "/webjars/**", "/swagger-ui.html","/api/treatments","/api/schedules/**",
                             "/api/protocols/**","/api/auth/forgot-password", "/api/auth/reset-password",
                             "/api/payments/patient/process/vnpay/return",
-                            "/api/verify-email/**", "/api/auth/refresh", "/api/auth/logout"
+                            "/api/verify-email/**", "/api/auth/refresh", "/api/auth/logout",
+                            "/api/manual-reminders/schedule", "/api/manual-reminders/medication",
+                            "/api/manual-scheduler/**"
                     ).permitAll()
                     .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                     .requestMatchers("/api/auth/me").authenticated()

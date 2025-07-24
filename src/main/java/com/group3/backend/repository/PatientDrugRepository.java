@@ -32,4 +32,6 @@ public interface PatientDrugRepository extends JpaRepository<PatientDrug, UUID> 
         @Param("start") LocalDate start,
         @Param("end") LocalDate end
     );
+
+    List<PatientDrug> findByStartDateBeforeAndEndDateAfter(LocalDate endDate, LocalDate startDate);
 }

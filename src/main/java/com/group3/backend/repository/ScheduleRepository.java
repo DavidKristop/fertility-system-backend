@@ -4,7 +4,6 @@ import com.group3.backend.model.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -70,4 +69,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
         Schedule.Status status,
         UUID id
     );
+
+    List<Schedule> findByAppointmentDateTimeBetween(LocalDateTime start, LocalDateTime end);
+
+    List<Schedule> findAllByAppointmentDateTimeBetween(LocalDateTime start, LocalDateTime end);
 }
