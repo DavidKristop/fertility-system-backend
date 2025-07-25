@@ -52,7 +52,7 @@ public class DoctorManagementController {
     }
 
     @GetMapping("/patient/all-doctors")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    @PreAuthorize("hasAnyAuthority('ROLE_PATIENT', 'ROLE_STAFF')")
     public ResponseEntity<Response<Page<UserDoctorResponse>>> getAllDoctors(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
