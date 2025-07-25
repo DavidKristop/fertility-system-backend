@@ -53,6 +53,8 @@ public class ScheduleService {
     @Autowired
     private EnvironmentConfig environmentConfig;
     
+    @Autowired
+    private HtmlStringImageUploaderService htmlStringImageUploaderService;
 
     @Autowired
     private TimeZoneConfig timeZoneConfig;
@@ -209,12 +211,19 @@ public class ScheduleService {
 
         if(schedule.getScheduleResult() == null){
             ScheduleResult scheduleResult = ScheduleResult.builder()
-                .doctorsNote(scheduleResultRequest.getDoctorsNote())
+                .doctorsNote(htmlStringImageUploaderService.uploadImagesFromHtmlString(scheduleResultRequest.getDoctorsNote()))
                 .schedule(schedule)
                 .build();
             schedule.setScheduleResult(scheduleResult);
         }
-        else schedule.getScheduleResult().setDoctorsNote(scheduleResultRequest.getDoctorsNote());
+        else{
+            schedule.getScheduleResult().setDoctorsNote(
+                htmlStringImageUploaderService.updateImagesFromHtmlString(
+                    scheduleResultRequest.getDoctorsNote(), 
+                    schedule.getScheduleResult().getDoctorsNote()
+                )
+            );  
+        } 
         return scheduleRepository.save(schedule);
     }
 
