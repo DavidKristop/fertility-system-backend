@@ -17,13 +17,13 @@ public class EmailService {
     private String from;
 
     public void sendVerificationEmail(String to, String token) {
-        String subject = "Email Verification";
+        String subject = "Xác minh địa chỉ email";
         String verificationLink = "http://localhost:5173/verify-email?token=" + token;
         String content = """
-                <p>Hello,</p>
-                <p>Please click the link below to verify your email address:</p>
-                <p><a href="%s">Verify Email</a></p>
-                <p>This link will expire in 30 minutes.</p>
+                <p>Xin chào,</p>
+                <p>Vui lòng nhấp vào liên kết bên dưới để xác minh địa chỉ email của bạn:</p>
+                <p><a href="%s">Xác minh Email</a></p>
+                <p>Liên kết này sẽ hết hạn trong 30 phút.</p>
                 """.formatted(verificationLink);
 
         sendHtmlEmail(to, subject, content);
@@ -41,5 +41,9 @@ public class EmailService {
         } catch (MessagingException e) {
             throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
         }
+    }
+
+    public void sendReminderEmail(String to, String subject, String contentHtml) {
+        sendHtmlEmail(to, subject, contentHtml);
     }
 }

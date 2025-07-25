@@ -20,4 +20,6 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
         Page<Payment> findByUserEmailIgnoreCaseContainingAndStatusIn(String email, List<Payment.Status> status, Pageable pageable);
 
         Payment findByIdAndUserId(UUID id, UUID userId);
+
+        List<Payment> findByStatusAndPaymentDeadlineBetween(Payment.Status status, LocalDateTime from, LocalDateTime to);
 }
