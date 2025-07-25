@@ -141,7 +141,7 @@ public class ScheduleService {
             throw new ResourceConflictException("Appointment time must be in the future by at least 3 days");
         }
 
-        if(!scheduleCreateRequest.getEstimatedTime().isAfter(scheduleCreateRequest.getAppointmentDateTime().plusMinutes(10))) {
+        if(!scheduleCreateRequest.getEstimatedTime().isAfter(scheduleCreateRequest.getAppointmentDateTime().plusMinutes(9))) {
             throw new ResourceConflictException("Estimated time must be after appointment time by at least 10 minutes");
         }
 
