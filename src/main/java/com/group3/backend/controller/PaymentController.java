@@ -69,7 +69,7 @@ public class PaymentController {
 
 
     @GetMapping("/manager")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<Page<PaymentResponse>>> listPayments(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
@@ -82,7 +82,7 @@ public class PaymentController {
     }
 
     @GetMapping("/manager/{paymentId}")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<PaymentResponse>> getPaymentById(@PathVariable UUID paymentId) {
         return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.getPaymentById(paymentId)), "Payment retrieved successfully"));
     }
@@ -113,13 +113,13 @@ public class PaymentController {
     }
 
     @PutMapping("/manager/process/{paymentId}")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<PaymentResponse>> processPaymentByManager(@PathVariable UUID paymentId, @RequestParam Payment.PaymentMethod paymentMethod) {
         return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.processPayment(paymentId, paymentMethod)), "Payment processed successfully"));
     }
 
     @PutMapping("/manager/cancel/{paymentId}")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<PaymentResponse>> cancelPayment(@PathVariable UUID paymentId) {
         return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.cancelPayment(paymentId)), "Payment cancelled successfully"));
     }
