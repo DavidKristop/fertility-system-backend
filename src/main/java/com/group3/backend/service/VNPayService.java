@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.group3.backend.config.VNPayConfig;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -23,7 +24,7 @@ public class VNPayService {
         String vnp_Version = vnPayConfig.getVnp_Version();
         String vnp_Command = "pay";
         String vnp_TxnRef = vnPayConfig.getRandomNumber(8);
-        String vnp_IpAddr = "127.0.0.1"; //Change this when deploy to reflect the site actual ip
+        String vnp_IpAddr = "127.0.0.1"; 
         String vnp_TmnCode = vnPayConfig.getVnp_TmnCode();
         String orderType = "other";
         
@@ -31,7 +32,7 @@ public class VNPayService {
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf(total*100));
+        vnp_Params.put("vnp_Amount", String.valueOf(Long.valueOf(total)*100));
         vnp_Params.put("vnp_CurrCode", "VND");
         
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);

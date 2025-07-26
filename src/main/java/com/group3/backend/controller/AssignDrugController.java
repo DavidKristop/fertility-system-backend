@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.response.AssignDrug.AssignDrugResponse;
-import com.group3.backend.dto.response.Treatment.TreatmentAssignDrugReponse;
 import com.group3.backend.mapper.AssignDrugMapper;
-import com.group3.backend.mapper.TreatmentMapper;
 import com.group3.backend.model.AssignDrug;
 import com.group3.backend.service.AssignDrugService;
 import com.group3.backend.utils.CurrentUserUtils;
