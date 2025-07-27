@@ -102,7 +102,7 @@
             <tbody>
                 <tr class="phase-row">
                     <td>
-                        <span class="phase-name" id="phase-name">{phase_name}</span>
+                        <span class="phase-name">{phase_name}</span>
                         <table class="table-phase">
                             <thead>
                                 <tr>
@@ -115,17 +115,21 @@
                             </thead>
                             <tbody>
                                 <tr class="service-row">
-                                    <td id="service-drug-name">{service_name}</td>
-                                    <td id="service-drug-quantity">{quantity}</td>
-                                    <td id="service-drug-unit">{unit}</td>
-                                    <td id="service-drug-unit-price">{unit_price}</td>
-                                    <td id="service-drug-total-price">{total_price}</td>
+                                    <td class="service-drug-name">{service_name}</td>
+                                    <td class="service-drug-quantity">{quantity}</td>
+                                    <td class="service-drug-unit">{unit}</td>
+                                    <td class="service-drug-unit-price">{unit_price}</td>
+                                    <td class="service-drug-total-price">{total_price}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </td>
-                    <td class="phase-total" id="phase-total">{phase_total}</td>
-                    <td class="phase-total" id="refund-amount">{refund_amount}</td>
+                    <td >
+                        <span class="phase-total">{phase_total}</span>
+                    </td>
+                    <td >
+                        <span class="refund-amount">{refund_amount}</span>
+                    </td>
                 </tr>
             </tbody>
         </table>

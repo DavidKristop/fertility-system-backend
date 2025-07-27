@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -98,11 +99,14 @@ public class ContractController {
                 .documentName("Hợp đồng thực hiện điều trị "+contract.getTreatment().getTreatmentProtocol().getTitle())
                 .documentHtml(html)
                 .submitterRole("Patient")
-                .submitterEmail(currentUserUtils.getCurrentUserId().toString())
+                .submitterEmail(contract.getTreatment().getPatient().getEmail())
                 .build();
+        JSONObject submissionData = new JSONObject(docuSealService.generateSubmissionBasedOnHtml(docuSealContract));
+
+        String slug = submissionData.getJSONArray("submitters").getJSONObject(0).getString("slug");
         
         return ResponseEntity.ok(new Response<>(
-            docuSealService.generateSubmissionBasedOnHtml(docuSealContract),
+            slug,
             "Contract template retrieved successfully"));
     }
 

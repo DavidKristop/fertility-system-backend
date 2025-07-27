@@ -94,32 +94,32 @@ public class ContractService {
         Treatment treatment = contract.getTreatment();
 
         File contractTemplateFile = ResourceUtils.getFile("classpath:templates/contract-template.html");
-        File contractDrugAndServicesTableFile = ResourceUtils.getFile("classpath:templates/contract-drug-and-services-table.html");
 
-        Document doc = Jsoup.parse(contractTemplateFile, "UTF-8");
-        Document drugAndServicesTableDoc = Jsoup.parse(contractDrugAndServicesTableFile, "UTF-8");
+        Document doc = Jsoup.parse(contractTemplateFile);
         Element drugAndServicesTable = doc.selectFirst("#drug-and-services tbody");
+        Element newDrugAndServicesTableRow = drugAndServicesTable.selectFirst(".phase-row").clone();
+
+        drugAndServicesTable.html("");
 
         for(TreatmentProtocolPhase treatmentProtocolPhase : treatment.getTreatmentProtocol().getPhases()){
-            System.out.println(drugAndServicesTableDoc.toString());
-            drugAndServicesTableDoc.selectFirst("#phase-name").text(treatmentProtocolPhase.getTitle());
-            drugAndServicesTableDoc.selectFirst("#phase-total").text(TreatmentProtocolServiceService.calculateEstimatedPriceByPhase(treatmentProtocolPhase, treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)).toString());
-            drugAndServicesTableDoc.selectFirst("#refund-amount").text(treatmentProtocolPhase.getRefundPercentage().toString());
+            newDrugAndServicesTableRow.selectFirst(".phase-name").text(treatmentProtocolPhase.getTitle());
+            newDrugAndServicesTableRow.selectFirst(".phase-total").text(TreatmentProtocolServiceService.calculateEstimatedPriceByPhase(treatmentProtocolPhase, treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)).toString());
+            newDrugAndServicesTableRow.selectFirst(".refund-amount").text(treatmentProtocolPhase.getRefundPercentage().toString());
             for(TreatmentProtocolService treatmentProtocolService : treatmentProtocolPhase.getServices()){
-                drugAndServicesTableDoc.selectFirst("#service-drug-name").text(treatmentProtocolService.getService().getName());
-                drugAndServicesTableDoc.selectFirst("#service-drug-unit").text("Lần");
-                drugAndServicesTableDoc.selectFirst("#service-drug-quantity").text("x1");
-                drugAndServicesTableDoc.selectFirst("#service-drug-unit-price").text(treatmentProtocolService.getService().getPrice().toString());
-                drugAndServicesTableDoc.selectFirst("#service-drug-total-price").text(treatmentProtocolService.getService().getPrice().toString());
+                newDrugAndServicesTableRow.selectFirst(".service-drug-name").text(treatmentProtocolService.getService().getName());
+                newDrugAndServicesTableRow.selectFirst(".service-drug-unit").text("Lần");
+                newDrugAndServicesTableRow.selectFirst(".service-drug-quantity").text("x1");
+                newDrugAndServicesTableRow.selectFirst(".service-drug-unit-price").text(treatmentProtocolService.getService().getPrice().toString());
+                newDrugAndServicesTableRow.selectFirst(".service-drug-total-price").text(treatmentProtocolService.getService().getPrice().toString());
             }
             for(TreatmentProtocolDrug treatmentProtocolDrug : treatmentProtocolPhase.getDrugs()){
-                drugAndServicesTableDoc.selectFirst("#service-drug-name").text(treatmentProtocolDrug.getDrug().getName());
-                drugAndServicesTableDoc.selectFirst("#service-drug-unit").text(treatmentProtocolDrug.getDrug().getUnit());
-                drugAndServicesTableDoc.selectFirst("#service-drug-quantity").text(String.valueOf(treatmentProtocolDrug.getAmount()));
-                drugAndServicesTableDoc.selectFirst("#service-drug-unit-price").text(treatmentProtocolDrug.getDrug().getPrice().toString());
-                drugAndServicesTableDoc.selectFirst("#service-drug-total-price").text(treatmentProtocolDrug.getDrug().getPrice().multiply(BigDecimal.valueOf(treatmentProtocolDrug.getAmount())).toString());
+                newDrugAndServicesTableRow.selectFirst(".service-drug-name").text(treatmentProtocolDrug.getDrug().getName());
+                newDrugAndServicesTableRow.selectFirst(".service-drug-unit").text(treatmentProtocolDrug.getDrug().getUnit());
+                newDrugAndServicesTableRow.selectFirst(".service-drug-quantity").text(String.valueOf(treatmentProtocolDrug.getAmount()));
+                newDrugAndServicesTableRow.selectFirst(".service-drug-unit-price").text(treatmentProtocolDrug.getDrug().getPrice().toString());
+                newDrugAndServicesTableRow.selectFirst(".service-drug-total-price").text(treatmentProtocolDrug.getDrug().getPrice().multiply(BigDecimal.valueOf(treatmentProtocolDrug.getAmount())).toString());
             }
-            drugAndServicesTable.appendElement(drugAndServicesTableDoc.selectFirst("tbody").html());
+            drugAndServicesTable.appendChild(newDrugAndServicesTableRow);
         }
 
         doc.selectFirst("#total").text("Tổng cộng: " + TreatmentProtocolServiceService.calculateEstimatedPrice(treatment.getTreatmentProtocol(), treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)).toString());
