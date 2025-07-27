@@ -15,15 +15,15 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class ImageService {
+public class StaticFileService {
 
     @Autowired
     private Cloudinary cloudinary;
 
     @SuppressWarnings("rawtypes")
-    public String uploadImage(MultipartFile file) throws IOException {
-        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-        return uploadResult.get("url").toString();
+    public String uploadFile(byte[] file, Map options) throws IOException {
+        Map uploadResult = cloudinary.uploader().upload(file, options);
+        return uploadResult.get("secure_url").toString();
     }
 
     public List<ImageResponse> uploadFromBase64Images(List<Base64ImageRequest> base64Images) {

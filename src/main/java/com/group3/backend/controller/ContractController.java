@@ -1,10 +1,7 @@
 package com.group3.backend.controller;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,15 +12,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.group3.backend.dto.Response;
+import com.group3.backend.dto.request.ContractSigningRequest;
 import com.group3.backend.dto.response.ContractResponse;
 import com.group3.backend.mapper.ContractMapper;
 import com.group3.backend.model.Contract;
-import com.group3.backend.model.DocuSealContract;
 import com.group3.backend.service.ContractService;
 import com.group3.backend.service.DocuSealService;
 import com.group3.backend.utils.CurrentUserUtils;
@@ -88,34 +86,12 @@ public class ContractController {
             "Contract retrieved successfully"));
     }
 
-    @GetMapping("/template/{contractId}")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
-    public ResponseEntity<Response<String>> getContractTemplate(@PathVariable UUID contractId) throws Exception {
-        Contract contract = contractService.getContractByIdAndPatientId(contractId, currentUserUtils.getCurrentUserId());
-        String html = contractService.getContractTemplate(contract);
-
-        DocuSealContract docuSealContract = DocuSealContract.builder()
-                .submissionName("Hợp đồng thực hiện điều trị "+contract.getTreatment().getTreatmentProtocol().getTitle())
-                .documentName("Hợp đồng thực hiện điều trị "+contract.getTreatment().getTreatmentProtocol().getTitle())
-                .documentHtml(html)
-                .submitterRole("Patient")
-                .submitterEmail(contract.getTreatment().getPatient().getEmail())
-                .build();
-        JSONObject submissionData = new JSONObject(docuSealService.generateSubmissionBasedOnHtml(docuSealContract));
-
-        String slug = submissionData.getJSONArray("submitters").getJSONObject(0).getString("slug");
-        
-        return ResponseEntity.ok(new Response<>(
-            slug,
-            "Contract template retrieved successfully"));
-    }
-
     @PutMapping("/sign/{contractId}")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
-    public ResponseEntity<Response<ContractResponse>> signContract(@PathVariable UUID contractId) {
+    public ResponseEntity<Response<ContractResponse>> signContract(@PathVariable UUID contractId,@RequestBody ContractSigningRequest contractSigningRequest) {
         return ResponseEntity.ok(new Response<>(
             contractMapper.toResponse(
-                    contractService.signedContract(contractId, currentUserUtils.getCurrentUserId())
+                    contractService.signedContract(contractId, currentUserUtils.getCurrentUserId(),contractSigningRequest.getSignedUrl())
                 ),
             "Contract signed successfully"));
     }
