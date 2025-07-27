@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +23,9 @@ import com.group3.backend.dto.Response;
 import com.group3.backend.dto.response.ContractResponse;
 import com.group3.backend.mapper.ContractMapper;
 import com.group3.backend.model.Contract;
+import com.group3.backend.model.DocuSealContract;
 import com.group3.backend.service.ContractService;
+import com.group3.backend.service.DocuSealService;
 import com.group3.backend.utils.CurrentUserUtils;
 
 @RestController
@@ -36,6 +39,9 @@ public class ContractController {
 
     @Autowired
     private ContractMapper contractMapper;
+
+    @Autowired
+    private DocuSealService docuSealService;
 
     @GetMapping("/patient")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
@@ -80,6 +86,28 @@ public class ContractController {
                     contractService.getContractById(contractId)
                 ),
             "Contract retrieved successfully"));
+    }
+
+    @GetMapping("/template/{contractId}")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<Response<String>> getContractTemplate(@PathVariable UUID contractId) throws Exception {
+        Contract contract = contractService.getContractByIdAndPatientId(contractId, currentUserUtils.getCurrentUserId());
+        String html = contractService.getContractTemplate(contract);
+
+        DocuSealContract docuSealContract = DocuSealContract.builder()
+                .submissionName("Hợp đồng thực hiện điều trị "+contract.getTreatment().getTreatmentProtocol().getTitle())
+                .documentName("Hợp đồng thực hiện điều trị "+contract.getTreatment().getTreatmentProtocol().getTitle())
+                .documentHtml(html)
+                .submitterRole("Patient")
+                .submitterEmail(contract.getTreatment().getPatient().getEmail())
+                .build();
+        JSONObject submissionData = new JSONObject(docuSealService.generateSubmissionBasedOnHtml(docuSealContract));
+
+        String slug = submissionData.getJSONArray("submitters").getJSONObject(0).getString("slug");
+        
+        return ResponseEntity.ok(new Response<>(
+            slug,
+            "Contract template retrieved successfully"));
     }
 
     @PutMapping("/sign/{contractId}")

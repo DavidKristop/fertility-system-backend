@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.group3.backend.dto.Response;
 import com.group3.backend.dto.response.AssignDrug.AssignDrugResponse;
-import com.group3.backend.dto.response.Treatment.TreatmentAssignDrugReponse;
 import com.group3.backend.mapper.AssignDrugMapper;
-import com.group3.backend.mapper.TreatmentMapper;
 import com.group3.backend.model.AssignDrug;
 import com.group3.backend.service.AssignDrugService;
 import com.group3.backend.utils.CurrentUserUtils;
@@ -74,7 +72,7 @@ public class AssignDrugController {
     }
 
     @GetMapping("/manager")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<Page<AssignDrugResponse>>> getAssignDrugByManagerId(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
@@ -86,19 +84,19 @@ public class AssignDrugController {
     }
 
     @GetMapping("/manager/{assignDrugId}")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<AssignDrugResponse>> getAssignDrugById(@PathVariable UUID assignDrugId){
         return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.getAssignDrugById(assignDrugId)), "Assign drug retrieved successfully"));
     }
 
     @PutMapping("/manager/complete/{assignDrugId}")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<AssignDrugResponse>> completeAssignDrug(@PathVariable UUID assignDrugId){
         return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.completeAssignDrug(assignDrugId)), "Assign drug completed successfully"));
     }
 
     @PutMapping("/manager/cancel/{assignDrugId}")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<AssignDrugResponse>> cancelAssignDrug(@PathVariable UUID assignDrugId){
         return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.cancelAssignDrug(assignDrugId)), "Assign drug cancelled successfully"));
     }

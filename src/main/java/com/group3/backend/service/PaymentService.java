@@ -10,6 +10,7 @@ import com.group3.backend.repository.AssignDrugRepository;
 import com.group3.backend.repository.PaymentRepository;
 import com.group3.backend.repository.ScheduleServiceRepository;
 import com.group3.backend.repository.UserRepository;
+import com.group3.backend.utils.Constants;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -156,7 +157,7 @@ public class PaymentService {
 
     public static PaymentRequest createPaymentBasedOnTreatment(Treatment treatment){
         PaymentRequest paymentRequest = PaymentRequest.builder()
-            .paymentDeadline(LocalDateTime.now().plusHours(48))
+            .paymentDeadline(LocalDateTime.now().plusHours(Constants.DEADLINE_PAYMENT_DEADLINE_IN_HOURS))
             .userId(treatment.getPatient().getId())
             .build();
         List<UUID> scheduleServiceIds = new ArrayList<>();
@@ -182,7 +183,7 @@ public class PaymentService {
 
     public static PaymentRequest createPaymentBasedOnPhase(TreatmentPhase phase){
         PaymentRequest paymentRequest = PaymentRequest.builder()
-            .paymentDeadline(LocalDateTime.now().plusHours(48))
+            .paymentDeadline(LocalDateTime.now().plusHours(Constants.DEADLINE_PAYMENT_DEADLINE_IN_HOURS))
             .userId(phase.getTreatment().getPatient().getId())
             .build();
         List<UUID> scheduleServiceIds = new ArrayList<>();

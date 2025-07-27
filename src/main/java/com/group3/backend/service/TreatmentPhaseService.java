@@ -37,6 +37,7 @@ import com.group3.backend.repository.ScheduleRepository;
 import com.group3.backend.repository.ScheduleServiceRepository;
 import com.group3.backend.repository.ServiceRepository;
 import com.group3.backend.repository.TreatmentPhaseRepository;
+import com.group3.backend.utils.Constants;
 
 @Service
 public class TreatmentPhaseService {
@@ -106,14 +107,14 @@ public class TreatmentPhaseService {
             .userId(treatmentPhase.getTreatment().getPatient().getId())
             .amount(new BigDecimal(0))
             .description("Payment for new services")
-            .paymentDeadline(LocalDateTime.now().plusHours(48))
+            .paymentDeadline(LocalDateTime.now().plusHours(Constants.DEADLINE_PAYMENT_DEADLINE_IN_HOURS))
             .build();
 
         PaymentRequest drugPaymentRequest = PaymentRequest.builder()
             .userId(treatmentPhase.getTreatment().getPatient().getId())
             .amount(new BigDecimal(0))
             .description("Payment for new drugs")
-            .paymentDeadline(LocalDateTime.now().plusHours(48))
+            .paymentDeadline(LocalDateTime.now().plusHours(Constants.DEADLINE_PAYMENT_DEADLINE_IN_HOURS))
             .build();
 
         for(TreatmentScheduleSetRequest scheduleRequest : request.getSchedules()) {

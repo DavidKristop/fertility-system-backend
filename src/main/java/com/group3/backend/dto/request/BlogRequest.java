@@ -1,5 +1,6 @@
 package com.group3.backend.dto.request;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.hibernate.validator.constraints.URL;
@@ -14,6 +15,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BlogRequest {
+
+    private Optional<UUID> id;
 
     @NotBlank(message = "Title cannot be empty")
     private String title;

@@ -2,7 +2,6 @@ package com.group3.backend.service;
 
 import com.group3.backend.dto.request.TreatmentProtocolCreateRequest;
 import com.group3.backend.dto.request.TreatmentProtocolPhaseRequest;
-import com.group3.backend.dto.request.ProtocolDrugRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
 import com.group3.backend.exception.ValidationException;
 import com.group3.backend.model.Drug;
@@ -14,12 +13,10 @@ import com.group3.backend.model.TreatmentProtocolDrug;
 import com.group3.backend.repository.DrugRepository;
 import com.group3.backend.repository.ServiceRepository;
 import com.group3.backend.repository.TreatmentProtocolRepository;
-import com.group3.backend.config.TimeZoneConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -155,34 +152,39 @@ public class TreatmentProtocolServiceService {
         return protocolRepository.save(protocol);
     }
 
-    public static BigDecimal calculateEstimatedPrice(TreatmentProtocol protocol) {
+    public static BigDecimal calculateEstimatedPriceByPhase(TreatmentProtocolPhase phase, boolean isByPhase) {
+        BigDecimal phasePrice = BigDecimal.ZERO;
+
+        // Calculate services price
+        if (phase.getServices() != null) {
+            phasePrice = phase.getServices().stream()
+                    .map(service -> service.getService().getPrice())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+
+        // Calculate drugs price
+        if (phase.getDrugs() != null) {
+            phasePrice = phasePrice.add(phase.getDrugs().stream()
+                    .map(drug -> drug.getDrug().getPrice().multiply(BigDecimal.valueOf(drug.getAmount())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add));
+        }
+
+        // Apply phase modifier percentage
+        if (phase.getPhaseModifierPercentage() != null && isByPhase) {
+            phasePrice = phasePrice.multiply(phase.getPhaseModifierPercentage());
+        }
+
+        return phasePrice;
+    }
+
+    public static BigDecimal calculateEstimatedPrice(TreatmentProtocol protocol, boolean isByPhase) {
         if (protocol.getPhases() == null || protocol.getPhases().isEmpty()) {
             return BigDecimal.ZERO;
         }
 
         BigDecimal total = BigDecimal.ZERO;
         for (TreatmentProtocolPhase phase : protocol.getPhases()) {
-            BigDecimal phasePrice = BigDecimal.ZERO;
-
-            // Calculate services price
-            if (phase.getServices() != null) {
-                phasePrice = phase.getServices().stream()
-                        .map(service -> service.getService().getPrice())
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-            }
-
-            // Calculate drugs price
-            if (phase.getDrugs() != null) {
-                phasePrice = phasePrice.add(phase.getDrugs().stream()
-                        .map(drug -> drug.getDrug().getPrice().multiply(BigDecimal.valueOf(drug.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add));
-            }
-
-            // Apply phase modifier percentage
-            if (phase.getPhaseModifierPercentage() != null) {
-                phasePrice = phasePrice.multiply(phase.getPhaseModifierPercentage());
-            }
-
+            BigDecimal phasePrice = calculateEstimatedPriceByPhase(phase, isByPhase);
             total = total.add(phasePrice);
         }
 
