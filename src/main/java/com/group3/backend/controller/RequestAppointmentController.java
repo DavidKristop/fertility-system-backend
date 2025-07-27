@@ -36,6 +36,7 @@ import com.group3.backend.model.User;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.RequestAppointmentService;
 import com.group3.backend.service.ScheduleService;
+import com.group3.backend.utils.Constants;
 import com.group3.backend.utils.CurrentUserUtils;
 
 import jakarta.validation.Valid;
@@ -132,7 +133,7 @@ public class RequestAppointmentController {
                 .map(scheduleService -> scheduleService.getService().getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add))
             .description("Consultation payment")
-            .paymentDeadline(LocalDateTime.now().plusHours(48))
+            .paymentDeadline(LocalDateTime.now().plusHours(Constants.DEADLINE_PAYMENT_DEADLINE_IN_HOURS))
             .userId(acceptedAppointment.getPatient().getId())
             .scheduleServiceIds(schedule.getScheduleServices().stream()
                 .map(com.group3.backend.model.ScheduleService::getId)

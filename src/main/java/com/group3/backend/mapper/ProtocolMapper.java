@@ -18,7 +18,7 @@ import com.group3.backend.service.TreatmentProtocolServiceService;
 @Mapper(componentModel = "spring", uses = TreatmentProtocolServiceService.class, imports = TreatmentProtocolServiceService.class)
 public interface ProtocolMapper {
     @Mapping(source = "active", target = "isActive")
-    @Mapping(target = "estimatedPrice", expression = "java(TreatmentProtocolServiceService.calculateEstimatedPrice(protocol))")
+    @Mapping(target = "estimatedPrice", expression = "java(TreatmentProtocolServiceService.calculateEstimatedPrice(protocol, false))")
     TreatmentProtocolResponse toResponse(TreatmentProtocol protocol);
 
     @Mapping(source = "service.name", target = "name")

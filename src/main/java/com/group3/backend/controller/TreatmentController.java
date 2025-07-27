@@ -11,6 +11,7 @@ import com.group3.backend.model.Treatment;
 import com.group3.backend.service.ContractService;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.TreatmentService;
+import com.group3.backend.utils.Constants;
 import com.group3.backend.utils.CurrentUserUtils;
 
 import java.time.LocalDateTime;
@@ -143,7 +144,7 @@ public class TreatmentController {
             PaymentRequest paymentRequest = PaymentRequest.builder()
                 .amount(TreatmentService.calculatePhaseEstimatePrice(treatment.getCurrentPhase(), treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)))
                 .description("Payment for phase: " + treatment.getCurrentPhase().getTitle())
-                .paymentDeadline(LocalDateTime.now().plusDays(2))
+                .paymentDeadline(LocalDateTime.now().plusHours(Constants.DEADLINE_PAYMENT_DEADLINE_IN_HOURS))
                 .userId(currentUserUtils.getCurrentUserId())
                 .build();
             paymentService.createPayment(paymentRequest);
