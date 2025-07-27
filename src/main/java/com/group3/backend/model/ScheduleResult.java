@@ -17,7 +17,7 @@ public class ScheduleResult {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "doctors_note")
+    @Column(name = "doctors_note", length = 10000000)
     private String doctorsNote;
 
     @OneToOne

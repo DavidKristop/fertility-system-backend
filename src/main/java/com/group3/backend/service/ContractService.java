@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
 import com.group3.backend.dto.request.ContractRequest;
 import com.group3.backend.dto.request.PaymentRequest;
@@ -91,11 +92,16 @@ public class ContractService {
 
     public String getContractTemplate(Contract contract) throws IOException {
         Treatment treatment = contract.getTreatment();
-        Document doc = Jsoup.parse(new File("contract-template.html"), "UTF-8");
-        Document drugAndServicesTableDoc = Jsoup.parse(new File("contract-drug-and-services-table.html"), "UTF-8");
+
+        File contractTemplateFile = ResourceUtils.getFile("classpath:templates/contract-template.html");
+        File contractDrugAndServicesTableFile = ResourceUtils.getFile("classpath:templates/contract-drug-and-services-table.html");
+
+        Document doc = Jsoup.parse(contractTemplateFile, "UTF-8");
+        Document drugAndServicesTableDoc = Jsoup.parse(contractDrugAndServicesTableFile, "UTF-8");
         Element drugAndServicesTable = doc.selectFirst("#drug-and-services tbody");
 
         for(TreatmentProtocolPhase treatmentProtocolPhase : treatment.getTreatmentProtocol().getPhases()){
+            System.out.println(drugAndServicesTableDoc.toString());
             drugAndServicesTableDoc.selectFirst("#phase-name").text(treatmentProtocolPhase.getTitle());
             drugAndServicesTableDoc.selectFirst("#phase-total").text(TreatmentProtocolServiceService.calculateEstimatedPriceByPhase(treatmentProtocolPhase, treatment.getPaymentMode().equals(Treatment.PaymentMode.BY_PHASE)).toString());
             drugAndServicesTableDoc.selectFirst("#refund-amount").text(treatmentProtocolPhase.getRefundPercentage().toString());

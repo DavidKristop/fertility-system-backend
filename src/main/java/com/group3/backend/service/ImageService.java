@@ -50,7 +50,7 @@ public class ImageService {
 
     public void deleteImage(List<String> fileNames){
         try{
-            cloudinary.api().deleteResources(fileNames, ObjectUtils.asMap());
+            if(!fileNames.isEmpty())cloudinary.api().deleteResources(fileNames, ObjectUtils.asMap());
         }
         catch(Exception e){
             System.out.println(e.getMessage());

@@ -50,6 +50,7 @@ public class HtmlStringImageUploaderService {
         Document oldDoc = Jsoup.parse(oldHtmlString);
         List<Base64ImageRequest> updateBase64Images = new ArrayList<>();
         List<Base64ImageRequest> oldBase64Images = new ArrayList<>();
+        List<Base64ImageRequest> uploadBase64Images = new ArrayList<>();
         List<String> deleteBase64Images = new ArrayList<>();
 
         oldDoc.select("img").forEach(img -> {
@@ -63,6 +64,10 @@ public class HtmlStringImageUploaderService {
             if(img.attr("id").isEmpty()){
                 String newUUID = UUID.randomUUID().toString();
                 img.attr("id",newUUID);
+                uploadBase64Images.add(Base64ImageRequest.builder()
+                    .base64Image(img.attr("src"))
+                    .fileName(newUUID)
+                    .build());
             }
             updateBase64Images.add(Base64ImageRequest.builder()
                 .base64Image(img.attr("src"))
@@ -75,8 +80,8 @@ public class HtmlStringImageUploaderService {
             .collect(Collectors.toList());
 
         imageService.deleteImage(deleteBase64Images);
-        List<ImageResponse> updateImageResponses = imageService.uploadFromBase64Images(updateBase64Images);
-        for(ImageResponse imageResponse : updateImageResponses){
+        List<ImageResponse> uploadImageResponses = imageService.uploadFromBase64Images(uploadBase64Images);
+        for(ImageResponse imageResponse : uploadImageResponses){
             updateDoc.select("img#" + imageResponse.getFileName()).attr("src", imageResponse.getUrl());
         }
         return updateDoc.html();
