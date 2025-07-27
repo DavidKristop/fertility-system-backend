@@ -37,9 +37,9 @@ public class RequestScheduler {
 
             String subject = "Yêu cầu đặt lịch đã bị từ chối";
             String content = String.format("""
-                <p>Chào %s,</p>
-                <p>Yêu cầu đặt lịch khám vào lúc <strong>%s</strong> đã bị từ chối vì không được xác nhận trước 24 giờ.</p>
-                <p>Vui lòng gửi yêu cầu lại nếu bạn vẫn muốn khám.</p>
+                <p>Xin chào %s,</p>
+                <p>Yêu cầu đặt lịch khám vào lúc <strong>%s</strong> đã bị hệ thống từ chối vì không được bác sĩ xác nhận trước 24 giờ.</p>
+                <p>Xin vui lòng đặt lại lịch mới nếu bạn vẫn muốn khám.</p>
                 """,
                 appointment.getPatient().getFullName(),
                 appointment.getAppointmentDatetime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
