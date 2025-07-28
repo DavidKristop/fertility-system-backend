@@ -33,8 +33,8 @@ ON CONFLICT DO NOTHING;
 -- Khởi tạo các dịch vụ mẫu
 INSERT INTO service (id, name, description, price, is_active) 
 VALUES 
-    ('123e4567-e89b-12d3-a456-426614174008', 'Tư vấn', 'Dịch vụ tư vấn y tế', 10000.00, true),
-    ('123e4567-e89b-12d3-a456-426614174009', 'Siêu âm', 'Dịch vụ siêu âm y tế', 2500.00, true)
+    ('123e4567-e89b-12d3-a456-426614174008', 'Tư vấn', 'Dịch vụ tư vấn y tế', 0.00, true),
+    ('123e4567-e89b-12d3-a456-426614174009', 'Siêu âm', 'Dịch vụ siêu âm y tế', 250000.00, true)
 ON CONFLICT DO NOTHING;
 
 -- Khởi tạo giao thức IVF tiêu chuẩn

@@ -1,5 +1,6 @@
 package com.group3.backend.service;
 
+import com.group3.backend.config.EnvironmentConfig;
 import com.group3.backend.dto.request.ServiceCreateRequest;
 import com.group3.backend.dto.request.ServiceUpdateRequest;
 import com.group3.backend.exception.ResourceNotFoundException;
@@ -18,9 +19,17 @@ public class ServiceItemService {
     @Autowired
     private ServiceRepository serviceRepository;
 
+    @Autowired
+    private EnvironmentConfig environmentConfig;
 
     public Page<Service> getServices(String name, boolean isActive, Pageable pageable){
-        return serviceRepository.findByNameIgnoreCaseContainingAndIsActive(name, isActive, pageable);
+        // Filter out the consulting service
+        return serviceRepository.findByNameIgnoreCaseContainingAndIsActiveAndIdNot(
+            name, 
+            isActive, 
+            UUID.fromString(environmentConfig.getConsultationServiceId()),
+            pageable
+        );
     }
 
     public Service getServiceById(UUID id){

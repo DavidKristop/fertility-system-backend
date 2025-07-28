@@ -13,7 +13,7 @@ import com.group3.backend.model.Service;
 
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, UUID> {
-    Page<Service> findByNameIgnoreCaseContainingAndIsActive(@Param("name") String name, @Param("isActive") boolean isActive, Pageable pageable);
+    Page<Service> findByNameIgnoreCaseContainingAndIsActiveAndIdNot(@Param("name") String name, @Param("isActive") boolean isActive, @Param("consultationServiceId") UUID consultationServiceId, Pageable pageable);
     List<Service> findByIdIn(List<UUID> ids);
     boolean existsByName(String name);
 }
