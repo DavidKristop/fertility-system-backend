@@ -8,6 +8,7 @@ import com.group3.backend.model.User;
 import com.group3.backend.repository.FeedbackRepository;
 import com.group3.backend.repository.TreatmentRepository;
 import com.group3.backend.repository.UserRepository;
+import com.group3.backend.service.HtmlStringImageUploaderService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +26,7 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final TreatmentRepository treatmentRepository;
     private final UserRepository userRepository;
+    private final HtmlStringImageUploaderService htmlStringImageUploaderService;
 
     public void createFeedback(CreateFeedbackRequest request) {
         // Lấy treatment và kiểm tra trạng thái
@@ -40,10 +42,13 @@ public class FeedbackService {
         User patient = userRepository.findByEmail(email)
             .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        // Xử lý hình ảnh trong nội dung feedback
+        String processedContent = htmlStringImageUploaderService.uploadImagesFromHtmlString(request.getContent());
+        
         Feedback feedback = Feedback.builder()
             .treatment(treatment)
             .user(patient)
-            .content(request.getContent())
+            .content(processedContent)
             .build();
 
         feedbackRepository.save(feedback);

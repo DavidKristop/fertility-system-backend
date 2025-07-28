@@ -18,14 +18,14 @@ public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
-    @PostMapping
+    @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_PATIENT')")
     public ResponseEntity<Response<String>> createFeedback(@RequestBody CreateFeedbackRequest request) {
         feedbackService.createFeedback(request);
         return ResponseEntity.ok(new Response<>(null,"Tạo feedback thành công.", true));
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     @PreAuthorize("hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')")
     public ResponseEntity<Response<Page<FeedbackResponse>>> getAllFeedbacks(
         @RequestParam(defaultValue = "0") int page,
