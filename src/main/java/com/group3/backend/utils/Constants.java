@@ -5,6 +5,7 @@ public class Constants {
     public static final int REQUEST_APPOINTMENT_ESTIMATED_TIME = 30;
     public static final int DEADLINE_SIGN_DATE_IN_HOURS = 48;
     public static final int DEADLINE_PAYMENT_DEADLINE_IN_HOURS = 48;
+    public static final int MAX_CONTENT_UPLOAD_LENGTH = 10000000;
     public static final String CONTRACT_DRUG_AND_SERVICES_TABLE ="""
             <tr class="phase-row">
                 <td>
