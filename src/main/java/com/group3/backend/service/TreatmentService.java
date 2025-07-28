@@ -128,20 +128,6 @@ public class TreatmentService {
             patientDrugs.addAll(assignDrug.getPatientDrugs());
         }
 
-        if(patientDrugs.size()>0){
-            // Check if today is past the endDate of the latest PatientDrug
-            LocalDate latestEndDate = patientDrugs.stream()
-                .map(patientDrug-> {
-                    if(patientDrug.getEndDate() == null) return LocalDate.now();
-                    return patientDrug.getEndDate();
-                })
-                .max(LocalDate::compareTo)
-                .orElseThrow(() -> new ResourceConflictException("No patient drugs found"));
-    
-            if (latestEndDate.isAfter(LocalDate.now())) {
-                throw new ResourceConflictException("Today is not past the endDate of the latest drug");
-            }
-        }
 
         // Mark current phase as complete
         currentPhase.setComplete(true);

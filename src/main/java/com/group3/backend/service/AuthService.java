@@ -14,12 +14,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.group3.backend.dto.Response;
+import com.group3.backend.dto.request.CreatePatientRequest;
 import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.dto.response.AuthResponse;
 import com.group3.backend.model.User;
 import com.group3.backend.model.VerifyEmailToken;
 import com.group3.backend.repository.VerifyEmailTokenRepository;
+import com.group3.backend.utils.Constants;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,7 +34,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UserService userService;
-    private final VerifyEmailTokenRepository verifyEmailTokenRepository;
+    private final VerifyTokenService verifyTokenService;
     private final EmailService emailService;
 
     @Transactional
@@ -53,19 +55,12 @@ public class AuthService {
             User user = userService.getUserByEmail(authRequest.getEmail());
 
             if (!user.isVerify()) {
-                // Xoá token cũ nếu có
-                verifyEmailTokenRepository.deleteByUser(user);
-                verifyEmailTokenRepository.flush();
 
-                // Tạo token mới
                 String token = UUID.randomUUID().toString();
-                VerifyEmailToken verifyToken = new VerifyEmailToken();
-                verifyToken.setToken(token);
-                verifyToken.setUser(user);
-                verifyToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
-                verifyEmailTokenRepository.save(verifyToken);
-
-                emailService.sendVerificationEmail(user.getEmail(), token);
+                emailService.sendVerificationEmail(
+                    user.getEmail(), 
+                    verifyTokenService.createVerifyToken(user, token).getToken()
+                );
 
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(new Response<>(null, "Email is not verified. A verification email has been sent.", false));
@@ -77,7 +72,7 @@ public class AuthService {
             Cookie cookie = new Cookie("refreshToken", refreshToken);
             cookie.setHttpOnly(true);
             cookie.setPath("/");
-            cookie.setMaxAge(7 * 24 * 60 * 60);
+            cookie.setMaxAge(Constants.MAX_REFRESH_TOKEN_COOKIE_AGE);
             response.addCookie(cookie);
 
             AuthResponse authResponse = new AuthResponse(
@@ -97,18 +92,15 @@ public class AuthService {
         }
     }
 
-    public ResponseEntity<Response<AuthResponse>> signup(RegistrationRequest request, HttpServletResponse response) {
+    public ResponseEntity<Response<AuthResponse>> signup(CreatePatientRequest request, HttpServletResponse response) {
         try {
-            User user = userService.registerUser(request);
+            User user = userService.registerPatientAccount(request);
 
             String token = UUID.randomUUID().toString();
-            VerifyEmailToken verifyToken = new VerifyEmailToken();
-            verifyToken.setToken(token);
-            verifyToken.setUser(user);
-            verifyToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
-            verifyEmailTokenRepository.save(verifyToken);
-
-            emailService.sendVerificationEmail(user.getEmail(), token);
+            emailService.sendVerificationEmail(
+                user.getEmail(), 
+                verifyTokenService.createVerifyToken(user, token).getToken()
+            );
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new Response<>(null, "User registered successfully. Please check your email to verify your account."));
         } catch (IllegalArgumentException e) {

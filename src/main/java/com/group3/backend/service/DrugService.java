@@ -61,22 +61,6 @@ public class DrugService {
             throw new ValidationException("Drug name already exists");
         }
 
-        if(existingDrug.isActive()){
-            throw new ValidationException("Cannot update active drug");
-        }
-
-        if (existingDrug.getLastDeactivated() == null) {
-            throw new ValidationException("Cannot update drug that has not been deactivated");
-        }
-
-        // Check if drug can be updated (must be deactivated for 120 days)
-        if ( existingDrug.getLastDeactivated() != null) {
-            long daysSinceDeactivation = Duration.between(existingDrug.getLastDeactivated(), LocalDateTime.now(timeZoneConfig.defaultZoneId())).toDays();
-            if (daysSinceDeactivation < 120) {
-                throw new ValidationException("Cannot update drug that was deactivated less than 120 days ago");
-            }
-        }
-
         Drug updatedDrug = Drug.builder()
                 .id(id)
                 .name(request.getName())
@@ -98,7 +82,6 @@ public class DrugService {
         }
         
         drug.setActive(false);
-        drug.setLastDeactivated(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         drugRepository.save(drug);
     }
 
@@ -111,7 +94,6 @@ public class DrugService {
         }
         
         drug.setActive(true);
-        drug.setLastDeactivated(null);
         drugRepository.save(drug);
     }
 }

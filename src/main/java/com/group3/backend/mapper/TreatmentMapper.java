@@ -115,28 +115,9 @@ public interface TreatmentMapper {
         boolean allDrugsCompleted = assignDrugs.stream()
             .allMatch(a -> a.getStatus() == AssignDrug.Status.COMPLETED);
         
-        // Get all patient drugs and find the latest endDate
-        List<PatientDrug> patientDrugs = assignDrugs.stream()
-            .flatMap(a -> a.getPatientDrugs().stream())
-            .collect(Collectors.toList());
-        
-        // Check if today is past the endDate of the latest PatientDrug
-        boolean isPastLatestEndDate = true;
-        if (!patientDrugs.isEmpty()) {
-            LocalDate latestEndDate = patientDrugs.stream()
-                .map(patientDrug-> {
-                    if(patientDrug.getEndDate() == null) return LocalDate.now();
-                    return patientDrug.getEndDate();
-                })
-                .max(LocalDate::compareTo)
-                .orElse(LocalDate.now());
-            isPastLatestEndDate = latestEndDate.isBefore(LocalDate.now());
-        }
-        
         return schedules.stream().allMatch(s -> s.getStatus() == Schedule.Status.DONE) 
             && unsetServices.isEmpty() 
-            && allDrugsCompleted 
-            && isPastLatestEndDate;
+            && allDrugsCompleted;
     }
 
     default List<TreatmentScheduleResponse> getScheduledServices(TreatmentPhase phase) {

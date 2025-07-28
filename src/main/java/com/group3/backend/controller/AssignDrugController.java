@@ -71,7 +71,7 @@ public class AssignDrugController {
         return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.getAssignDrugByIdAndDoctorId(currentUserUtils.getCurrentUserId(), assignDrugId)), "Assign drug retrieved successfully"));
     }
 
-    @GetMapping("/manager")
+    @GetMapping("/staff")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<Page<AssignDrugResponse>>> getAssignDrugByManagerId(
         @RequestParam(defaultValue = "0") int page,
@@ -83,19 +83,19 @@ public class AssignDrugController {
         return ResponseEntity.ok(new Response<>(assignDrugService.getAssignDrugByStatus(status, title, pageable).map(assignDrugMapper::toAssignDrugResponse), "Assign drug retrieved successfully"));
     }
 
-    @GetMapping("/manager/{assignDrugId}")
+    @GetMapping("/staff/{assignDrugId}")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<AssignDrugResponse>> getAssignDrugById(@PathVariable UUID assignDrugId){
         return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.getAssignDrugById(assignDrugId)), "Assign drug retrieved successfully"));
     }
 
-    @PutMapping("/manager/complete/{assignDrugId}")
+    @PutMapping("/staff/complete/{assignDrugId}")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<AssignDrugResponse>> completeAssignDrug(@PathVariable UUID assignDrugId){
         return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.completeAssignDrug(assignDrugId)), "Assign drug completed successfully"));
     }
 
-    @PutMapping("/manager/cancel/{assignDrugId}")
+    @PutMapping("/staff/cancel/{assignDrugId}")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<AssignDrugResponse>> cancelAssignDrug(@PathVariable UUID assignDrugId){
         return ResponseEntity.ok(new Response<>(assignDrugMapper.toAssignDrugResponse(assignDrugService.cancelAssignDrug(assignDrugId)), "Assign drug cancelled successfully"));

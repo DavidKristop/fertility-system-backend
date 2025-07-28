@@ -10,10 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.group3.backend.constants.Roles;
 import com.group3.backend.dto.Response;
+import com.group3.backend.dto.request.CreatePatientRequest;
 import com.group3.backend.dto.request.LoginRequest;
 import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.dto.response.AuthResponse;
+import com.group3.backend.exception.UnauthorizedAccessException;
 import com.group3.backend.model.User;
 import com.group3.backend.service.AuthService;
 import com.group3.backend.service.UserDetailsImpl;
@@ -36,7 +39,10 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Response<AuthResponse>> signup(@Valid @RequestBody RegistrationRequest registrationRequest, HttpServletResponse response) {
+    public ResponseEntity<Response<AuthResponse>> signup(@Valid @RequestBody CreatePatientRequest registrationRequest, HttpServletResponse response) {
+        if(registrationRequest.getRole() != Roles.ROLE_PATIENT){
+            throw new UnauthorizedAccessException("Invalid role");
+        }
         return service.signup(registrationRequest, response);
     }
 

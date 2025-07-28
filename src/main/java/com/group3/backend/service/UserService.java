@@ -1,15 +1,18 @@
 package com.group3.backend.service;
 
 import com.group3.backend.model.DoctorProfile;
+import com.group3.backend.model.PatientProfile;
 import com.group3.backend.model.Role;
 import com.group3.backend.model.User;
 import com.group3.backend.dto.request.RegistrationRequest;
 import com.group3.backend.dto.request.CreateDoctorRequest;
+import com.group3.backend.dto.request.CreatePatientRequest;
 import com.group3.backend.dto.response.DoctorResponse;
 import com.group3.backend.dto.response.ManagedUserResponse;
+import com.group3.backend.dto.response.UserDoctorResponse;
+import com.group3.backend.dto.response.UserPatientResponse;
 import com.group3.backend.mapper.ManagedUserMapper;
 import com.group3.backend.constants.Roles;
-import com.group3.backend.repository.DoctorProfileRepository;
 import com.group3.backend.repository.RoleRepository;
 import com.group3.backend.repository.UserRepository;
 
@@ -36,7 +39,6 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final DoctorProfileRepository doctorProfileRepository;
     private final ManagedUserMapper managedUserMapper;
 
     @Override
@@ -46,20 +48,15 @@ public class UserService implements UserDetailsService {
     return new UserDetailsImpl(user);
     }
 
-    public User registerUser(RegistrationRequest request) {
-
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("User with email '" + request.getEmail() + "' already exists!");
-        }
-
+    private User createUser(RegistrationRequest request, Roles newUserRole){
         int age = Period.between(request.getDateOfBirth(), LocalDate.now()).getYears();
         
         if (age < 18) {
             throw new IllegalArgumentException("You must be at least 18 years old to register.");
         }
 
-        Role patientRole = roleRepository.findByName(Roles.ROLE_PATIENT)
-                .orElseThrow(() -> new RuntimeException("Role '" + Roles.ROLE_PATIENT.name() + "' not found."));
+        Role role = roleRepository.findByName(newUserRole)
+                .orElseThrow(() -> new RuntimeException("Role '" + newUserRole.name() + "' not found."));
 
         User newUser = User.builder()
                 .fullName(request.getUsername())
@@ -69,71 +66,19 @@ public class UserService implements UserDetailsService {
                 .passwordHashed(passwordEncoder.encode(request.getPassword()))
                 .passwordSecret(UUID.randomUUID().toString())
                 .dateOfBirth(request.getDateOfBirth())
-                .role(patientRole)
+                .role(role)
                 .build();
 
-        return userRepository.save(newUser);
+        return newUser;
     }
 
-    // Method to create a Manager account
-    public User createManagerAccount(RegistrationRequest request) {
+    public User registerUser(RegistrationRequest request, Roles newUserRole) {
 
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("User with email '" + request.getEmail() + "' already exists!");
-        }
-
-        int age = Period.between(request.getDateOfBirth(), LocalDate.now()).getYears();
-        
-        if (age < 18) {
-            throw new IllegalArgumentException("This user must be at least 18 years old.");
-        }
-
-        Role managerRole = roleRepository.findByName(Roles.ROLE_MANAGER)
-                .orElseThrow(() -> new RuntimeException("Role '" + Roles.ROLE_MANAGER.name() + "' not found."));
-
-        User newUser = User.builder()
-                .fullName(request.getUsername())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .address(request.getAddress())
-                .passwordHashed(passwordEncoder.encode(request.getPassword()))
-                .passwordSecret(UUID.randomUUID().toString())
-                .dateOfBirth(request.getDateOfBirth())
-                .role(managerRole)
-                .build();
-
-        return userRepository.save(newUser);
+        return userRepository.save(createUser(request, newUserRole));
     }
 
-    // Method to create a Doctor account
-    public DoctorResponse createDoctorAccount(CreateDoctorRequest request) {
-
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("User with email '" + request.getEmail() + "' already exists!");
-        }
-
-        int age = Period.between(request.getDateOfBirth(), LocalDate.now()).getYears();
-
-        if (age < 18) {
-            throw new IllegalArgumentException("This user must be at least 18 years old.");
-        }
-
-        Role doctorRole = roleRepository.findByName(Roles.ROLE_DOCTOR)
-                .orElseThrow(() -> new RuntimeException("Role '" + Roles.ROLE_DOCTOR.name() + "' not found."));
-
-        User newUser = User.builder()
-                .fullName(request.getFullName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .address(request.getAddress())
-                .passwordHashed(passwordEncoder.encode(request.getPassword()))
-                .passwordSecret(UUID.randomUUID().toString())
-                .dateOfBirth(request.getDateOfBirth())
-                .role(doctorRole)
-                .build();
-
-        userRepository.save(newUser);
-        
+    public User createDoctorUser(CreateDoctorRequest request){
+        User newUser = createUser(request, Roles.ROLE_DOCTOR);
         DoctorProfile profile = DoctorProfile.builder()
             .specialty(request.getSpecialty())
             .degree(request.getDegree())
@@ -144,19 +89,28 @@ public class UserService implements UserDetailsService {
 
         newUser.setDoctorProfile(profile);
         
-        doctorProfileRepository.save(profile);
+        
+        return newUser;
+    }
 
-        return new DoctorResponse(
-                newUser.getId(),
-                newUser.getFullName(),
-                newUser.getEmail(),
-                newUser.getPhone(),
-                newUser.getAddress(),
-                request.getSpecialty(),
-                request.getDegree(),
-                request.getYearsOfExperience(),
-                request.getLicenseNumber()
-        );
+    // Method to create a Doctor account
+    public User registerDoctorAccount(CreateDoctorRequest request) {
+        return userRepository.save(createDoctorUser(request));
+    }
+
+    public User createPatientUser(CreatePatientRequest request){
+        User newUser = createUser(request, Roles.ROLE_PATIENT);
+        PatientProfile profile = PatientProfile.builder()
+            .medicalHistory(request.getMedicalHistory())
+            .user(newUser)
+            .build();
+
+        newUser.setPatientProfile(profile);
+        return newUser;
+    }
+
+    public User registerPatientAccount(CreatePatientRequest request) {
+        return userRepository.save(createPatientUser(request));
     }
 
     public User getUserByEmail(String email) {

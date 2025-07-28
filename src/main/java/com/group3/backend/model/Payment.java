@@ -65,8 +65,7 @@ public class Payment {
 
     public enum PaymentMethod {
         CASH,
-        CREDIT_CARD,
-        PAYPAL,
+        VNPAY
     }
     
     public enum Status {

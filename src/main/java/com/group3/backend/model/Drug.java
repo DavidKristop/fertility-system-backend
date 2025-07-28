@@ -40,9 +40,6 @@ public class Drug {
     @Column(name = "unit")
     private String unit;
 
-    @Column(name = "last_deactivated")
-    private LocalDateTime lastDeactivated;
-
     @OneToMany(mappedBy = "drug")
     private List<PatientDrug> patientDrugs;
 

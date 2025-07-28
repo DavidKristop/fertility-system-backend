@@ -41,9 +41,6 @@ public class Service {
     @Builder.Default
     private boolean isActive = true;
 
-    @Column(name = "last_deactivated")
-    private LocalDateTime lastDeactivated;
-
     @OneToMany(mappedBy = "service")
     private List<ScheduleService> scheduleServices;
 

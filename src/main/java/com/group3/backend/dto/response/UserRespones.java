@@ -14,6 +14,7 @@ public class UserRespones {
     private String phone;
     private String fullName;
     private LocalDate dateOfBirth;
+    private String address;
     private String avatarUrl;
     private Roles role;
 }

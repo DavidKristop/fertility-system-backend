@@ -104,7 +104,7 @@ public class PaymentController {
         HttpServletResponse response
     ) throws IOException{
         if(vnp_responseCode.equals("00")){
-            paymentService.processPayment(paymentId, Payment.PaymentMethod.CREDIT_CARD);
+            paymentService.processPayment(paymentId, Payment.PaymentMethod.VNPAY);
             response.sendRedirect(vnPayConfig.getPayment_success_url()+"?paymentId="+paymentId);
         }
         else{
@@ -112,13 +112,13 @@ public class PaymentController {
         }
     }
 
-    @PutMapping("/manager/process/{paymentId}")
+    @PutMapping("/staff/process/{paymentId}")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
-    public ResponseEntity<Response<PaymentResponse>> processPaymentByManager(@PathVariable UUID paymentId, @RequestParam Payment.PaymentMethod paymentMethod) {
+    public ResponseEntity<Response<PaymentResponse>> processPaymentByStaff(@PathVariable UUID paymentId, @RequestParam Payment.PaymentMethod paymentMethod) {
         return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.processPayment(paymentId, paymentMethod)), "Payment processed successfully"));
     }
 
-    @PutMapping("/manager/cancel/{paymentId}")
+    @PutMapping("/staff/cancel/{paymentId}")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<PaymentResponse>> cancelPayment(@PathVariable UUID paymentId) {
         return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.cancelPayment(paymentId)), "Payment cancelled successfully"));
