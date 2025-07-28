@@ -52,7 +52,8 @@ public class SecurityConfig {
                             "/api/payments/patient/process/vnpay/return",
                             "/api/verify-email/**", "/api/auth/refresh", "/api/auth/logout",
                             "/api/manual-reminders/schedule", "/api/manual-reminders/medication",
-                            "/api/manual-scheduler/**"
+                            "/api/manual-scheduler/**",
+                            "/api/doctor-management/public/**"
                     ).permitAll()
                     .requestMatchers("/blogs").hasAuthority("ROLE_PATIENT")
                     .requestMatchers("/api/auth/me").authenticated()

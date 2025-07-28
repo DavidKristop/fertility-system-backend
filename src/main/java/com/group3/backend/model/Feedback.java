@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.util.UUID;
 
+import com.group3.backend.utils.Constants;
+
 @Entity
 @Table(name = "feedback")
 @Getter
@@ -16,7 +18,7 @@ public class Feedback {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "content")
+    @Column(name = "content",length = Constants.MAX_CONTENT_UPLOAD_LENGTH)
     private String content;
 
     @ManyToOne

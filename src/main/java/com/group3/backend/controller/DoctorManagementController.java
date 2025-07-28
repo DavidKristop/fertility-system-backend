@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequestMapping("/api/doctor-management")
 @RequiredArgsConstructor
@@ -56,6 +57,17 @@ public class DoctorManagementController {
     @GetMapping("/patient/all-doctors")
     @PreAuthorize("hasAnyAuthority('ROLE_PATIENT', 'ROLE_STAFF')")
     public ResponseEntity<Response<Page<UserDoctorResponse>>> getAllDoctors(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String name
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<User> doctors = userManagementService.getUsers(Roles.ROLE_DOCTOR, name, true, pageable);
+        return ResponseEntity.ok(new Response<>(doctors.map(userMapper::toUserDoctorResponse), "Doctors retrieved successfully", true));
+    }
+
+    @GetMapping("/public/doctors")
+    public ResponseEntity<Response<Page<UserDoctorResponse>>> getPublicDoctorList(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "") String name

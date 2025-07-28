@@ -5,7 +5,7 @@ public class Constants {
     public static final int REQUEST_APPOINTMENT_ESTIMATED_TIME = 30;
     public static final int DEADLINE_SIGN_DATE_IN_HOURS = 48;
     public static final int DEADLINE_PAYMENT_DEADLINE_IN_HOURS = 48;
-    
     public static final int MAX_VERIFY_EMAIL_TOKEN_MINUTES = 30;
     public static final int MAX_REFRESH_TOKEN_COOKIE_AGE = 604800;
+    public static final int MAX_CONTENT_UPLOAD_LENGTH = 10000000;
 }

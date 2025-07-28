@@ -5,6 +5,10 @@ import lombok.*;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.tomcat.util.bcel.Const;
+
+import com.group3.backend.utils.Constants;
+
 @Entity
 @Table(name = "schedule_result")
 @Getter
@@ -17,7 +21,7 @@ public class ScheduleResult {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "doctors_note", length = 10000000)
+    @Column(name = "doctors_note", length = Constants.MAX_CONTENT_UPLOAD_LENGTH)
     private String doctorsNote;
 
     @OneToOne
