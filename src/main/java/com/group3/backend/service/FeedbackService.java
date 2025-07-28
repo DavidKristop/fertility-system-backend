@@ -55,17 +55,17 @@ public class FeedbackService {
     }
 
     public Page<FeedbackResponse> getAllFeedbacks(int page, int size) {
-    Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-    Page<Feedback> feedbacks = feedbackRepository.findAll(pageable);
-    
-    return feedbacks.map(fb -> {
-        FeedbackResponse res = new FeedbackResponse();
-        res.setId(fb.getId());
-        res.setContent(fb.getContent());
-        res.setTreatmentId(fb.getTreatment().getId());
-        res.setTreatmentName(fb.getTreatment().getTitle());
-        res.setPatientName(fb.getUser().getFullName());
-        return res;
-    });
-}
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Feedback> feedbacks = feedbackRepository.findAll(pageable);
+        
+        return feedbacks.map(fb -> {
+            FeedbackResponse res = new FeedbackResponse();
+            res.setId(fb.getId());
+            res.setContent(fb.getContent());
+            res.setTreatmentId(fb.getTreatment().getId());
+            res.setTreatmentName(fb.getTreatment().getTitle());
+            res.setPatientName(fb.getUser().getFullName());
+            return res;
+        });
+    }
 }
