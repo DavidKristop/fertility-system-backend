@@ -166,12 +166,14 @@
         <div class="signature-section">
             <div class="signature-box">
                 <p>Bệnh nhân</p>
-                <signature-field
-                    name="Renter's Signature"
-                    role="Renter"
-                    style="width: 160px; height: 80px; display: inline-block;">
-                </signature-field>
-                <p class="date" id="sign_date">Ngày ký: {sign_date}</p>
+                <div id="signature-field-container">
+                    <signature-field
+                        name="Chữ ký bệnh nhân"
+                        role="Bệnh nhân"
+                        style="width: 160px; height: 80px; display: inline-block;">
+                    </signature-field>
+                </div>
+                <p class="date" id="sign_date">Ngày ký: </p>
             </div>
         </div>
     </div>

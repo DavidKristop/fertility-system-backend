@@ -21,7 +21,7 @@ import com.group3.backend.dto.response.ImageResponse;
 @Service
 public class HtmlStringImageUploaderService {
     @Autowired
-    private ImageService imageService;
+    private StaticFileService imageService;
     
     public String uploadImagesFromHtmlString(String htmlString){
         Document doc = Jsoup.parse(htmlString);

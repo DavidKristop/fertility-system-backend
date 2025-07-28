@@ -3,17 +3,17 @@ package com.group3.backend.controller;
 import com.group3.backend.dto.response.Treatment.TreatmentResponse;
 import com.group3.backend.mapper.TreatmentMapper;
 import com.group3.backend.dto.Response;
-import com.group3.backend.dto.request.ContractRequest;
 import com.group3.backend.dto.request.PaymentRequest;
 import com.group3.backend.dto.request.Treatment.TreatmentCreateRequest;
-import com.group3.backend.dto.request.Treatment.TreatmentCreateRequestWithContract;
 import com.group3.backend.model.Treatment;
 import com.group3.backend.service.ContractService;
 import com.group3.backend.service.PaymentService;
 import com.group3.backend.service.TreatmentService;
 import com.group3.backend.utils.Constants;
 import com.group3.backend.utils.CurrentUserUtils;
+import com.mashape.unirest.http.exceptions.UnirestException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -49,14 +49,11 @@ public class TreatmentController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_DOCTOR')")
-    public ResponseEntity<Response<TreatmentResponse>> createTreatment(@RequestBody TreatmentCreateRequest request) {
+    public ResponseEntity<Response<TreatmentResponse>> createTreatment(@RequestBody TreatmentCreateRequest request) throws IOException, UnirestException {
         Treatment treatment = treatmentService.createTreatment(request, currentUserUtils.getCurrentUserId());
         TreatmentResponse response = treatmentMapper.toResponse(treatment);
 
-        contractService.createContract(ContractRequest.builder()
-            .contractUrl("")
-            .isSigned(false)
-            .build(), treatment);
+        contractService.createContract(treatment);
         return ResponseEntity.ok(new Response<>(response, "Treatment created successfully"));
     }
     
