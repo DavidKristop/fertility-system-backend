@@ -68,7 +68,7 @@ public class PaymentController {
     }
 
 
-    @GetMapping("/manager")
+    @GetMapping("/staff")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<Page<PaymentResponse>>> listPayments(
         @RequestParam(defaultValue = "0") int page,
@@ -81,7 +81,7 @@ public class PaymentController {
          "Payments retrieved successfully"));
     }
 
-    @GetMapping("/manager/{paymentId}")
+    @GetMapping("/staff/{paymentId}")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public ResponseEntity<Response<PaymentResponse>> getPaymentById(@PathVariable UUID paymentId) {
         return ResponseEntity.ok(new Response<>(paymentMapper.toResponse(paymentService.getPaymentById(paymentId)), "Payment retrieved successfully"));

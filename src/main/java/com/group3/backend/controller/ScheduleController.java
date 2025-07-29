@@ -68,7 +68,7 @@ public class ScheduleController {
     }
 
     @GetMapping("/doctor")
-    @PreAuthorize("hasAnyAuthority('ROLE_DOCTOR', 'ROLE_STAFF')")
+    @PreAuthorize("hasAnyAuthority('ROLE_DOCTOR', 'ROLE_STAFF', 'ROLE_MANAGER')")
     public ResponseEntity<Response<List<DoctorScheduleReponse>>> getSchedulesByDoctor(
             @RequestParam(value = "from") @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDate from,
             @RequestParam(value = "to") @DateTimeFormat(pattern = Constants.DATE_FORMAT) LocalDate to,
