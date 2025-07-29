@@ -13,7 +13,7 @@ import com.group3.backend.service.UserService;
 import com.group3.backend.utils.CurrentUserUtils;
 
 @RestController
-@RequestMapping("/profile")
+@RequestMapping("api/profile")
 public class ProfileController {
     @Autowired
     private CurrentUserUtils currentUserUtils;
